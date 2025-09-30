@@ -521,6 +521,12 @@ elif app_mode == "Montagem (Montadores)":
 
                             resp = requests.post("https://graph.microsoft.com/v1.0/me/sendMail", headers={"Authorization": f"Bearer {st.session_state.access_token}", "Content-Type": "application/json"}, json=final_payload)
                             
+                            from check_montagem_exists import check_montagem_exists
+                            
+                            if check_montagem_exists(montador_info['id'], periodo_relatorio):
+                                report_summary.append({"Montador": montador_info['nome'], "Status": "❌ Já existe envio para este período"})
+                                continue
+                                
                             if resp.status_code == 202:
                                 time.sleep(2)
                                 headers = {"Authorization": f"Bearer {st.session_state.access_token}"}
