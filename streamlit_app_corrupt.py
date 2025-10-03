@@ -1,6 +1,14 @@
 import os
-import base64
-import datetime
+import ba# --- Novas Funções de Configuração ---
+CONFIG_FILE = Path("config.json")
+DIAS_SEMANA_MAP = {
+    "Monday": "Segunda-feira",
+    "Tuesday": "Terça-feira",
+    "Wednesday": "Quarta-feira",
+    "Thursday": "Quinta-feira",
+    "Friday": "Sexta-feira",
+    "Saturday": "Sábado",
+    "Sunday": "Domingo"}t datetime
 import re
 from pathlib import Path
 import json
@@ -21,13 +29,56 @@ from templates.variaveis import mostrar_variaveis_disponiveis
 CONFIG_FILE = Path("config.json")
 DIAS_SEMANA_MAP = {
     "Monday": "Segunda-feira",
-    "Tuesday": "Terça-feira", 
+    "Tuesday": "Terça-feira",
     "Wednesday": "Quarta-feira",
     "Thursday": "Quinta-feira",
     "Friday": "Sexta-feira",
     "Saturday": "Sábado",
     "Sunday": "Domingo"
 }
+        st.title("👷 Gerenciar Montadores")
+        
+        # Seção de Blacklist
+        with st.expander("📋 Blacklist de Boletins"):
+            st.subheader("Adicionar Boletins à Blacklist")
+            cols = st.columns([2, 2, 1])
+            with cols[0]:
+                montadores = {m['nome']: m['id'] for m in db.get_all_montadores()}
+                montador_selected = st.selectbox("Montador", options=list(montadores.keys()))
+            with cols[1]:
+                boletins_input = st.text_input("Números dos Boletins (separados por vírgula)")
+            with cols[2]:
+                motivo = st.text_input("Motivo (opcional)")
+            
+            if st.button("Adicionar à Blacklist"):
+                if boletins_input and montador_selected:
+                    montador_id = montadores[montador_selected]
+                    boletins = [b.strip() for b in boletins_input.split(",")]
+                    for boletim in boletins:
+                        success, message = db.adicionar_boletim_blacklist(montador_id, boletim, motivo)
+                        st.toast(f"Boletim {boletim}: {message}")
+                    st.rerun()
+                else:
+                    st.warning("Selecione um montador e insira os números dos boletins.")
+            
+            st.divider()
+            st.subheader("Boletins na Blacklist")
+            boletins_blacklist = db.get_boletins_blacklist()
+            if not boletins_blacklist:
+                st.info("Nenhum boletim na blacklist.")
+            else:
+                for b in boletins_blacklist:
+                    cols = st.columns([2, 2, 2, 1])
+                    cols[0].text(b['montador_nome'])
+                    cols[1].text(f"Boletim: {b['boletim']}")
+                    cols[2].text(f"Motivo: {b['motivo'] or '-'}")
+                    if cols[3].button("🗑️", key=f"del_blacklist_{b['id']}"):
+                        db.remover_boletim_blacklist(b['montador_id'], b['boletim'])
+                        st.success(f"Boletim {b['boletim']} removido da blacklist!")
+                        st.rerun()
+        
+        st.divider()
+        with st.form("novo_montador_form", clear_on_submit=True):ay": "Quarta-feira", "Thursday": "Quinta-feira", "Friday": "Sexta-feira", "Saturday": "Sábado", "Sunday": "Domingo"}
 
 def load_config():
     """Carrega as configurações salvas do arquivo JSON."""
@@ -183,9 +234,7 @@ elif app_mode == "Serviços (Prestadores)":
 
         with input_method[0]:
             st.header("Adicionar Boletim Manualmente")
-            if 'manual_entries' not in st.session_state: 
-                st.session_state.manual_entries = []
-            
+            if 'manual_entries' not in st.session_state: st.session_state.manual_entries = []
             with st.form("manual_entry_form", clear_on_submit=True):
                 prestador_nomes = [p['nome'] for p in db.get_all_prestadores()]
                 if not prestador_nomes:
@@ -198,20 +247,8 @@ elif app_mode == "Serviços (Prestadores)":
                     motivo_valor_extra = st.text_input("Motivo Valor Extra")
                     valor_total = valor + valor_extra
                     st.metric("Valor Total", f"R$ {valor_total:.2f}")
-                    
                     if st.form_submit_button("Adicionar à Lista"):
-                        st.session_state.manual_entries.append({
-                            "nome_prestador": nome_prestador, 
-                            "periodo": periodo, 
-                            "o_s": o_s, 
-                            "modalidade": modalidade, 
-                            "data_execucao": data_execucao, 
-                            "valor_custo_prestador": valor, 
-                            "valor_extra": valor_extra, 
-                            "motivo_extra": motivo_valor_extra, 
-                            "valor_total": valor_total
-                        })
-                        
+                        st.session_state.manual_entries.append({"nome_prestador": nome_prestador, "periodo": periodo, "o_s": o_s, "modalidade": modalidade, "data_execucao": data_execucao, "valor_custo_prestador": valor, "valor_extra": valor_extra, "motivo_extra": motivo_valor_extra, "valor_total": valor_total})
             if st.session_state.manual_entries:
                 df_para_envio = pd.DataFrame(st.session_state.manual_entries)
                 st.subheader("Lista para Envio")
@@ -226,12 +263,10 @@ elif app_mode == "Serviços (Prestadores)":
                 df = pd.read_excel(uploader)
                 df.columns = [re.sub(r"\W+", "_", c.strip()).lower() for c in df.columns]
                 required = ["nome_prestador", "periodo", "data_execucao", "o_s"]
-                if not all(c in df.columns for c in required): 
-                    st.error(f"Excel precisa das colunas: {', '.join(required)}")
+                if not all(c in df.columns for c in required): st.error(f"Excel precisa das colunas: {', '.join(required)}")
                 else:
                     for col in ["valor_custo_prestador", "valor_extra", "valor_total"]:
-                        if col in df.columns: 
-                            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+                        if col in df.columns: df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
                     df_para_envio = df
         
         st.divider()
@@ -241,19 +276,14 @@ elif app_mode == "Serviços (Prestadores)":
             all_os_numbers = df_para_envio['o_s'].dropna().tolist()
             sent_os = db.check_os_list(all_os_numbers)
             df_para_envio['status_envio'] = df_para_envio['o_s'].apply(lambda x: "Já enviado" if x in sent_os else "Pendente")
-            
             st.subheader("Pré-visualização")
             st.dataframe(df_para_envio[['nome_prestador', 'o_s', 'status_envio']])
-            if sent_os: 
-                st.warning(f"{len(sent_os)} O.S. já enviadas serão ignoradas.")
-            
+            if sent_os: st.warning(f"{len(sent_os)} O.S. já enviadas serão ignoradas.")
             df_final = df_para_envio[df_para_envio['status_envio'] == 'Pendente']
             
-            if df_final.empty: 
-                st.error("Nenhuma O.S. nova para enviar.")
+            if df_final.empty: st.error("Nenhuma O.S. nova para enviar.")
             else:
                 st.success(f"Tudo pronto para enviar {len(df_final)} novas O.S.")
-                
                 st.sidebar.divider()
                 st.sidebar.title("⚙️ Configurações de Envio (Serviços)")
                 
@@ -283,18 +313,9 @@ elif app_mode == "Serviços (Prestadores)":
                             items_raw = [r.to_dict() for _, r in group.iterrows()]
                             total_geral = float(group["valor_total"].sum())
                             items_fmt = []
-                            
                             for item in items_raw:
                                 data_exec = item.get('data_execucao')
-                                items_fmt.append({
-                                    "OS": item.get('o_s'), 
-                                    "Modalidade": item.get('modalidade'), 
-                                    "Data_execucao": data_exec.strftime('%d/%m/%Y') if hasattr(data_exec, 'strftime') else str(data_exec), 
-                                    "Valor": f"{item.get('valor_custo_prestador', 0):.2f}", 
-                                    "Valor_extra": f"{item.get('valor_extra', 0):.2f}", 
-                                    "Motivo_valor_extra": item.get("motivo_extra", "-"), 
-                                    "Valor_total": f"{item.get('valor_total', 0):.2f}"
-                                })
+                                items_fmt.append({"OS": item.get('o_s'), "Modalidade": item.get('modalidade'), "Data_execucao": data_exec.strftime('%d/%m/%Y') if hasattr(data_exec, 'strftime') else str(data_exec), "Valor": f"{item.get('valor_custo_prestador', 0):.2f}", "Valor_extra": f"{item.get('valor_extra', 0):.2f}", "Motivo_valor_extra": item.get("motivo_extra", "-"), "Valor_total": f"{item.get('valor_total', 0):.2f}"})
                             
                             items_to_log = []
                             for item in items_raw:
@@ -303,14 +324,7 @@ elif app_mode == "Serviços (Prestadores)":
                             
                             lote_id = db.criar_lote_servico(prestador_info['id'], nome_prestador, periodo, total_geral, items_to_log)
                             
-                            ctx = {
-                                "nome_prestador": nome_prestador, 
-                                "periodo": periodo, 
-                                "items": items_fmt, 
-                                "total_geral": total_geral, 
-                                "saudacao": saudacao, 
-                                "lote_id": lote_id
-                            }
+                            ctx = {"nome_prestador": nome_prestador, "periodo": periodo, "items": items_fmt, "total_geral": total_geral, "saudacao": saudacao, "lote_id": lote_id}
                             
                             subj_template = Template(st.session_state.prestador_subject)
                             body_template = Template(st.session_state.prestador_body)
@@ -320,13 +334,7 @@ elif app_mode == "Serviços (Prestadores)":
                             html_pdf = invoice_tpl.render(**ctx)
                             pdf_bytes = HTML(string=html_pdf, base_url="templates").write_pdf()
 
-                            message_data = {
-                                "subject": subj, 
-                                "body": {"contentType": "HTML", "content": body_html}, 
-                                "toRecipients": [{"emailAddress": {"address": prestador_info['email']}}], 
-                                "attachments": [{"@odata.type": "#microsoft.graph.fileAttachment", "name": f"Relatorio_{nome_prestador.replace(' ', '_')}_Lote_{lote_id}.pdf", "contentBytes": base64.b64encode(pdf_bytes).decode()}]
-                            }
-                            
+                            message_data = {"subject": subj, "body": {"contentType": "HTML", "content": body_html}, "toRecipients": [{"emailAddress": {"address": prestador_info['email']}}], "attachments": [{"@odata.type": "#microsoft.graph.fileAttachment", "name": f"Relatorio_{nome_prestador.replace(' ', '_')}_Lote_{lote_id}.pdf", "contentBytes": base64.b64encode(pdf_bytes).decode()}]}
                             if cc_list:
                                 message_data["ccRecipients"] = [{"emailAddress": {"address": cc}} for cc in cc_list]
                             
@@ -344,7 +352,6 @@ elif app_mode == "Serviços (Prestadores)":
                                 report.append({"Prestador": nome_prestador, "Status": f"✅ Lote #{lote_id} Enviado"})
                             else:
                                 report.append({"Prestador": nome_prestador, "Status": f"❌ Erro {resp.status_code} - {resp.text}"})
-                                
                     st.subheader("📋 Relatório de Envio")
                     st.table(pd.DataFrame(report))
                     st.success("Processo concluído!")
@@ -352,7 +359,6 @@ elif app_mode == "Serviços (Prestadores)":
 
     elif page == "Gerenciar Prestadores":
         st.title("📇 Gerenciar Prestadores de Serviço")
-        
         with st.form("novo_prestador_form", clear_on_submit=True):
             st.subheader("Adicionar Novo Prestador")
             nome = st.text_input("Nome")
@@ -360,7 +366,6 @@ elif app_mode == "Serviços (Prestadores)":
             fornecedor_id = st.text_input("Número do Fornecedor")
             regra_envio = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], key="p_regra")
             dias_envio = ""
-            
             if regra_envio == "Semanal":
                 dias_envio = st.selectbox("Dia da Semana", list(DIAS_SEMANA_MAP.values()), key="p_dia_sem")
             elif regra_envio in ["Mensal (Dia Fixo)", "Quinzenal"]:
@@ -372,10 +377,8 @@ elif app_mode == "Serviços (Prestadores)":
                     st.toast(message)
                 else:
                     st.warning("Todos os campos são obrigatórios.")
-                    
         st.divider()
         st.subheader("Prestadores Cadastrados")
-        
         for p in db.get_all_prestadores():
             with st.expander(p['nome']):
                 with st.form(key=f"form_p_{p['id']}"):
@@ -385,7 +388,6 @@ elif app_mode == "Serviços (Prestadores)":
                     
                     regra_edit = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], index=["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"].index(regra_atual), key=f"p_regra_edit_{p['id']}")
                     dias_edit = ""
-                    
                     if regra_edit == "Semanal":
                         dias_semana_list = list(DIAS_SEMANA_MAP.values())
                         index_sem = dias_semana_list.index(dias_atuais) if dias_atuais in dias_semana_list else 0
@@ -434,13 +436,10 @@ elif app_mode == "Serviços (Prestadores)":
                         
                         st.markdown("---")
                         sub_cols = st.columns(2)
-                        
                         with sub_cols[0]:
                             status_options = ["Em Aberto", "Pago", "Cancelado", "N.F. RECEBIDA"]
-                            try: 
-                                current_status_index = status_options.index(lote['status'])
-                            except ValueError: 
-                                current_status_index = 0
+                            try: current_status_index = status_options.index(lote['status'])
+                            except ValueError: current_status_index = 0
                             
                             new_status = st.selectbox("Alterar status do lote:", options=status_options, index=current_status_index, key=f"status_lote_{lote['id']}")
                             if st.button("Salvar Status", key=f"save_lote_{lote['id']}"):
@@ -476,13 +475,10 @@ elif app_mode == "Montagem (Montadores)":
 
         with input_method[0]:
             st.header("Adicionar Montagem Manualmente")
-            if 'manual_montagem_entries' not in st.session_state:
-                st.session_state.manual_montagem_entries = []
-                
+            if 'manual_montagem_entries' not in st.session_state: st.session_state.manual_montagem_entries = []
             with st.form("manual_montagem_form", clear_on_submit=True):
                 montadores = db.get_all_montadores(apenas_ativos=True)
                 montador_map = {m['nome']: m['identificador'] for m in montadores}
-                
                 if not montador_map:
                     st.warning("Nenhum montador ativo cadastrado.")
                 else:
@@ -490,18 +486,8 @@ elif app_mode == "Montagem (Montadores)":
                     boletim, data_montagem = st.text_input("Boletim Montagem"), st.date_input("Data da Montagem")
                     valor_venda = st.number_input("Média de Valor Venda (R$)", 0.0, format="%.2f")
                     cliente, produto = st.text_input("Cliente"), st.text_input("Nome do Produto")
-                    
                     if st.form_submit_button("Adicionar à Lista"):
-                        st.session_state.manual_montagem_entries.append({
-                            "identificador_do_montador": montador_map[montador_nome], 
-                            "identificador_boletim_montagem": boletim, 
-                            "data_da_montagem": data_montagem, 
-                            "media_de_valor_venda": valor_venda, 
-                            "nome_do_cliente": cliente, 
-                            "nome_produto": produto, 
-                            "nome_do_montador": montador_nome
-                        })
-                        
+                        st.session_state.manual_montagem_entries.append({"identificador_do_montador": montador_map[montador_nome], "identificador_boletim_montagem": boletim, "data_da_montagem": data_montagem, "media_de_valor_venda": valor_venda, "nome_do_cliente": cliente, "nome_produto": produto, "nome_do_montador": montador_nome})
             if st.session_state.manual_montagem_entries:
                 df_para_envio_montagem = pd.DataFrame(st.session_state.manual_montagem_entries)
                 st.subheader("Lista para Envio")
@@ -516,20 +502,16 @@ elif app_mode == "Montagem (Montadores)":
                 df = pd.read_excel(uploader)
                 df.columns = [re.sub(r"\W+", "_", c.strip()).lower() for c in df.columns]
                 required_cols = ['identificador_do_montador', 'identificador_boletim_montagem', 'data_da_montagem', 'media_de_valor_venda', 'nome_produto']
-                if not all(c in df.columns for c in required_cols):
-                    st.error(f"Excel precisa das colunas: {', '.join(required_cols)}")
-                else: 
-                    df_para_envio_montagem = df
+                if not all(c in df.columns for c in required_cols): st.error(f"Excel precisa das colunas: {', '.join(required_cols)}")
+                else: df_para_envio_montagem = df
         
         st.divider()
         st.header("🚀 Processar e Disparar Pagamentos")
-        
         if df_para_envio_montagem is not None and not df_para_envio_montagem.empty:
             df = df_para_envio_montagem
             df['identificador_boletim_montagem'] = df['identificador_boletim_montagem'].astype(str)
             df['identificador_do_montador'] = df['identificador_do_montador'].astype(str)
             df['data_da_montagem'] = pd.to_datetime(df['data_da_montagem'])
-            
             all_boletins = df['identificador_boletim_montagem'].unique().tolist()
             sent_boletins = db.check_boletim_list(all_boletins)
             blacklisted_boletins = db.check_boletins_blacklist(all_boletins)
@@ -546,8 +528,7 @@ elif app_mode == "Montagem (Montadores)":
             st.dataframe(df[['identificador_do_montador', 'identificador_boletim_montagem', 'status_envio']])
             df_final = df[df['status_envio'] == 'Pendente']
 
-            if df_final.empty:
-                st.error("Nenhuma montagem nova para processar.")
+            if df_final.empty: st.error("Nenhuma montagem nova para processar.")
             else:
                 st.sidebar.divider()
                 st.sidebar.title("⚙️ Configurações de E-mail (Montador)")
@@ -577,29 +558,15 @@ elif app_mode == "Montagem (Montadores)":
                             total_auxilio = float(semanas_trabalhadas * montador_info['auxilio_semanal'])
                             total_geral = total_comissao + total_auxilio
                             items_para_pdf = []
-                            
                             for _, row in group.iterrows():
-                                items_para_pdf.append({
-                                    'boletim': row['identificador_boletim_montagem'], 
-                                    'data_montagem': row['data_da_montagem'].strftime('%d/%m/%Y'), 
-                                    'cliente': row.get('nome_do_cliente', '-'), 
-                                    'nome_produto': row.get('nome_produto', '-'), 
-                                    'valor_venda': row['media_de_valor_venda'], 
-                                    'comissao_calculada': row['comissao_calculada'], 
-                                    'comissao_editada': None, 
-                                    'adicional': 0.0
-                                })
+                                items_para_pdf.append({'boletim': row['identificador_boletim_montagem'], 'data_montagem': row['data_da_montagem'].strftime('%d/%m/%Y'), 'cliente': row.get('nome_do_cliente', '-'), 'nome_produto': row.get('nome_produto', '-'), 'valor_venda': row['media_de_valor_venda'], 'comissao_calculada': row['comissao_calculada'], 'comissao_editada': None, 'adicional': 0.0})
                             
                             periodo_relatorio = f"{group['data_da_montagem'].min().strftime('%d/%m/%Y')} - {group['data_da_montagem'].max().strftime('%d/%m/%Y')}"
                             
                             ctx = {
-                                "nome_montador": montador_info['nome'], 
-                                "periodo_relatorio": periodo_relatorio, 
-                                "percentual_comissao": montador_info['percentual_comissao'] * 100, 
-                                "items": items_para_pdf, 
-                                "total_comissao": total_comissao, 
-                                "total_adicionais": 0, 
-                                "total_auxilio": total_auxilio, 
+                                "nome_montador": montador_info['nome'], "periodo_relatorio": periodo_relatorio, 
+                                "percentual_comissao": montador_info['percentual_comissao'] * 100, "items": items_para_pdf, 
+                                "total_comissao": total_comissao, "total_adicionais": 0, "total_auxilio": total_auxilio, 
                                 "total_geral": total_geral
                             }
                             
@@ -619,7 +586,6 @@ elif app_mode == "Montagem (Montadores)":
                                 "toRecipients": [{"emailAddress": {"address": montador_info['email']}}],
                                 "attachments": [{"@odata.type": "#microsoft.graph.fileAttachment", "name": f"Relatorio_Montagem_{montador_info['nome']}.pdf", "contentBytes": base64.b64encode(pdf_bytes).decode()}]
                             }
-                            
                             if cc_list_montador:
                                 message_data["ccRecipients"] = [{"emailAddress": {"address": cc}} for cc in cc_list_montador]
                             
@@ -645,59 +611,12 @@ elif app_mode == "Montagem (Montadores)":
                                 report_summary.append({"Montador": montador_info['nome'], "Status": "✅ Enviado"})
                             else:
                                 report_summary.append({"Montador": montador_info['nome'], "Status": f"❌ Erro {resp.status_code} - {resp.text}"})
-                                
                     st.subheader("📋 Relatório de Envio")
                     st.table(pd.DataFrame(report_summary))
                     st.session_state.manual_montagem_entries = []
 
     elif page == "Gerenciar Montadores":
         st.title("👷 Gerenciar Montadores")
-        
-        # Seção de Blacklist
-        with st.expander("📋 Blacklist de Boletins"):
-            st.subheader("Adicionar Boletins à Blacklist")
-            cols = st.columns([2, 2, 1])
-            
-            with cols[0]:
-                montadores = {m['nome']: m['id'] for m in db.get_all_montadores()}
-                montador_selected = st.selectbox("Montador", options=list(montadores.keys()))
-            
-            with cols[1]:
-                boletins_input = st.text_input("Números dos Boletins (separados por vírgula)")
-            
-            with cols[2]:
-                motivo = st.text_input("Motivo (opcional)")
-            
-            if st.button("Adicionar à Blacklist"):
-                if boletins_input and montador_selected:
-                    montador_id = montadores[montador_selected]
-                    boletins = [b.strip() for b in boletins_input.split(",")]
-                    for boletim in boletins:
-                        success, message = db.adicionar_boletim_blacklist(montador_id, boletim, motivo)
-                        st.toast(f"Boletim {boletim}: {message}")
-                    st.rerun()
-                else:
-                    st.warning("Selecione um montador e insira os números dos boletins.")
-            
-            st.divider()
-            st.subheader("Boletins na Blacklist")
-            boletins_blacklist = db.get_boletins_blacklist()
-            
-            if not boletins_blacklist:
-                st.info("Nenhum boletim na blacklist.")
-            else:
-                for b in boletins_blacklist:
-                    cols = st.columns([2, 2, 2, 1])
-                    cols[0].text(b['montador_nome'])
-                    cols[1].text(f"Boletim: {b['boletim']}")
-                    cols[2].text(f"Motivo: {b['motivo'] or '-'}")
-                    if cols[3].button("🗑️", key=f"del_blacklist_{b['id']}"):
-                        db.remover_boletim_blacklist(b['montador_id'], b['boletim'])
-                        st.success(f"Boletim {b['boletim']} removido da blacklist!")
-                        st.rerun()
-        
-        st.divider()
-        
         with st.form("novo_montador_form", clear_on_submit=True):
             st.subheader("Adicionar Novo Montador")
             nome = st.text_input("Nome Completo")
@@ -709,7 +628,6 @@ elif app_mode == "Montagem (Montadores)":
             
             regra_envio = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], key="m_regra")
             dias_envio = ""
-            
             if regra_envio == "Semanal":
                 dias_envio = st.selectbox("Dia da Semana", list(DIAS_SEMANA_MAP.values()), key="m_dia_sem")
             elif regra_envio in ["Mensal (Dia Fixo)", "Quinzenal"]:
@@ -721,18 +639,12 @@ elif app_mode == "Montagem (Montadores)":
                     st.toast(message)
                 else:
                     st.warning("Todos os campos são obrigatórios.")
-                    
         st.divider()
         st.subheader("Montadores Cadastrados")
-        
         for m in db.get_all_montadores():
-            with st.expander(f"{m['nome']} ({'Ativo' if m['ativo'] else 'Inativo'}) - ID: {m['id']}"):
-                # Informações básicas do montador
-                st.info(f"**ID do Montador:** {m['id']} | **Identificador:** {m['identificador']}")
-                
+            with st.expander(f"{m['nome']} ({'Ativo' if m['ativo'] else 'Inativo'})"):
                 with st.form(key=f"form_montador_{m['id']}"):
-                    # Permitir edição do número do fornecedor
-                    fornecedor_id = st.text_input("Número do Fornecedor", value=m['fornecedor_id'], key=f"fornecedor_{m['id']}")
+                    st.text_input("Número do Fornecedor", value=m['fornecedor_id'], disabled=True)
                     email = st.text_input("E-mail", value=m['email'], key=f"email_{m['id']}")
                     comissao = st.number_input("Comissão (%)", value=m['percentual_comissao'] * 100, key=f"com_{m['id']}")
                     auxilio = st.number_input("Auxílio Semanal (R$)", value=m['auxilio_semanal'], key=f"aux_{m['id']}")
@@ -743,7 +655,6 @@ elif app_mode == "Montagem (Montadores)":
                     
                     regra_edit = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], index=["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"].index(regra_atual), key=f"m_regra_edit_{m['id']}")
                     dias_edit = ""
-                    
                     if regra_edit == "Semanal":
                         dias_semana_list = list(DIAS_SEMANA_MAP.values())
                         index_sem = dias_semana_list.index(dias_atuais) if dias_atuais in dias_semana_list else 0
@@ -752,65 +663,9 @@ elif app_mode == "Montagem (Montadores)":
                         dias_edit = st.text_input("Dias do Mês", value=dias_atuais, key=f"m_dia_mes_edit_{m['id']}")
 
                     if st.form_submit_button("Salvar Alterações"):
-                        db.update_montador(m['id'], email, comissao / 100.0, auxilio, ativo, regra_edit, dias_edit, fornecedor_id)
+                        db.update_montador(m['id'], email, comissao / 100.0, auxilio, ativo, regra_edit, dias_edit)
                         st.success(f"Dados de {m['nome']} atualizados!")
                         st.rerun()
-                
-                # Histórico de montagens do montador
-                st.divider()
-                st.subheader(f"📋 Histórico de Montagens - {m['nome']}")
-                
-                historico_montador = db.get_montagens_by_montador_id(m['id'])
-                
-                if not historico_montador:
-                    st.info("Nenhuma montagem enviada ainda para este montador.")
-                else:
-                    st.write(f"**Total de envios:** {len(historico_montador)}")
-                    
-                    # Mostrar resumo dos últimos envios
-                    for idx, envio in enumerate(historico_montador[:3]):  # Mostra apenas os 3 mais recentes
-                        details = envio.get('detalhes', {})
-                        cols = st.columns([2, 2, 1, 1])
-                        
-                        cols[0].text(f"📅 {envio['data_envio'].strftime('%d/%m/%Y')}")
-                        cols[1].text(f"Período: {details.get('periodo_relatorio', 'N/A')}")
-                        cols[2].text(f"R$ {details.get('total_geral', 0):.2f}")
-                        cols[3].markdown(f"**{envio['status']}**")
-                    
-                    if len(historico_montador) > 3:
-                        st.write(f"... e mais {len(historico_montador) - 3} envios anteriores.")
-                    
-                    # Botão para ver histórico completo
-                    if st.button(f"Ver Histórico Completo", key=f"hist_{m['id']}"):
-                        st.session_state[f"show_full_history_{m['id']}"] = True
-                    
-                    # Mostrar histórico completo se solicitado
-                    if st.session_state.get(f"show_full_history_{m['id']}", False):
-                        st.markdown("#### Histórico Completo")
-                        
-                        for envio in historico_montador:
-                            details = envio.get('detalhes', {})
-                            
-                            with st.container():
-                                st.markdown("---")
-                                cols = st.columns([2, 2, 1, 1, 1])
-                                cols[0].text(f"📅 {envio['data_envio'].strftime('%d/%m/%Y')}")
-                                cols[1].text(f"Período: {details.get('periodo_relatorio', 'N/A')}")
-                                cols[2].text(f"R$ {details.get('total_geral', 0):.2f}")
-                                cols[3].markdown(f"**{envio['status']}**")
-                                
-                                # Mostrar detalhes dos boletins
-                                if details and 'items' in details:
-                                    # Usar checkbox para controlar a visualização
-                                    show_boletins = st.checkbox(f"👁️ Ver {len(details['items'])} boletins", key=f"show_boletins_{envio['id']}")
-                                    
-                                    if show_boletins:
-                                        df_boletins = pd.DataFrame(details['items'])
-                                        st.dataframe(df_boletins[['boletim', 'data_montagem', 'valor_venda', 'comissao_calculada']])
-                        
-                        if st.button(f"Ocultar Histórico", key=f"hide_hist_{m['id']}"):
-                            st.session_state[f"show_full_history_{m['id']}"] = False
-                            st.rerun()
 
     elif page == "Histórico de Montagens":
         st.title("📚 Histórico e Status de Pagamentos (Montagem)")
@@ -845,10 +700,8 @@ elif app_mode == "Montagem (Montadores)":
                     with st.expander("Ver Detalhes e Gerenciar"):
                         if details:
                             df_items = pd.DataFrame(details.get('items', []))
-                            if 'comissao_editada' not in df_items.columns: 
-                                df_items['comissao_editada'] = None
-                            if 'adicional' not in df_items.columns: 
-                                df_items['adicional'] = 0.0
+                            if 'comissao_editada' not in df_items.columns: df_items['comissao_editada'] = None
+                            if 'adicional' not in df_items.columns: df_items['adicional'] = 0.0
                             
                             st.markdown("##### Editar Boletins")
                             edited_df = st.data_editor(df_items, key=f"editor_{item['id']}", disabled=['boletim', 'data_montagem', 'cliente', 'nome_produto', 'valor_venda', 'comissao_calculada'])
@@ -867,8 +720,7 @@ elif app_mode == "Montagem (Montadores)":
                                 st.success("Detalhes do pagamento atualizados!")
                                 st.rerun()
 
-                        else: 
-                            st.warning("Não há detalhes salvos.")
+                        else: st.warning("Não há detalhes salvos.")
                         
                         if item['anexo_path']:
                             with open(item['anexo_path'], "rb") as file:
@@ -876,20 +728,15 @@ elif app_mode == "Montagem (Montadores)":
 
                         st.markdown("---")
                         sub_cols = st.columns(2)
-                        
                         with sub_cols[0]:
                             status_options = ["Em Aberto", "Pago", "Cancelado", "N.F. RECEBIDA"]
-                            try: 
-                                current_status_index = status_options.index(item['status'])
-                            except ValueError: 
-                                current_status_index = 0
-                                
+                            try: current_status_index = status_options.index(item['status'])
+                            except ValueError: current_status_index = 0
                             new_status = st.selectbox("Alterar status:", options=status_options, index=current_status_index, key=f"status_mont_{item['id']}")
                             if st.button("Salvar Status", key=f"save_status_mont_{item['id']}"):
                                 db.update_montagem_status(item['id'], new_status)
                                 st.success(f"Status atualizado!")
                                 st.rerun()
-                                
                         with sub_cols[1]:
                             st.write("")
                             st.write("")

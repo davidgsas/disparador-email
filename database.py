@@ -36,6 +36,16 @@ def run_migrations():
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_montagem ON envios_montagem ((detalhes->>'periodo_relatorio'), montador_id);''')
         cur.execute('''CREATE TABLE IF NOT EXISTS envios_ignorados (id SERIAL PRIMARY KEY, tipo TEXT NOT NULL, entidade_id INTEGER NOT NULL, ano INTEGER NOT NULL, periodo_chave TEXT NOT NULL, data_ignorada TIMESTAMP NOT NULL)''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_ignore ON envios_ignorados (tipo, entidade_id, ano, periodo_chave);''')
+        
+        # Nova tabela para blacklist de boletins
+        cur.execute('''CREATE TABLE IF NOT EXISTS boletins_blacklist (
+            id SERIAL PRIMARY KEY,
+            montador_id INTEGER REFERENCES montadores(id) ON DELETE CASCADE,
+            boletim TEXT NOT NULL,
+            data_adicao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            motivo TEXT
+        )''')
+        cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_boletim_blacklist ON boletins_blacklist (montador_id, boletim);''')
 
     conn.commit()
     conn.close()
@@ -168,10 +178,13 @@ def add_montador(nome, identificador, email, percentual_comissao, auxilio_semana
     except psycopg2.IntegrityError: return False, f"Erro: Identificador ou Fornecedor ID já existem."
     finally: conn.close()
 
-def update_montador(montador_id, email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio):
+def update_montador(montador_id, email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id=None):
     conn = get_db_connection()
     with conn.cursor() as cur:
-        cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s WHERE id = %s', (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, montador_id))
+        if fornecedor_id is not None:
+            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s, fornecedor_id = %s WHERE id = %s', (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id, montador_id))
+        else:
+            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s WHERE id = %s', (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, montador_id))
     conn.commit()
     conn.close()
 
@@ -236,6 +249,15 @@ def get_all_sent_montagens():
     conn.close()
     return history
 
+def get_montagens_by_montador_id(montador_id):
+    """Retorna histórico de montagens por montador específico"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('SELECT e.*, m.nome as montador_nome FROM envios_montagem e LEFT JOIN montadores m ON e.montador_id = m.id WHERE e.montador_id = %s ORDER BY data_envio DESC', (montador_id,))
+        history = cur.fetchall()
+    conn.close()
+    return history
+
 def update_montagem_status(envio_id, status):
     conn = get_db_connection()
     with conn.cursor() as cur: cur.execute('UPDATE envios_montagem SET status = %s WHERE id = %s', (status, envio_id))
@@ -287,5 +309,68 @@ def ignorar_envio_semanal(tipo, entidade_id, ano, semana):
         cur.execute("INSERT INTO envios_ignorados (tipo, entidade_id, ano, periodo_chave, data_ignorada) VALUES (%s, %s, %s, %s, %s) ON CONFLICT (tipo, entidade_id, ano, periodo_chave) DO NOTHING", (tipo, entidade_id, ano, f"semana_{semana}", datetime.datetime.now()))
     conn.commit()
     conn.close()
+
+# --- Funções de Blacklist de Boletins ---
+def adicionar_boletim_blacklist(montador_id, boletim, motivo=None):
+    """Adiciona um boletim à blacklist de um montador"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO boletins_blacklist (montador_id, boletim, motivo) VALUES (%s, %s, %s)",
+                (montador_id, boletim, motivo)
+            )
+        conn.commit()
+        return True, "Boletim adicionado à blacklist!"
+    except psycopg2.IntegrityError:
+        return False, "Este boletim já está na blacklist"
+    finally:
+        conn.close()
+
+def remover_boletim_blacklist(montador_id, boletim):
+    """Remove um boletim da blacklist de um montador"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            "DELETE FROM boletins_blacklist WHERE montador_id = %s AND boletim = %s",
+            (montador_id, boletim)
+        )
+    conn.commit()
+    conn.close()
+
+def get_boletins_blacklist(montador_id=None):
+    """Retorna todos os boletins na blacklist, filtrados por montador se especificado"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        if montador_id:
+            cur.execute('''
+                SELECT b.*, m.nome as montador_nome 
+                FROM boletins_blacklist b 
+                JOIN montadores m ON b.montador_id = m.id 
+                WHERE b.montador_id = %s 
+                ORDER BY b.data_adicao DESC
+            ''', (montador_id,))
+        else:
+            cur.execute('''
+                SELECT b.*, m.nome as montador_nome 
+                FROM boletins_blacklist b 
+                JOIN montadores m ON b.montador_id = m.id 
+                ORDER BY b.data_adicao DESC
+            ''')
+        return cur.fetchall()
+
+def check_boletins_blacklist(boletim_ids):
+    """Verifica quais boletins estão na blacklist"""
+    if not boletim_ids:
+        return []
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT boletim FROM boletins_blacklist WHERE boletim = ANY(%s)",
+            (boletim_ids,)
+        )
+        blacklisted = [row[0] for row in cur.fetchall()]
+    conn.close()
+    return blacklisted
 
 run_migrations()

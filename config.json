@@ -2,7 +2,7 @@
     "prestador_cc": "",
     "prestador_subject": "",
     "prestador_body": "",
-    "montador_cc": "",
-    "montador_subject": "montagem",
-    "montador_body": "montagem teste"
+    "montador_cc": "centralclientes01@novomundo.com.br",
+    "montador_subject": "Relat\u00f3rio de Pagamento de Montagem {{nome_montador}} - Per\u00edodo: {{periodo_relatorio}}",
+    "montador_body": "Ol\u00e1, {{nome_montador}}.\n\nSegue em anexo o seu relat\u00f3rio de pagamento de montagens referente ao per\u00edodo de {{periodo_relatorio}}.\n\nLembrando que a nota fiscal deve ser emitida no CNPJ 01.534.080/0008-02.\n\nQualquer d\u00favida, estamos \u00e0 disposi\u00e7\u00e3o."
 }
