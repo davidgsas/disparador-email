@@ -37,7 +37,7 @@ def run_migrations():
         cur.execute('''CREATE TABLE IF NOT EXISTS envios_ignorados (id SERIAL PRIMARY KEY, tipo TEXT NOT NULL, entidade_id INTEGER NOT NULL, ano INTEGER NOT NULL, periodo_chave TEXT NOT NULL, data_ignorada TIMESTAMP NOT NULL)''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_ignore ON envios_ignorados (tipo, entidade_id, ano, periodo_chave);''')
         
-        # Nova tabela para blacklist de boletins
+        # Nova tabela para blacklist de boletins (montadores)
         cur.execute('''CREATE TABLE IF NOT EXISTS boletins_blacklist (
             id SERIAL PRIMARY KEY,
             montador_id INTEGER REFERENCES montadores(id) ON DELETE CASCADE,
@@ -46,6 +46,16 @@ def run_migrations():
             motivo TEXT
         )''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_boletim_blacklist ON boletins_blacklist (montador_id, boletim);''')
+        
+        # Nova tabela para blacklist de OS (prestadores)
+        cur.execute('''CREATE TABLE IF NOT EXISTS os_blacklist (
+            id SERIAL PRIMARY KEY,
+            prestador_id INTEGER REFERENCES prestadores(id) ON DELETE CASCADE,
+            os_numero TEXT NOT NULL,
+            data_adicao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            motivo TEXT
+        )''')
+        cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_os_blacklist ON os_blacklist (prestador_id, os_numero);''')
 
     conn.commit()
     conn.close()
@@ -368,6 +378,69 @@ def check_boletins_blacklist(boletim_ids):
         cur.execute(
             "SELECT boletim FROM boletins_blacklist WHERE boletim = ANY(%s)",
             (boletim_ids,)
+        )
+        blacklisted = [row[0] for row in cur.fetchall()]
+    conn.close()
+    return blacklisted
+
+# --- Funções de Blacklist de OS (Prestadores) ---
+def adicionar_os_blacklist(prestador_id, os_numero, motivo=None):
+    """Adiciona uma OS à blacklist de um prestador"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO os_blacklist (prestador_id, os_numero, motivo) VALUES (%s, %s, %s)",
+                (prestador_id, os_numero, motivo)
+            )
+        conn.commit()
+        return True, "OS adicionada à blacklist!"
+    except psycopg2.IntegrityError:
+        return False, "Esta OS já está na blacklist"
+    finally:
+        conn.close()
+
+def remover_os_blacklist(prestador_id, os_numero):
+    """Remove uma OS da blacklist de um prestador"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            "DELETE FROM os_blacklist WHERE prestador_id = %s AND os_numero = %s",
+            (prestador_id, os_numero)
+        )
+    conn.commit()
+    conn.close()
+
+def get_os_blacklist(prestador_id=None):
+    """Retorna todas as OS na blacklist, filtradas por prestador se especificado"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        if prestador_id:
+            cur.execute('''
+                SELECT o.*, p.nome as prestador_nome 
+                FROM os_blacklist o 
+                JOIN prestadores p ON o.prestador_id = p.id 
+                WHERE o.prestador_id = %s 
+                ORDER BY o.data_adicao DESC
+            ''', (prestador_id,))
+        else:
+            cur.execute('''
+                SELECT o.*, p.nome as prestador_nome 
+                FROM os_blacklist o 
+                JOIN prestadores p ON o.prestador_id = p.id 
+                ORDER BY o.data_adicao DESC
+            ''')
+        return cur.fetchall()
+
+def check_os_blacklist(os_numbers):
+    """Verifica quais OS estão na blacklist"""
+    if not os_numbers:
+        return []
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT os_numero FROM os_blacklist WHERE os_numero = ANY(%s)",
+            (os_numbers,)
         )
         blacklisted = [row[0] for row in cur.fetchall()]
     conn.close()

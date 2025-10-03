@@ -240,12 +240,25 @@ elif app_mode == "Serviços (Prestadores)":
             df_para_envio['o_s'] = df_para_envio['o_s'].astype(str)
             all_os_numbers = df_para_envio['o_s'].dropna().tolist()
             sent_os = db.check_os_list(all_os_numbers)
-            df_para_envio['status_envio'] = df_para_envio['o_s'].apply(lambda x: "Já enviado" if x in sent_os else "Pendente")
+            blacklisted_os = db.check_os_blacklist(all_os_numbers)
+            
+            def get_os_status(row):
+                os_numero = row['o_s']
+                if os_numero in blacklisted_os:
+                    return "Na blacklist"
+                elif os_numero in sent_os:
+                    return "Já enviado"
+                return "Pendente"
+            
+            df_para_envio['status_envio'] = df_para_envio.apply(get_os_status, axis=1)
             
             st.subheader("Pré-visualização")
             st.dataframe(df_para_envio[['nome_prestador', 'o_s', 'status_envio']])
+            
             if sent_os: 
                 st.warning(f"{len(sent_os)} O.S. já enviadas serão ignoradas.")
+            if blacklisted_os:
+                st.warning(f"{len(blacklisted_os)} O.S. na blacklist serão ignoradas.")
             
             df_final = df_para_envio[df_para_envio['status_envio'] == 'Pendente']
             
@@ -352,6 +365,51 @@ elif app_mode == "Serviços (Prestadores)":
 
     elif page == "Gerenciar Prestadores":
         st.title("📇 Gerenciar Prestadores de Serviço")
+        
+        # Seção de Blacklist de OS
+        with st.expander("📋 Blacklist de O.S."):
+            st.subheader("Adicionar O.S. à Blacklist")
+            cols = st.columns([2, 2, 1])
+            
+            with cols[0]:
+                prestadores = {p['nome']: p['id'] for p in db.get_all_prestadores()}
+                prestador_selected = st.selectbox("Prestador", options=list(prestadores.keys()))
+            
+            with cols[1]:
+                os_input = st.text_input("Números das O.S. (separados por vírgula)")
+            
+            with cols[2]:
+                motivo = st.text_input("Motivo (opcional)")
+            
+            if st.button("Adicionar à Blacklist"):
+                if os_input and prestador_selected:
+                    prestador_id = prestadores[prestador_selected]
+                    os_numbers = [o.strip() for o in os_input.split(",")]
+                    for os_numero in os_numbers:
+                        success, message = db.adicionar_os_blacklist(prestador_id, os_numero, motivo)
+                        st.toast(f"O.S. {os_numero}: {message}")
+                    st.rerun()
+                else:
+                    st.warning("Selecione um prestador e insira os números das O.S.")
+            
+            st.divider()
+            st.subheader("O.S. na Blacklist")
+            os_blacklist = db.get_os_blacklist()
+            
+            if not os_blacklist:
+                st.info("Nenhuma O.S. na blacklist.")
+            else:
+                for o in os_blacklist:
+                    cols = st.columns([2, 2, 2, 1])
+                    cols[0].text(o['prestador_nome'])
+                    cols[1].text(f"O.S.: {o['os_numero']}")
+                    cols[2].text(f"Motivo: {o['motivo'] or '-'}")
+                    if cols[3].button("🗑️", key=f"del_os_blacklist_{o['id']}"):
+                        db.remover_os_blacklist(o['prestador_id'], o['os_numero'])
+                        st.success(f"O.S. {o['os_numero']} removida da blacklist!")
+                        st.rerun()
+        
+        st.divider()
         
         with st.form("novo_prestador_form", clear_on_submit=True):
             st.subheader("Adicionar Novo Prestador")
