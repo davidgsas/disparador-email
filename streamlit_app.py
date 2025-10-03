@@ -333,10 +333,14 @@ elif app_mode == "Serviços (Prestadores)":
                             html_pdf = invoice_tpl.render(**ctx)
                             pdf_bytes = HTML(string=html_pdf, base_url="templates").write_pdf()
 
+                            # Obter todos os emails do prestador (principal + adicionais)
+                            prestador_emails = db.get_prestador_emails(prestador_info)
+                            recipients = [{"emailAddress": {"address": email}} for email in prestador_emails]
+                            
                             message_data = {
                                 "subject": subj, 
                                 "body": {"contentType": "HTML", "content": body_html}, 
-                                "toRecipients": [{"emailAddress": {"address": prestador_info['email']}}], 
+                                "toRecipients": recipients, 
                                 "attachments": [{"@odata.type": "#microsoft.graph.fileAttachment", "name": f"Relatorio_{nome_prestador.replace(' ', '_')}_Lote_{lote_id}.pdf", "contentBytes": base64.b64encode(pdf_bytes).decode()}]
                             }
                             
@@ -414,7 +418,9 @@ elif app_mode == "Serviços (Prestadores)":
         with st.form("novo_prestador_form", clear_on_submit=True):
             st.subheader("Adicionar Novo Prestador")
             nome = st.text_input("Nome")
-            email = st.text_input("E-mail")
+            email = st.text_input("E-mail Principal")
+            emails_adicionais = st.text_input("E-mails Adicionais (separados por vírgula)", 
+                                            help="Digite os emails adicionais separados por vírgula. Ex: email2@empresa.com, email3@empresa.com")
             fornecedor_id = st.text_input("Número do Fornecedor")
             regra_envio = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], key="p_regra")
             dias_envio = ""
@@ -426,18 +432,31 @@ elif app_mode == "Serviços (Prestadores)":
             
             if st.form_submit_button("Adicionar"):
                 if all([nome, email, fornecedor_id]):
-                    success, message = db.add_prestador(nome, email, fornecedor_id, regra_envio, dias_envio)
+                    success, message = db.add_prestador(nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais.strip() if emails_adicionais.strip() else None)
                     st.toast(message)
                 else:
-                    st.warning("Todos os campos são obrigatórios.")
+                    st.warning("Todos os campos obrigatórios devem ser preenchidos (Nome, E-mail Principal e Número do Fornecedor).")
                     
         st.divider()
         st.subheader("Prestadores Cadastrados")
         
         for p in db.get_all_prestadores():
-            with st.expander(p['nome']):
+            with st.expander(f"{p['nome']} - ID: {p['id']}"):
+                # Mostrar emails atuais
+                st.info(f"**E-mail Principal:** {p['email']}")
+                if p.get('emails_adicionais'):
+                    emails_extras = [email.strip() for email in p['emails_adicionais'].split(',') if email.strip()]
+                    st.info(f"**E-mails Adicionais:** {', '.join(emails_extras)}")
+                
                 with st.form(key=f"form_p_{p['id']}"):
                     st.text_input("Número do Fornecedor", value=p['fornecedor_id'], disabled=True)
+                    
+                    # Campo para editar emails adicionais
+                    emails_adicionais_edit = st.text_input("E-mails Adicionais (separados por vírgula)", 
+                                                         value=p.get('emails_adicionais', '') or '', 
+                                                         key=f"p_emails_edit_{p['id']}",
+                                                         help="Digite os emails adicionais separados por vírgula")
+                    
                     regra_atual = p.get('regra_envio') or "Nenhuma"
                     dias_atuais = p.get('dias_envio') or ""
                     
@@ -451,9 +470,9 @@ elif app_mode == "Serviços (Prestadores)":
                     elif regra_edit in ["Mensal (Dia Fixo)", "Quinzenal"]:
                         dias_edit = st.text_input("Dias do Mês", value=dias_atuais, key=f"p_dia_mes_edit_{p['id']}")
 
-                    if st.form_submit_button("Salvar Regra"):
-                        db.update_prestador(p['id'], regra_edit, dias_edit)
-                        st.success("Regra de envio atualizada!")
+                    if st.form_submit_button("Salvar Alterações"):
+                        db.update_prestador(p['id'], regra_edit, dias_edit, emails_adicionais_edit.strip() if emails_adicionais_edit.strip() else None)
+                        st.success("Dados do prestador atualizados!")
                         st.rerun()
 
     elif page == "Histórico de Envios":
@@ -671,10 +690,14 @@ elif app_mode == "Montagem (Montadores)":
                             subj, body_plain = subj_template.render(**ctx), body_template.render(**ctx)
                             body_html = convert_plain_text_to_html(body_plain)
 
+                            # Obter todos os emails do montador (principal + adicionais)
+                            montador_emails = db.get_montador_emails(montador_info)
+                            recipients = [{"emailAddress": {"address": email}} for email in montador_emails]
+
                             message_data = {
                                 "subject": subj,
                                 "body": {"contentType": "HTML", "content": body_html},
-                                "toRecipients": [{"emailAddress": {"address": montador_info['email']}}],
+                                "toRecipients": recipients,
                                 "attachments": [{"@odata.type": "#microsoft.graph.fileAttachment", "name": f"Relatorio_Montagem_{montador_info['nome']}.pdf", "contentBytes": base64.b64encode(pdf_bytes).decode()}]
                             }
                             
@@ -761,7 +784,9 @@ elif app_mode == "Montagem (Montadores)":
             nome = st.text_input("Nome Completo")
             identificador = st.text_input("Identificador do Montador (ID único)")
             fornecedor_id = st.text_input("Número do Fornecedor")
-            email = st.text_input("E-mail")
+            email = st.text_input("E-mail Principal")
+            emails_adicionais = st.text_input("E-mails Adicionais (separados por vírgula)", 
+                                            help="Digite os emails adicionais separados por vírgula. Ex: email2@empresa.com, email3@empresa.com")
             percentual_comissao = st.number_input("Comissão (%)", 0.0, 100.0, 5.0, 0.1, "%.2f")
             auxilio_semanal = st.number_input("Auxílio Semanal (R$)", 0.0, value=100.0, step=10.0, format="%.2f")
             
@@ -775,10 +800,10 @@ elif app_mode == "Montagem (Montadores)":
 
             if st.form_submit_button("Adicionar"):
                 if all([nome, identificador, email, fornecedor_id]):
-                    success, message = db.add_montador(nome, identificador, email, percentual_comissao / 100.0, auxilio_semanal, fornecedor_id, regra_envio, dias_envio)
+                    success, message = db.add_montador(nome, identificador, email, percentual_comissao / 100.0, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais.strip() if emails_adicionais.strip() else None)
                     st.toast(message)
                 else:
-                    st.warning("Todos os campos são obrigatórios.")
+                    st.warning("Todos os campos obrigatórios devem ser preenchidos (Nome, Identificador, E-mail Principal e Número do Fornecedor).")
                     
         st.divider()
         st.subheader("Montadores Cadastrados")
@@ -788,10 +813,23 @@ elif app_mode == "Montagem (Montadores)":
                 # Informações básicas do montador
                 st.info(f"**ID do Montador:** {m['id']} | **Identificador:** {m['identificador']}")
                 
+                # Mostrar emails atuais
+                st.info(f"**E-mail Principal:** {m['email']}")
+                if m.get('emails_adicionais'):
+                    emails_extras = [email.strip() for email in m['emails_adicionais'].split(',') if email.strip()]
+                    st.info(f"**E-mails Adicionais:** {', '.join(emails_extras)}")
+                
                 with st.form(key=f"form_montador_{m['id']}"):
                     # Permitir edição do número do fornecedor
                     fornecedor_id = st.text_input("Número do Fornecedor", value=m['fornecedor_id'], key=f"fornecedor_{m['id']}")
-                    email = st.text_input("E-mail", value=m['email'], key=f"email_{m['id']}")
+                    email = st.text_input("E-mail Principal", value=m['email'], key=f"email_{m['id']}")
+                    
+                    # Campo para editar emails adicionais
+                    emails_adicionais_edit = st.text_input("E-mails Adicionais (separados por vírgula)", 
+                                                         value=m.get('emails_adicionais', '') or '', 
+                                                         key=f"m_emails_edit_{m['id']}",
+                                                         help="Digite os emails adicionais separados por vírgula")
+                    
                     comissao = st.number_input("Comissão (%)", value=m['percentual_comissao'] * 100, key=f"com_{m['id']}")
                     auxilio = st.number_input("Auxílio Semanal (R$)", value=m['auxilio_semanal'], key=f"aux_{m['id']}")
                     ativo = st.toggle("Ativo", value=m['ativo'], key=f"ativo_{m['id']}")
@@ -810,7 +848,7 @@ elif app_mode == "Montagem (Montadores)":
                         dias_edit = st.text_input("Dias do Mês", value=dias_atuais, key=f"m_dia_mes_edit_{m['id']}")
 
                     if st.form_submit_button("Salvar Alterações"):
-                        db.update_montador(m['id'], email, comissao / 100.0, auxilio, ativo, regra_edit, dias_edit, fornecedor_id)
+                        db.update_montador(m['id'], email, comissao / 100.0, auxilio, ativo, regra_edit, dias_edit, fornecedor_id, emails_adicionais_edit.strip() if emails_adicionais_edit.strip() else None)
                         st.success(f"Dados de {m['nome']} atualizados!")
                         st.rerun()
                 

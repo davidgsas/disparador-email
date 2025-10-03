@@ -28,6 +28,12 @@ def run_migrations():
         cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS prestador_id INTEGER REFERENCES prestadores(id);")
         cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS montador_id INTEGER REFERENCES montadores(id);")
         cur.execute("ALTER TABLE envios_montagem DROP COLUMN IF EXISTS montador_identificador;")
+        
+        # Adicionar coluna para múltiplos emails em prestadores
+        cur.execute("ALTER TABLE prestadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
+        
+        # Adicionar coluna para múltiplos emails em montadores
+        cur.execute("ALTER TABLE montadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
 
 
         cur.execute('''CREATE TABLE IF NOT EXISTS lotes_servico (id SERIAL PRIMARY KEY, prestador_id INTEGER REFERENCES prestadores(id), prestador_nome TEXT, periodo TEXT NOT NULL, valor_total REAL NOT NULL, data_envio TIMESTAMP NOT NULL, status TEXT NOT NULL DEFAULT 'Em Aberto', conversation_id TEXT, anexo_path TEXT)''')
@@ -61,19 +67,25 @@ def run_migrations():
     conn.close()
 
 # --- Funções de Prestadores ---
-def add_prestador(nome, email, fornecedor_id, regra_envio, dias_envio):
+def add_prestador(nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais=None):
     conn = get_db_connection()
     try:
-        with conn.cursor() as cur: cur.execute('INSERT INTO prestadores (nome, email, fornecedor_id, regra_envio, dias_envio) VALUES (%s, %s, %s, %s, %s)', (nome, email, fornecedor_id, regra_envio, dias_envio))
+        with conn.cursor() as cur: 
+            cur.execute('INSERT INTO prestadores (nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais) VALUES (%s, %s, %s, %s, %s, %s)', 
+                       (nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais))
         conn.commit()
         return True, "Prestador adicionado!"
     except psycopg2.IntegrityError: return False, f"Erro: Fornecedor ID ou Nome já existe."
     finally: conn.close()
 
-def update_prestador(prestador_id, regra_envio, dias_envio):
+def update_prestador(prestador_id, regra_envio, dias_envio, emails_adicionais=None):
     conn = get_db_connection()
     with conn.cursor() as cur:
-        cur.execute('UPDATE prestadores SET regra_envio = %s, dias_envio = %s WHERE id = %s', (regra_envio, dias_envio, prestador_id))
+        if emails_adicionais is not None:
+            cur.execute('UPDATE prestadores SET regra_envio = %s, dias_envio = %s, emails_adicionais = %s WHERE id = %s', 
+                       (regra_envio, dias_envio, emails_adicionais, prestador_id))
+        else:
+            cur.execute('UPDATE prestadores SET regra_envio = %s, dias_envio = %s WHERE id = %s', (regra_envio, dias_envio, prestador_id))
     conn.commit()
     conn.close()
 
@@ -98,6 +110,28 @@ def delete_prestador(prestador_id):
     with conn.cursor() as cur: cur.execute('DELETE FROM prestadores WHERE id = %s', (prestador_id,))
     conn.commit()
     conn.close()
+
+def get_prestador_emails(prestador_info):
+    """Retorna lista de todos os emails do prestador (principal + adicionais)"""
+    emails = [prestador_info['email']]  # Email principal
+    
+    # Adicionar emails adicionais se existirem
+    if prestador_info.get('emails_adicionais'):
+        emails_extras = [email.strip() for email in prestador_info['emails_adicionais'].split(',') if email.strip()]
+        emails.extend(emails_extras)
+    
+    return emails
+
+def get_montador_emails(montador_info):
+    """Retorna lista de todos os emails do montador (principal + adicionais)"""
+    emails = [montador_info['email']]  # Email principal
+    
+    # Adicionar emails adicionais se existirem
+    if montador_info.get('emails_adicionais'):
+        emails_extras = [email.strip() for email in montador_info['emails_adicionais'].split(',') if email.strip()]
+        emails.extend(emails_extras)
+    
+    return emails
 
 # --- Funções de Lote de Serviço ---
 def criar_lote_servico(prestador_id, prestador_nome, periodo, valor_total, items_raw):
@@ -179,22 +213,32 @@ def get_lote_servico_by_conversation_id(conversation_id):
     return lote
 
 # --- Funções de Montadores ---
-def add_montador(nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio):
+def add_montador(nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais=None):
     conn = get_db_connection()
     try:
-        with conn.cursor() as cur: cur.execute('INSERT INTO montadores (nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio))
+        with conn.cursor() as cur: 
+            cur.execute('INSERT INTO montadores (nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)', 
+                       (nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais))
         conn.commit()
         return True, "Montador adicionado!"
     except psycopg2.IntegrityError: return False, f"Erro: Identificador ou Fornecedor ID já existem."
     finally: conn.close()
 
-def update_montador(montador_id, email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id=None):
+def update_montador(montador_id, email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id=None, emails_adicionais=None):
     conn = get_db_connection()
     with conn.cursor() as cur:
-        if fornecedor_id is not None:
-            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s, fornecedor_id = %s WHERE id = %s', (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id, montador_id))
+        if fornecedor_id is not None and emails_adicionais is not None:
+            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s, fornecedor_id = %s, emails_adicionais = %s WHERE id = %s', 
+                       (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id, emails_adicionais, montador_id))
+        elif fornecedor_id is not None:
+            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s, fornecedor_id = %s WHERE id = %s', 
+                       (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id, montador_id))
+        elif emails_adicionais is not None:
+            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s, emails_adicionais = %s WHERE id = %s', 
+                       (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, emails_adicionais, montador_id))
         else:
-            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s WHERE id = %s', (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, montador_id))
+            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s WHERE id = %s', 
+                       (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, montador_id))
     conn.commit()
     conn.close()
 
