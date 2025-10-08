@@ -62,6 +62,23 @@ def run_migrations():
             motivo TEXT
         )''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_os_blacklist ON os_blacklist (prestador_id, os_numero);''')
+        
+        # Nova tabela para tokens únicos de upload de NF
+        cur.execute('''CREATE TABLE IF NOT EXISTS upload_tokens (
+            id SERIAL PRIMARY KEY,
+            token TEXT NOT NULL UNIQUE,
+            tipo TEXT NOT NULL, -- 'prestador' ou 'montador'
+            entidade_id INTEGER NOT NULL, -- ID do prestador ou montador
+            lote_id INTEGER, -- ID do lote (para prestadores) ou envio (para montadores)
+            data_criacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            data_expiracao TIMESTAMP NOT NULL,
+            usado BOOLEAN NOT NULL DEFAULT FALSE,
+            data_upload TIMESTAMP,
+            arquivo_nome TEXT,
+            arquivo_path TEXT
+        )''')
+        cur.execute('''CREATE INDEX IF NOT EXISTS idx_upload_tokens_token ON upload_tokens (token);''')
+        cur.execute('''CREATE INDEX IF NOT EXISTS idx_upload_tokens_entidade ON upload_tokens (tipo, entidade_id);''')
 
     conn.commit()
     conn.close()
@@ -274,11 +291,13 @@ def log_sent_montagem(montador_id, group_details, conversation_id):
     now = datetime.datetime.now()
     with conn.cursor() as cur:
         cur.execute(
-            "INSERT INTO envios_montagem (montador_id, data_envio, detalhes, conversation_id) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO envios_montagem (montador_id, data_envio, detalhes, conversation_id) VALUES (%s, %s, %s, %s) RETURNING id",
             (montador_id, now, psycopg2.extras.Json(group_details), conversation_id)
         )
+        envio_id = cur.fetchone()[0]
     conn.commit()
     conn.close()
+    return envio_id
 
 def get_envio_montagem_by_conversation_id(conversation_id):
     conn = get_db_connection()
@@ -489,5 +508,165 @@ def check_os_blacklist(os_numbers):
         blacklisted = [row[0] for row in cur.fetchall()]
     conn.close()
     return blacklisted
+
+# --- Funções de Upload de Notas Fiscais ---
+import uuid
+import secrets
+
+def gerar_token_upload(tipo, entidade_id, lote_id=None, dias_expiracao=30):
+    """Gera um token único para upload de nota fiscal"""
+    conn = get_db_connection()
+    token = secrets.token_urlsafe(32)
+    data_expiracao = datetime.datetime.now() + datetime.timedelta(days=dias_expiracao)
+    
+    with conn.cursor() as cur:
+        cur.execute(
+            """INSERT INTO upload_tokens (token, tipo, entidade_id, lote_id, data_expiracao) 
+               VALUES (%s, %s, %s, %s, %s) RETURNING id""",
+            (token, tipo, entidade_id, lote_id, data_expiracao)
+        )
+        token_id = cur.fetchone()[0]
+    
+    conn.commit()
+    conn.close()
+    return token, token_id
+
+def validar_token_upload(token):
+    """Valida se o token existe e não expirou"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT t.*, 
+                      CASE WHEN t.tipo = 'prestador' THEN p.nome ELSE m.nome END as entidade_nome,
+                      CASE WHEN t.tipo = 'prestador' THEN p.email ELSE m.email END as entidade_email
+               FROM upload_tokens t 
+               LEFT JOIN prestadores p ON t.tipo = 'prestador' AND t.entidade_id = p.id
+               LEFT JOIN montadores m ON t.tipo = 'montador' AND t.entidade_id = m.id
+               WHERE t.token = %s AND t.data_expiracao > NOW() AND t.usado = FALSE""",
+            (token,)
+        )
+        token_info = cur.fetchone()
+    conn.close()
+    return dict(token_info) if token_info else None
+
+def marcar_token_usado(token, arquivo_nome, arquivo_path):
+    """Marca o token como usado após o upload e atualiza status do lote/envio"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        # Primeiro, buscar informações do token
+        cur.execute(
+            """SELECT tipo, lote_id FROM upload_tokens WHERE token = %s""",
+            (token,)
+        )
+        token_info = cur.fetchone()
+        
+        if token_info:
+            tipo, lote_id = token_info
+            
+            # Marcar token como usado
+            cur.execute(
+                """UPDATE upload_tokens 
+                   SET usado = TRUE, data_upload = NOW(), arquivo_nome = %s, arquivo_path = %s 
+                   WHERE token = %s""",
+                (arquivo_nome, arquivo_path, token)
+            )
+            
+            # Atualizar status do lote ou envio para "NF RECEBIDA"
+            if tipo == 'prestador' and lote_id:
+                cur.execute(
+                    """UPDATE lotes_servico 
+                       SET status = 'NF RECEBIDA', anexo_path = %s 
+                       WHERE id = %s""",
+                    (arquivo_path, lote_id)
+                )
+            elif tipo == 'montador' and lote_id:
+                cur.execute(
+                    """UPDATE envios_montagem 
+                       SET status = 'NF RECEBIDA', anexo_path = %s 
+                       WHERE id = %s""",
+                    (arquivo_path, lote_id)
+                )
+    
+    conn.commit()
+    conn.close()
+    
+    # Retornar informações para notificação
+    return token_info
+
+def get_dados_para_notificacao(tipo, lote_id):
+    """Busca dados completos para notificação de upload"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        if tipo == 'prestador':
+            cur.execute(
+                """SELECT l.*, p.nome as prestador_nome, p.email as prestador_email
+                   FROM lotes_servico l 
+                   JOIN prestadores p ON l.prestador_id = p.id 
+                   WHERE l.id = %s""",
+                (lote_id,)
+            )
+        else:  # montador
+            cur.execute(
+                """SELECT e.*, m.nome as montador_nome, m.email as montador_email,
+                          e.detalhes->>'periodo_relatorio' as periodo
+                   FROM envios_montagem e 
+                   JOIN montadores m ON e.montador_id = m.id 
+                   WHERE e.id = %s""",
+                (lote_id,)
+            )
+        
+        resultado = cur.fetchone()
+    conn.close()
+    return dict(resultado) if resultado else None
+
+def get_uploads_por_entidade(tipo, entidade_id):
+    """Retorna histórico de uploads de uma entidade"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT * FROM upload_tokens 
+               WHERE tipo = %s AND entidade_id = %s AND usado = TRUE 
+               ORDER BY data_upload DESC""",
+            (tipo, entidade_id)
+        )
+        uploads = cur.fetchall()
+    conn.close()
+    return uploads
+
+def get_token_info_completa(token):
+    """Retorna informações completas do token incluindo dados do lote/envio"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT t.*, 
+                      CASE WHEN t.tipo = 'prestador' THEN p.nome ELSE m.nome END as entidade_nome,
+                      CASE WHEN t.tipo = 'prestador' THEN p.email ELSE m.email END as entidade_email,
+                      CASE WHEN t.tipo = 'prestador' THEN l.periodo ELSE e.detalhes->>'periodo_relatorio' END as periodo,
+                      CASE WHEN t.tipo = 'prestador' THEN l.valor_total ELSE NULL END as valor_total
+               FROM upload_tokens t 
+               LEFT JOIN prestadores p ON t.tipo = 'prestador' AND t.entidade_id = p.id
+               LEFT JOIN montadores m ON t.tipo = 'montador' AND t.entidade_id = m.id
+               LEFT JOIN lotes_servico l ON t.tipo = 'prestador' AND t.lote_id = l.id
+               LEFT JOIN envios_montagem e ON t.tipo = 'montador' AND t.lote_id = e.id
+               WHERE t.token = %s""",
+            (token,)
+        )
+        token_info = cur.fetchone()
+    conn.close()
+    return dict(token_info) if token_info else None
+
+def get_upload_info_por_lote(tipo, lote_id):
+    """Retorna informações de upload por lote/envio"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT * FROM upload_tokens 
+               WHERE tipo = %s AND lote_id = %s 
+               ORDER BY data_criacao DESC LIMIT 1""",
+            (tipo, lote_id)
+        )
+        upload_info = cur.fetchone()
+    conn.close()
+    return dict(upload_info) if upload_info else None
 
 run_migrations()

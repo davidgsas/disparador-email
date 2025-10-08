@@ -13,6 +13,8 @@ from dotenv import load_dotenv
 from msal import PublicClientApplication, SerializableTokenCache
 from jinja2 import Template
 from weasyprint import HTML
+import psycopg2
+import psycopg2.extras
 
 import database as db
 from templates.variaveis import mostrar_variaveis_disponiveis
@@ -38,16 +40,171 @@ def load_config():
 
 def save_config():
     """Salva as configurações atuais da session_state no arquivo JSON."""
-    config_data = {
-        "prestador_cc": st.session_state.get("prestador_cc", ""),
-        "prestador_subject": st.session_state.get("prestador_subject", ""),
-        "prestador_body": st.session_state.get("prestador_body", ""),
-        "montador_cc": st.session_state.get("montador_cc", ""),
-        "montador_subject": st.session_state.get("montador_subject", ""),
-        "montador_body": st.session_state.get("montador_body", "")
+    try:
+        # Carregar configurações existentes para preservar notificacao_nf
+        existing_config = load_config()
+        
+        config_data = {
+            "prestador_cc": st.session_state.get("prestador_cc", ""),
+            "prestador_subject": st.session_state.get("prestador_subject", ""),
+            "prestador_body": st.session_state.get("prestador_body", ""),
+            "montador_cc": st.session_state.get("montador_cc", ""),
+            "montador_subject": st.session_state.get("montador_subject", ""),
+            "montador_body": st.session_state.get("montador_body", "")
+        }
+        
+        # Preservar configurações de notificação existentes
+        if "notificacao_nf" in existing_config:
+            config_data["notificacao_nf"] = existing_config["notificacao_nf"]
+        
+        # Garantir que o diretório existe
+        CONFIG_FILE.parent.mkdir(exist_ok=True)
+        
+        # Salvar com backup
+        backup_file = CONFIG_FILE.with_suffix('.json.bak')
+        if CONFIG_FILE.exists():
+            import shutil
+            shutil.copy2(CONFIG_FILE, backup_file)
+        
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(config_data, f, indent=4, ensure_ascii=False)
+            
+        # Salvar timestamp do último salvamento
+        st.session_state['last_save_time'] = datetime.datetime.now()
+            
+    except Exception as e:
+        st.error(f"❌ Erro ao salvar configurações: {e}")
+        # Tentar restaurar backup se houver erro
+        if 'backup_file' in locals() and backup_file.exists():
+            import shutil
+            shutil.copy2(backup_file, CONFIG_FILE)
+
+def auto_save_config():
+    """Função callback para salvar automaticamente quando qualquer campo for alterado."""
+    save_config()
+
+def enviar_notificacao_nf(token_info, dados_lote, arquivo_nome):
+    """Envia notificação automática quando nota fiscal é recebida"""
+    try:
+        # Carregar configurações de notificação
+        config = load_config()
+        notif_config = config.get("notificacao_nf", {})
+        
+        # Verificar se notificações estão ativas
+        if not notif_config.get("ativo", False):
+            return True  # Sucesso silencioso se desativado
+        
+        # Verificar se há emails configurados
+        emails_str = notif_config.get("emails", "").strip()
+        if not emails_str:
+            return False
+        
+        # Preparar variáveis para o template
+        tipo, lote_id = token_info
+        
+        vars_template = {
+            "lote_id": lote_id,
+            "data_upload": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "arquivo_nome": arquivo_nome,
+            "sistema_url": os.getenv('UPLOAD_BASE_URL', 'http://localhost:8501')
+        }
+        
+        if tipo == 'prestador':
+            vars_template.update({
+                "prestador_nome": dados_lote.get('prestador_nome', 'N/A'),
+                "periodo": dados_lote.get('periodo', 'N/A'),
+                "valor_total": f"{dados_lote.get('valor_total', 0):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+            })
+        else:  # montador
+            vars_template.update({
+                "prestador_nome": dados_lote.get('montador_nome', 'N/A'),  # Usar mesmo campo
+                "periodo": dados_lote.get('periodo', 'N/A'),
+                "valor_total": f"{dados_lote.get('detalhes', {}).get('total_geral', 0):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+            })
+        
+        # Renderizar templates
+        assunto_template = Template(notif_config.get("assunto", "Nota Fiscal Recebida"))
+        corpo_template = Template(notif_config.get("corpo", "Nova nota fiscal recebida."))
+        
+        assunto_final = assunto_template.render(**vars_template)
+        corpo_final = corpo_template.render(**vars_template)
+        
+        # Preparar lista de emails
+        emails_list = [email.strip() for email in emails_str.split(",") if email.strip()]
+        recipients = [{"emailAddress": {"address": email}} for email in emails_list]
+        
+        # Configurar prioridade
+        prioridade = notif_config.get("prioridade", "Alta")
+        importance = "high" if prioridade in ["Alta", "Urgente"] else "normal"
+        
+        # Montar payload do email
+        message_data = {
+            "subject": assunto_final,
+            "body": {
+                "contentType": "Text",
+                "content": corpo_final
+            },
+            "toRecipients": recipients,
+            "importance": importance
+        }
+        
+        # Enviar via Microsoft Graph API (usando token da sessão)
+        if 'access_token' in st.session_state:
+            headers = {
+                "Authorization": f"Bearer {st.session_state.access_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(
+                "https://graph.microsoft.com/v1.0/me/sendMail",
+                headers=headers,
+                json=message_data,
+                timeout=30
+            )
+            
+            return response.status_code == 202
+        
+        return False
+        
+    except Exception as e:
+        print(f"Erro ao enviar notificação: {e}")
+        return False
+
+def init_config():
+    """Inicializa as configurações no session_state APENAS se não existirem."""
+    config = load_config()
+    
+    # Valores padrão mais robustos
+    defaults = {
+        "prestador_cc": "projetos.qualidade@novomundo.com.br",
+        "prestador_subject": "Novo Mundo Resolve | Nota Fiscal Eletrônica de Prestação de Serviços | Período: {{periodo}} | Prestador: {{nome_prestador}}",
+        "prestador_body": "Olá, {{nome_prestador}}.\n\nEspero que esteja tudo bem.\n\nSegue em anexo a relação de boletins finalizados para emissão da nota fiscal referente aos serviços prestados no período de {{periodo}}.\n\nInformamos que nosso sistema foi atualizado. Agora, a nota fiscal deve ser enviada exclusivamente pelo link abaixo, o que garante mais agilidade no processamento e pagamento.\nSomente as notas fiscais enviadas por esse novo sistema serão consideradas para pagamento.\n\n{{link_upload_nf}}\n\nA nota fiscal deve ser emitida com o mesmo valor indicado neste relatório e enviada em até 2 dias úteis após o recebimento deste e-mail.\nNotas enviadas após esse prazo serão incluídas no próximo fechamento.\n\nLembrando que a nota fiscal deve ser emitida para o CNPJ 01.534.080/0008-02.",
+        "montador_cc": "projetos.qualidade@novomundo.com.br",
+        "montador_subject": "Relatório de Pagamento de Montagem - Período: {{periodo_relatorio}}",
+        "montador_body": "Olá, {{nome_montador}},\n\nSegue em anexo o seu relatório de pagamento de montagens referente ao período de **{{periodo_relatorio}}**.\n\nPara enviar a nota fiscal, utilize o link: {{link_upload_nf}}\n\nQualquer dúvida, estamos à disposição.\n\nAtenciosamente,\nEquipe Novo Mundo"
     }
-    with open(CONFIG_FILE, "w") as f:
-        json.dump(config_data, f, indent=4)
+    
+    # Verificar se já foi inicializado E se os campos não estão vazios
+    already_initialized = st.session_state.get('config_initialized', False)
+    fields_empty = any(not st.session_state.get(key, "").strip() for key in defaults.keys())
+    
+    # Só pular inicialização se já foi inicializado E os campos não estão vazios
+    if already_initialized and not fields_empty:
+        return
+    
+    # Inicializar/reinicializar com valores salvos ou padrões
+    for key, default_value in defaults.items():
+        saved_value = config.get(key, "")
+        # Se tem valor salvo no arquivo e não está vazio, usar ele
+        if saved_value and saved_value.strip():
+            st.session_state[key] = saved_value
+        else:
+            # Senão usar padrão (só se campo estiver vazio)
+            if not st.session_state.get(key, "").strip():
+                st.session_state[key] = default_value
+    
+    # Marcar como inicializado
+    st.session_state['config_initialized'] = True
 
 def convert_plain_text_to_html(text):
     """Converte texto com quebras de linha em HTML simples com <br>."""
@@ -131,9 +288,24 @@ if "access_token" not in st.session_state:
 # --- APLICAÇÃO PRINCIPAL (SÓ EXECUTA SE LOGADO) ---
 config = load_config()
 
+# Inicializar configurações no session_state
+init_config()
+
 st.sidebar.title("MENU")
-app_mode = st.sidebar.selectbox("Selecione a Página", ["Dashboard de Pendências", "Serviços (Prestadores)", "Montagem (Montadores)"])
+app_mode = st.sidebar.selectbox("Selecione a Página", ["Dashboard de Pendências", "Serviços (Prestadores)", "Montagem (Montadores)", "Gerenciar Uploads NF"])
 st.sidebar.info(f"**Conectado como:** \n{st.session_state.user}")
+
+# Botão de reset de configurações na sidebar
+st.sidebar.markdown("---")
+if st.sidebar.button("🔄 Resetar Configurações", help="Recarrega configurações do arquivo ou usa padrões"):
+    # Limpar flag de inicialização para forçar reload
+    if 'config_initialized' in st.session_state:
+        del st.session_state['config_initialized']
+    
+    # Forçar reinicialização
+    init_config()
+    st.sidebar.success("✅ Configurações resetadas!")
+    st.rerun()
 
 if app_mode == "Dashboard de Pendências":
     st.title("🗓️ Dashboard de Pendências de Envio")
@@ -274,9 +446,56 @@ elif app_mode == "Serviços (Prestadores)":
                 default_body = "Segue a relação de boletins para emissão da nota fiscal de serviços entre **{{periodo}}**.\n\nObrigado."
 
                 mostrar_variaveis_disponiveis()
-                st.text_input("CC", value=config.get("prestador_cc", "projetos.qualidade@novomundo.com.br"), key="prestador_cc", on_change=save_config)
-                st.text_input("Assunto", value=config.get("prestador_subject", default_subject), key="prestador_subject", on_change=save_config)
-                st.text_area("Corpo do E-mail", value=config.get("prestador_body", default_body), key="prestador_body", on_change=save_config, height=200)
+                
+                # Indicador de salvamento
+                col1, col2 = st.columns([3, 1])
+                with col2:
+                    if 'last_save_time' in st.session_state:
+                        st.success(f"✅ Salvo em {st.session_state.last_save_time.strftime('%H:%M:%S')}")
+                    else:
+                        st.info("💾 Salvamento automático ativo")
+                
+                st.text_input("CC", key="prestador_cc", on_change=auto_save_config, 
+                             help="Os emails serão salvos automaticamente conforme você digita")
+                st.text_input("Assunto", key="prestador_subject", on_change=auto_save_config,
+                             help="Use variáveis como {{nome_prestador}} e {{periodo}}")
+                st.text_area("Corpo do E-mail", key="prestador_body", on_change=auto_save_config, height=200,
+                           help="Use variáveis como {{nome_prestador}} e {{periodo}}. Salvamento automático ativo.")
+                
+                # Botão de salvamento manual
+                col_save1, col_save2 = st.columns(2)
+                with col_save1:
+                    if st.button("💾 Salvar Configurações", help="Força o salvamento das configurações", key="save_prestador_config"):
+                        save_config()
+                        st.success("✅ Configurações salvas manualmente!")
+                
+                with col_save2:
+                    if st.button("🔍 Debug Config", help="Ver estado atual das configurações", key="debug_prestador_config"):
+                        st.write("**📋 Session State Atual:**")
+                        st.json({
+                            "prestador_cc": st.session_state.get("prestador_cc", "NÃO DEFINIDO"),
+                            "prestador_subject": st.session_state.get("prestador_subject", "NÃO DEFINIDO"),
+                            "prestador_body": st.session_state.get("prestador_body", "NÃO DEFINIDO")[:100] + "..."
+                        })
+                        
+                        st.write("**💾 Config.json Atual:**")
+                        config_atual = load_config()
+                        st.json({
+                            "prestador_cc": config_atual.get("prestador_cc", "NÃO DEFINIDO"),
+                            "prestador_subject": config_atual.get("prestador_subject", "NÃO DEFINIDO"),
+                            "prestador_body": config_atual.get("prestador_body", "NÃO DEFINIDO")[:100] + "..."
+                        })
+                        
+                        st.write("**🔄 Config Initialized:**")
+                        st.code(f"config_initialized = {st.session_state.get('config_initialized', False)}")
+                        
+                        if st.button("🔄 Recarregar do Arquivo", key="reload_prestador"):
+                            config = load_config()
+                            st.session_state.prestador_cc = config.get("prestador_cc", "")
+                            st.session_state.prestador_subject = config.get("prestador_subject", "")
+                            st.session_state.prestador_body = config.get("prestador_body", "")
+                            st.success("✅ Configurações recarregadas do arquivo!")
+                            st.rerun()
                 
                 if st.button("▶️ ENVIAR E-MAILS PENDENTES", type="primary"):
                     report = []
@@ -316,13 +535,21 @@ elif app_mode == "Serviços (Prestadores)":
                             
                             lote_id = db.criar_lote_servico(prestador_info['id'], nome_prestador, periodo, total_geral, items_to_log)
                             
+                            # Gerar token único para upload de nota fiscal
+                            token_upload, _ = db.gerar_token_upload('prestador', prestador_info['id'], lote_id)
+                            # Usar URL configurável - padrão local para desenvolvimento
+                            import os
+                            base_url = os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')
+                            link_upload_nf = f"{base_url}/?token={token_upload}"
+                            
                             ctx = {
                                 "nome_prestador": nome_prestador, 
                                 "periodo": periodo, 
                                 "items": items_fmt, 
                                 "total_geral": total_geral, 
                                 "saudacao": saudacao, 
-                                "lote_id": lote_id
+                                "lote_id": lote_id,
+                                "link_upload_nf": link_upload_nf
                             }
                             
                             subj_template = Template(st.session_state.prestador_subject)
@@ -498,6 +725,48 @@ elif app_mode == "Serviços (Prestadores)":
                     cols[4].markdown(f"**{lote['status']}**")
 
                     with st.expander("Ver O.S. do Lote e Gerenciar"):
+                        # Informações de Upload
+                        upload_info = db.get_upload_info_por_lote('prestador', lote['id'])
+                        
+                        if upload_info:
+                            st.markdown("### 📄 Status do Upload de Nota Fiscal")
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                if upload_info['usado']:
+                                    st.success("✅ NF Recebida")
+                                    st.write(f"**Upload em:** {upload_info['data_upload'].strftime('%d/%m/%Y %H:%M')}")
+                                else:
+                                    if upload_info['data_expiracao'] > datetime.datetime.now():
+                                        st.warning("⏳ Aguardando NF")
+                                    else:
+                                        st.error("❌ Link Expirado")
+                            
+                            with col2:
+                                st.write(f"**Token gerado:** {upload_info['data_criacao'].strftime('%d/%m/%Y %H:%M')}")
+                                st.write(f"**Expira em:** {upload_info['data_expiracao'].strftime('%d/%m/%Y %H:%M')}")
+                            
+                            with col3:
+                                if upload_info['usado'] and upload_info['arquivo_path'] and os.path.exists(upload_info['arquivo_path']):
+                                    with open(upload_info['arquivo_path'], "rb") as file:
+                                        st.download_button(
+                                            label="📥 Baixar Nota Fiscal",
+                                            data=file.read(),
+                                            file_name=upload_info['arquivo_nome'],
+                                            mime="application/octet-stream",
+                                            key=f"download_nf_prestador_{lote['id']}",
+                                            use_container_width=True
+                                        )
+                                else:
+                                    if not upload_info['usado']:
+                                        st.code(f"Link: {os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={upload_info['token']}")
+                        else:
+                            st.info("ℹ️ Este lote não possui sistema de upload (anterior à implementação)")
+                        
+                        st.markdown("---")
+                        
+                        # O.S. do Lote
+                        st.markdown("### 📋 Ordens de Serviço")
                         os_do_lote = db.get_os_by_lote_id(lote['id'])
                         if os_do_lote:
                             df_os = pd.DataFrame([item['detalhes'] for item in os_do_lote])
@@ -505,9 +774,16 @@ elif app_mode == "Serviços (Prestadores)":
                         else:
                             st.warning("Não há O.S. detalhadas para este lote.")
                         
-                        if lote['anexo_path']:
+                        # Download antigo (manter compatibilidade)
+                        if lote['anexo_path'] and os.path.exists(lote['anexo_path']):
+                            st.markdown("### 📎 Anexo Antigo")
                             with open(lote['anexo_path'], "rb") as file:
-                                st.download_button(label="Baixar N.F. Recebida", data=file, file_name=Path(lote['anexo_path']).name)
+                                st.download_button(
+                                    label="📥 Baixar Anexo Legado", 
+                                    data=file.read(), 
+                                    file_name=Path(lote['anexo_path']).name,
+                                    key=f"legacy_download_prestador_{lote['id']}"
+                                )
                         
                         st.markdown("---")
                         sub_cols = st.columns(2)
@@ -633,9 +909,53 @@ elif app_mode == "Montagem (Montadores)":
                 default_body_montador = "Olá, {{nome_montador}},\n\nSegue em anexo o seu relatório de pagamento de montagens referente ao período de **{{periodo_relatorio}}**.\n\nQualquer dúvida, estamos à disposição."
 
                 mostrar_variaveis_disponiveis()
-                st.text_input("CC (Montadores)", value=config.get("montador_cc", "projetos.qualidade@novomundo.com.br"), key="montador_cc", on_change=save_config)
-                st.text_input("Assunto (Montadores)", value=config.get("montador_subject", default_subject_montador), key="montador_subject", on_change=save_config)
-                st.text_area("Corpo do E-mail (Montadores)", value=config.get("montador_body", default_body_montador), key="montador_body", on_change=save_config, height=200)
+                
+                # Indicador de salvamento
+                col1, col2 = st.columns([3, 1])
+                with col2:
+                    if 'last_save_time' in st.session_state:
+                        st.success(f"✅ Salvo em {st.session_state.last_save_time.strftime('%H:%M:%S')}")
+                    else:
+                        st.info("💾 Salvamento automático ativo")
+                
+                st.text_input("CC (Montadores)", key="montador_cc", on_change=auto_save_config,
+                             help="Os emails serão salvos automaticamente conforme você digita")
+                st.text_input("Assunto (Montadores)", key="montador_subject", on_change=auto_save_config,
+                             help="Use variáveis como {{nome_montador}} e {{periodo_relatorio}}")
+                st.text_area("Corpo do E-mail (Montadores)", key="montador_body", on_change=auto_save_config, height=200,
+                           help="Use variáveis como {{nome_montador}} e {{periodo_relatorio}}. Salvamento automático ativo.")
+                
+                # Botão de salvamento manual
+                col_save_mont1, col_save_mont2 = st.columns(2)
+                with col_save_mont1:
+                    if st.button("💾 Salvar Configurações", help="Força o salvamento das configurações", key="save_montador_config"):
+                        save_config()
+                        st.success("✅ Configurações salvas manualmente!")
+                
+                with col_save_mont2:
+                    if st.button("🔍 Debug Config", help="Ver estado atual das configurações", key="debug_montador_config"):
+                        st.write("**📋 Session State Atual:**")
+                        st.json({
+                            "montador_cc": st.session_state.get("montador_cc", "NÃO DEFINIDO"),
+                            "montador_subject": st.session_state.get("montador_subject", "NÃO DEFINIDO"),
+                            "montador_body": st.session_state.get("montador_body", "NÃO DEFINIDO")[:100] + "..."
+                        })
+                        
+                        st.write("**💾 Config.json Atual:**")
+                        config_atual = load_config()
+                        st.json({
+                            "montador_cc": config_atual.get("montador_cc", "NÃO DEFINIDO"),
+                            "montador_subject": config_atual.get("montador_subject", "NÃO DEFINIDO"),
+                            "montador_body": config_atual.get("montador_body", "NÃO DEFINIDO")[:100] + "..."
+                        })
+                        
+                        if st.button("🔄 Recarregar do Arquivo", key="reload_montador"):
+                            config = load_config()
+                            st.session_state.montador_cc = config.get("montador_cc", "")
+                            st.session_state.montador_subject = config.get("montador_subject", "")
+                            st.session_state.montador_body = config.get("montador_body", "")
+                            st.success("✅ Configurações recarregadas do arquivo!")
+                            st.rerun()
                 
                 if st.button("▶️ PROCESSAR E ENVIAR E-MAILS", type="primary"):
                     report_summary = []
@@ -669,6 +989,13 @@ elif app_mode == "Montagem (Montadores)":
                             
                             periodo_relatorio = f"{group['data_da_montagem'].min().strftime('%d/%m/%Y')} - {group['data_da_montagem'].max().strftime('%d/%m/%Y')}"
                             
+                            # Gerar token único para upload de nota fiscal (será associado ao envio após criação)
+                            token_upload, _ = db.gerar_token_upload('montador', montador_info['id'])
+                            # Usar URL configurável - padrão local para desenvolvimento
+                            import os
+                            base_url = os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')
+                            link_upload_nf = f"{base_url}/?token={token_upload}"
+                            
                             ctx = {
                                 "nome_montador": montador_info['nome'], 
                                 "periodo_relatorio": periodo_relatorio, 
@@ -677,7 +1004,8 @@ elif app_mode == "Montagem (Montadores)":
                                 "total_comissao": total_comissao, 
                                 "total_adicionais": 0, 
                                 "total_auxilio": total_auxilio, 
-                                "total_geral": total_geral
+                                "total_geral": total_geral,
+                                "link_upload_nf": link_upload_nf
                             }
                             
                             template = Template(Path("templates/montador_template.html").read_text(encoding="utf-8"))
@@ -722,7 +1050,15 @@ elif app_mode == "Montagem (Montadores)":
                                 message_id = sent_resp['value'][0]['id']
                                 conversation_id = sent_resp['value'][0]['conversationId']
                                 
-                                db.log_sent_montagem(montador_info['id'], ctx, conversation_id)
+                                envio_id = db.log_sent_montagem(montador_info['id'], ctx, conversation_id)
+                                
+                                # Atualizar o token para associar ao envio criado
+                                conn = db.get_db_connection()
+                                with conn.cursor() as cur:
+                                    cur.execute("UPDATE upload_tokens SET lote_id = %s WHERE token = %s", (envio_id, token_upload))
+                                conn.commit()
+                                conn.close()
+                                
                                 report_summary.append({"Montador": montador_info['nome'], "Status": "✅ Enviado"})
                             else:
                                 report_summary.append({"Montador": montador_info['nome'], "Status": f"❌ Erro {resp.status_code} - {resp.text}"})
@@ -939,7 +1275,49 @@ elif app_mode == "Montagem (Montadores)":
                     cols[4].markdown(f"**{item['status']}**")
 
                     with st.expander("Ver Detalhes e Gerenciar"):
+                        # Informações de Upload
+                        upload_info = db.get_upload_info_por_lote('montador', item['id'])
+                        
+                        if upload_info:
+                            st.markdown("### 📄 Status do Upload de Nota Fiscal")
+                            col1, col2, col3 = st.columns(3)
+                            
+                            with col1:
+                                if upload_info['usado']:
+                                    st.success("✅ NF Recebida")
+                                    st.write(f"**Upload em:** {upload_info['data_upload'].strftime('%d/%m/%Y %H:%M')}")
+                                else:
+                                    if upload_info['data_expiracao'] > datetime.datetime.now():
+                                        st.warning("⏳ Aguardando NF")
+                                    else:
+                                        st.error("❌ Link Expirado")
+                            
+                            with col2:
+                                st.write(f"**Token gerado:** {upload_info['data_criacao'].strftime('%d/%m/%Y %H:%M')}")
+                                st.write(f"**Expira em:** {upload_info['data_expiracao'].strftime('%d/%m/%Y %H:%M')}")
+                            
+                            with col3:
+                                if upload_info['usado'] and upload_info['arquivo_path'] and os.path.exists(upload_info['arquivo_path']):
+                                    with open(upload_info['arquivo_path'], "rb") as file:
+                                        st.download_button(
+                                            label="📥 Baixar Nota Fiscal",
+                                            data=file.read(),
+                                            file_name=upload_info['arquivo_nome'],
+                                            mime="application/octet-stream",
+                                            key=f"download_nf_mont_{item['id']}",
+                                            use_container_width=True
+                                        )
+                                else:
+                                    if not upload_info['usado']:
+                                        st.code(f"Link: {os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={upload_info['token']}")
+                        else:
+                            st.info("ℹ️ Este envio não possui sistema de upload (anterior à implementação)")
+                        
+                        st.markdown("---")
+                        
+                        # Detalhes dos Boletins
                         if details:
+                            st.markdown("### 📋 Detalhes dos Boletins")
                             df_items = pd.DataFrame(details.get('items', []))
                             if 'comissao_editada' not in df_items.columns: 
                                 df_items['comissao_editada'] = None
@@ -968,7 +1346,12 @@ elif app_mode == "Montagem (Montadores)":
                         
                         if item['anexo_path']:
                             with open(item['anexo_path'], "rb") as file:
-                                st.download_button(label="Baixar N.F. Recebida", data=file, file_name=Path(item['anexo_path']).name)
+                                st.download_button(
+                                    label="Baixar N.F. Recebida", 
+                                    data=file, 
+                                    file_name=Path(item['anexo_path']).name,
+                                    key=f"download_nf_lote_{item['id']}"
+                                )
 
                         st.markdown("---")
                         sub_cols = st.columns(2)
@@ -993,3 +1376,515 @@ elif app_mode == "Montagem (Montadores)":
                                 db.delete_envio_montagem(item['id'])
                                 st.success("Pagamento excluído!")
                                 st.rerun()
+
+elif app_mode == "Gerenciar Uploads NF":
+    st.header("📄 Gerenciamento de Uploads de Notas Fiscais")
+    
+    # Estatísticas gerais
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        # Total de tokens gerados
+        conn = db.get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM upload_tokens")
+            total_tokens = cur.fetchone()[0]
+        conn.close()
+        st.metric("🔗 Total de Tokens", total_tokens)
+    
+    with col2:
+        # Tokens usados
+        conn = db.get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM upload_tokens WHERE usado = TRUE")
+            tokens_usados = cur.fetchone()[0]
+        conn.close()
+        st.metric("✅ Tokens Usados", tokens_usados)
+    
+    with col3:
+        # Tokens pendentes
+        conn = db.get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM upload_tokens WHERE usado = FALSE AND data_expiracao > NOW()")
+            tokens_pendentes = cur.fetchone()[0]
+        conn.close()
+        st.metric("⏳ Tokens Pendentes", tokens_pendentes)
+    
+    with col4:
+        # Tokens expirados
+        conn = db.get_db_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM upload_tokens WHERE usado = FALSE AND data_expiracao <= NOW()")
+            tokens_expirados = cur.fetchone()[0]
+        conn.close()
+        st.metric("❌ Tokens Expirados", tokens_expirados)
+    
+    st.markdown("---")
+    
+    # Tabs para diferentes visualizações
+    tab1, tab2, tab3 = st.tabs(["📋 Tokens Recentes", "✅ Uploads Realizados", "⚙️ Configurações"])
+    
+    with tab1:
+        st.subheader("🔗 Tokens Gerados Recentemente")
+        
+        conn = db.get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            cur.execute("""
+                SELECT t.*, 
+                       CASE WHEN t.tipo = 'prestador' THEN p.nome ELSE m.nome END as entidade_nome,
+                       CASE WHEN t.tipo = 'prestador' THEN p.email ELSE m.email END as entidade_email
+                FROM upload_tokens t 
+                LEFT JOIN prestadores p ON t.tipo = 'prestador' AND t.entidade_id = p.id
+                LEFT JOIN montadores m ON t.tipo = 'montador' AND t.entidade_id = m.id
+                ORDER BY t.data_criacao DESC
+                LIMIT 50
+            """)
+            tokens = cur.fetchall()
+        conn.close()
+        
+        if tokens:
+            for token in tokens:
+                status_icon = "✅" if token['usado'] else ("❌" if token['data_expiracao'] < datetime.datetime.now() else "⏳")
+                status_text = "Usado" if token['usado'] else ("Expirado" if token['data_expiracao'] < datetime.datetime.now() else "Pendente")
+                
+                with st.expander(f"{status_icon} {token['entidade_nome']} ({token['tipo'].title()}) - {status_text}"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write(f"**Email:** {token['entidade_email']}")
+                        st.write(f"**Criado:** {token['data_criacao'].strftime('%d/%m/%Y %H:%M')}")
+                        st.write(f"**Expira:** {token['data_expiracao'].strftime('%d/%m/%Y %H:%M')}")
+                    with col2:
+                        if token['usado']:
+                            st.write(f"**Upload:** {token['data_upload'].strftime('%d/%m/%Y %H:%M')}")
+                            st.write(f"**Arquivo:** {token['arquivo_nome']}")
+                        else:
+                            st.write("**Link de Upload:**")
+                            st.code(f"https://uploadnf.novomundo.com.br/?token={token['token']}")
+        else:
+            st.info("Nenhum token encontrado.")
+    
+    with tab2:
+        st.subheader("📁 Uploads Realizados")
+        
+        conn = db.get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+            cur.execute("""
+                SELECT t.*, 
+                       CASE WHEN t.tipo = 'prestador' THEN p.nome ELSE m.nome END as entidade_nome,
+                       CASE WHEN t.tipo = 'prestador' THEN p.email ELSE m.email END as entidade_email,
+                       CASE WHEN t.tipo = 'prestador' THEN l.periodo ELSE e.detalhes->>'periodo_relatorio' END as periodo
+                FROM upload_tokens t 
+                LEFT JOIN prestadores p ON t.tipo = 'prestador' AND t.entidade_id = p.id
+                LEFT JOIN montadores m ON t.tipo = 'montador' AND t.entidade_id = m.id
+                LEFT JOIN lotes_servico l ON t.tipo = 'prestador' AND t.lote_id = l.id
+                LEFT JOIN envios_montagem e ON t.tipo = 'montador' AND t.lote_id = e.id
+                WHERE t.usado = TRUE
+                ORDER BY t.data_upload DESC
+                LIMIT 100
+            """)
+            uploads = cur.fetchall()
+        conn.close()
+        
+        if uploads:
+            for upload in uploads:
+                with st.expander(f"📄 {upload['entidade_nome']} - {upload['arquivo_nome']} ({upload['data_upload'].strftime('%d/%m/%Y %H:%M')})"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write(f"**Tipo:** {upload['tipo'].title()}")
+                        st.write(f"**Email:** {upload['entidade_email']}")
+                        st.write(f"**Período:** {upload['periodo']}")
+                    with col2:
+                        st.write(f"**Arquivo:** {upload['arquivo_nome']}")
+                        st.write(f"**Caminho:** {upload['arquivo_path']}")
+                        
+                        # Botão para baixar arquivo (se existir)
+                        if upload['arquivo_path'] and os.path.exists(upload['arquivo_path']):
+                            with open(upload['arquivo_path'], "rb") as file:
+                                st.download_button(
+                                    label="📥 Baixar Arquivo",
+                                    data=file.read(),
+                                    file_name=upload['arquivo_nome'],
+                                    mime="application/octet-stream",
+                                    key=f"download_upload_{upload['id']}"
+                                )
+        else:
+            st.info("Nenhum upload realizado ainda.")
+    
+    with tab3:
+        st.subheader("⚙️ Configurações do Sistema")
+        
+        st.markdown("### 🌐 Configuração da URL Base")
+        
+        # Carregar URL atual das variáveis de ambiente ou usar padrão local
+        import os
+        current_url = os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')
+        
+        new_url = st.text_input("URL Base para Links de Upload", value=current_url, 
+                               help="Para desenvolvimento local: http://localhost:8502")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("💾 Salvar URL (Sessão)"):
+                os.environ['UPLOAD_BASE_URL'] = new_url
+                st.success("✅ URL salva para esta sessão!")
+                
+        with col2:
+            if st.button("🔄 Restaurar Padrão Local"):
+                os.environ['UPLOAD_BASE_URL'] = 'http://localhost:8502'
+                st.success("✅ URL restaurada para localhost:8502!")
+                st.rerun()
+        
+        st.markdown("---")
+        
+        st.markdown("### 📧 Notificações de Upload de NF")
+        st.markdown("Configure emails automáticos quando uma nota fiscal for enviada")
+        
+        # Carregar configurações de notificação existentes
+        notif_config = load_config().get("notificacao_nf", {})
+        
+        # Verificar se configuração existe
+        if not notif_config:
+            st.warning("⚠️ **Configurações de notificação não encontradas!**")
+            st.info("👆 Configure os campos abaixo e clique em **'💾 Salvar Configurações de Notificação'** antes de testar.")
+        else:
+            st.success("✅ Configurações de notificação carregadas")
+        
+        # Configuração de emails destinatários
+        emails_notif = st.text_area(
+            "📬 Emails para Notificação",
+            value=notif_config.get("emails", ""),
+            help="Emails separados por vírgula. Ex: admin@empresa.com, financeiro@empresa.com",
+            key="notif_emails",
+            height=68
+        )
+        
+        # Configuração do assunto
+        assunto_notif = st.text_input(
+            "📋 Assunto do Email",
+            value=notif_config.get("assunto", "🚨 NOTA FISCAL RECEBIDA - {{prestador_nome}} - Lote {{lote_id}}"),
+            help="Use variáveis: {{prestador_nome}}, {{lote_id}}, {{data_upload}}, {{periodo}}, {{valor_total}}",
+            key="notif_assunto"
+        )
+        
+        # Configuração do corpo do email
+        corpo_notif = st.text_area(
+            "📝 Corpo do Email",
+            value=notif_config.get("corpo", """🎉 NOVA NOTA FISCAL RECEBIDA!
+
+📋 **Detalhes do Upload:**
+• **Prestador:** {{prestador_nome}}
+• **Lote:** #{{lote_id}}
+• **Período:** {{periodo}}
+• **Valor Total:** R$ {{valor_total}}
+• **Data/Hora:** {{data_upload}}
+• **Arquivo:** {{arquivo_nome}}
+
+⚡ **Ação Necessária:**
+A nota fiscal foi recebida e está disponível para download no sistema.
+
+🔗 **Acesso Rápido:**
+Acesse o painel de uploads para fazer o download: {{sistema_url}}
+
+---
+Este é um email automático do sistema de gestão de notas fiscais."""),
+            help="Use variáveis disponíveis para personalizar a mensagem",
+            key="notif_corpo",
+            height=200
+        )
+        
+        # Configuração de prioridade
+        col1, col2 = st.columns(2)
+        with col1:
+            prioridade_notif = st.selectbox(
+                "⚡ Prioridade do Email",
+                options=["Normal", "Alta", "Urgente"],
+                index=["Normal", "Alta", "Urgente"].index(notif_config.get("prioridade", "Alta")),
+                key="notif_prioridade"
+            )
+        
+        with col2:
+            ativar_notif = st.checkbox(
+                "✅ Ativar Notificações",
+                value=notif_config.get("ativo", True),
+                help="Marque para enviar emails automáticos quando NF for recebida",
+                key="notif_ativo"
+            )
+        
+        # Botões de ação
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("💾 Salvar Configurações de Notificação", type="primary"):
+                # Salvar configurações
+                config = load_config()
+                config["notificacao_nf"] = {
+                    "emails": st.session_state.notif_emails,
+                    "assunto": st.session_state.notif_assunto,
+                    "corpo": st.session_state.notif_corpo,
+                    "prioridade": st.session_state.notif_prioridade,
+                    "ativo": st.session_state.notif_ativo
+                }
+                
+                # Salvar no arquivo
+                try:
+                    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+                        json.dump(config, f, indent=4, ensure_ascii=False)
+                    st.success("✅ Configurações de notificação salvas!")
+                except Exception as e:
+                    st.error(f"❌ Erro ao salvar: {e}")
+        
+        with col2:
+            if st.button("🧪 Testar Notificação"):
+                if st.session_state.notif_emails.strip():
+                    try:
+                        # Salvar configurações temporariamente para teste
+                        config = load_config()
+                        config["notificacao_nf"] = {
+                            "emails": st.session_state.notif_emails,
+                            "assunto": st.session_state.notif_assunto,
+                            "corpo": st.session_state.notif_corpo,
+                            "prioridade": st.session_state.notif_prioridade,
+                            "ativo": True  # Forçar ativo para teste
+                        }
+                        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+                            json.dump(config, f, indent=4, ensure_ascii=False)
+                        
+                        st.success("✅ Configurações salvas!")
+                        
+                        # Teste com logs detalhados
+                        st.info("🔍 **Iniciando teste da notificação...**")
+                        
+                        # Log 1: Verificar configurações
+                        st.write("**📋 Passo 1: Verificando configurações...**")
+                        config_debug = load_config()
+                        notif_debug = config_debug.get("notificacao_nf", {})
+                        
+                        if notif_debug:
+                            st.success(f"✅ Configuração encontrada:")
+                            col_cfg1, col_cfg2 = st.columns(2)
+                            with col_cfg1:
+                                st.code(f"Emails: {notif_debug.get('emails', 'NÃO DEFINIDO')}")
+                                st.code(f"Ativo: {notif_debug.get('ativo', False)}")
+                            with col_cfg2:
+                                st.code(f"Prioridade: {notif_debug.get('prioridade', 'NÃO DEFINIDO')}")
+                                st.code(f"Assunto: {notif_debug.get('assunto', 'NÃO DEFINIDO')[:50]}...")
+                        else:
+                            st.error("❌ Nenhuma configuração de notificação encontrada!")
+                            st.stop()
+                        
+                        # Log 2: Status do login
+                        st.write("**🔑 Passo 2: Verificando status de login...**")
+                        if 'access_token' in st.session_state and st.session_state.access_token:
+                            st.success("✅ Usuário logado - Pode enviar emails reais")
+                            token_status = "DISPONÍVEL"
+                        else:
+                            st.warning("⚠️ Usuário não logado - Apenas preview")
+                            token_status = "NÃO DISPONÍVEL"
+                        
+                        # Log 3: Teste de importação
+                        st.write("**📦 Passo 3: Importando módulo de notificação...**")
+                        try:
+                            import sys
+                            import os
+                            current_dir = os.path.dirname(os.path.abspath(__file__))
+                            if current_dir not in sys.path:
+                                sys.path.append(current_dir)
+                            
+                            from notificacao_nf import enviar_notificacao_nf_upload
+                            st.success("✅ Módulo importado com sucesso")
+                        except Exception as e:
+                            st.error(f"❌ Erro na importação: {e}")
+                            st.stop()
+                        
+                        # Log 4: Executar teste
+                        st.write("**🧪 Passo 4: Executando teste...**")
+                        
+                        dados_teste = {
+                            "prestador_nome": "EMPRESA TESTE REAL LTDA",
+                            "periodo": "01/10/2025 - 31/10/2025",
+                            "valor_total": 1234.56
+                        }
+                        
+                        st.code(f"Dados de teste: {dados_teste}")
+                        
+                        # Executar com token se disponível, senão sem token
+                        access_token = st.session_state.get('access_token') if token_status == "DISPONÍVEL" else None
+                        
+                        with st.spinner("Executando notificação..."):
+                            resultado = enviar_notificacao_nf_upload(
+                                ("prestador", "TESTE123"),
+                                dados_teste,
+                                "NF_TESTE_COMPLETO.pdf",
+                                access_token,
+                                None  # Sem anexo no teste
+                            )
+                            
+                        # Log 5: Mostrar resultado completo
+                        st.write("**📊 Passo 5: Resultado da execução:**")
+                        st.json(resultado)
+                        
+                        # Log 6: Interpretação do resultado
+                        st.write("**🔍 Passo 6: Análise do resultado:**")
+                        
+                        if resultado.get("success"):
+                            st.success(f"🎉 **SUCESSO!** {resultado['message']}")
+                            if "emails" in resultado:
+                                st.balloons()
+                                st.info(f"� **EMAIL ENVIADO PARA:** {', '.join(resultado['emails'])}")
+                            
+                        elif "preview" in resultado:
+                            st.info("📧 **PREVIEW GERADO** (sem envio real)")
+                            preview = resultado["preview"]
+                            
+                            st.write("**Preview do email:**")
+                            col_p1, col_p2 = st.columns(2)
+                            with col_p1:
+                                st.code(f"Para: {', '.join(preview['para'])}")
+                                st.code(f"Prioridade: {preview['prioridade'].upper()}")
+                            with col_p2:
+                                st.code(f"Assunto: {preview['assunto']}")
+                            
+                            st.text_area("**Corpo completo:**", preview['corpo'], height=300, disabled=True)
+                            
+                            if token_status == "NÃO DISPONÍVEL":
+                                st.info("💡 **Para enviar email real:** Faça login na página principal primeiro")
+                        else:
+                            st.error(f"❌ **ERRO:** {resultado.get('message', 'Erro desconhecido')}")
+                            if "error" in resultado:
+                                st.code(f"Detalhes do erro: {resultado['error']}")
+                        
+                        # Log 7: Teste de envio real (se logado)
+                        if token_status == "DISPONÍVEL" and not resultado.get("success"):
+                            st.write("**🚀 Passo 7: Opção de envio real:**")
+                            st.warning("⚠️ O teste acima foi apenas preview. Clique abaixo para tentar envio real:")
+                            
+                            if st.button("📧 FORÇAR ENVIO REAL", type="secondary", key="forcar_envio_real"):
+                                st.write("**Executando envio forçado...**")
+                                with st.spinner("Enviando email real..."):
+                                    resultado_forcado = enviar_notificacao_nf_upload(
+                                        ("prestador", "FORÇADO123"),
+                                        dados_teste,
+                                        "NF_TESTE_FORCADO.pdf",
+                                        st.session_state.access_token,
+                                        None  # Sem anexo no teste forçado
+                                    )
+                                
+                                st.write("**Resultado do envio forçado:**")
+                                st.json(resultado_forcado)
+                                
+                                if resultado_forcado.get("success"):
+                                    st.success("🎉 EMAIL ENVIADO COM SUCESSO!")
+                                    st.balloons()
+                                else:
+                                    st.error("❌ Falha no envio forçado")
+                        
+                        st.markdown("---")
+                        st.info("📝 **Log completo exibido acima - Verifique cada passo**")
+                                
+                    except Exception as e:
+                        st.error(f"❌ Erro ao salvar configurações: {e}")
+                        st.code(str(e))
+                else:
+                    st.warning("⚠️ Configure os emails destinatários primeiro!")
+        
+        with col3:
+            if st.button("🔍 Debug Config", help="Verificar configurações salvas"):
+                config = load_config()
+                notif_config = config.get("notificacao_nf", {})
+                
+                st.json({
+                    "config_existe": "notificacao_nf" in config,
+                    "emails": notif_config.get("emails", "NÃO DEFINIDO"),
+                    "assunto": notif_config.get("assunto", "NÃO DEFINIDO"),
+                    "ativo": notif_config.get("ativo", False),
+                    "prioridade": notif_config.get("prioridade", "NÃO DEFINIDO")
+                })
+        
+        st.markdown("**📚 Variáveis Disponíveis:**")
+        with st.expander("Ver todas as variáveis", expanded=False):
+            st.code("""
+{{prestador_nome}} - Nome do prestador
+{{lote_id}} - ID do lote/envio  
+{{periodo}} - Período do lote
+{{valor_total}} - Valor total formatado
+{{data_upload}} - Data/hora do upload
+{{arquivo_nome}} - Nome do arquivo NF
+{{sistema_url}} - URL do sistema
+{{valor_total}}
+{{data_upload}}
+{{arquivo_nome}}
+{{sistema_url}}
+            """)
+        
+        st.markdown("---")
+        
+        st.markdown("### 🧹 Limpeza de Tokens")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("🗑️ Limpar Tokens Expirados"):
+                conn = db.get_db_connection()
+                with conn.cursor() as cur:
+                    cur.execute("DELETE FROM upload_tokens WHERE usado = FALSE AND data_expiracao <= NOW()")
+                    deleted_count = cur.rowcount
+                conn.commit()
+                conn.close()
+                st.success(f"✅ {deleted_count} tokens expirados removidos!")
+        
+        with col2:
+            if st.button("📊 Gerar Relatório CSV"):
+                conn = db.get_db_connection()
+                with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+                    cur.execute("""
+                        SELECT t.token, t.tipo, 
+                               CASE WHEN t.tipo = 'prestador' THEN p.nome ELSE m.nome END as entidade_nome,
+                               t.data_criacao, t.data_expiracao, t.usado, t.data_upload, t.arquivo_nome
+                        FROM upload_tokens t 
+                        LEFT JOIN prestadores p ON t.tipo = 'prestador' AND t.entidade_id = p.id
+                        LEFT JOIN montadores m ON t.tipo = 'montador' AND t.entidade_id = m.id
+                        ORDER BY t.data_criacao DESC
+                    """)
+                    data = cur.fetchall()
+                conn.close()
+                
+                if data:
+                    df = pd.DataFrame(data)
+                    csv = df.to_csv(index=False)
+                    st.download_button(
+                        label="📥 Baixar Relatório CSV",
+                        data=csv,
+                        file_name=f"relatorio_uploads_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                        mime="text/csv",
+                        key="download_relatorio_csv"
+                    )
+                else:
+                    st.info("Nenhum dado para gerar relatório.")
+        
+        st.markdown("### ℹ️ Informações do Sistema")
+        st.info("""
+        **Como funciona o sistema de upload:**
+        
+        1. 📧 Quando um email é enviado, um token único é gerado automaticamente
+        2. 🔗 O link com o token é incluído no email para o prestador/montador
+        3. 📄 O destinatário acessa o link e faz upload da nota fiscal
+        4. ✅ O arquivo é salvo de forma segura e o token é marcado como usado
+        5. 📊 Você pode acompanhar todos os uploads através desta interface
+        
+        **Configuração do servidor de upload:**
+        Execute o comando: `./start_upload_server.sh` para iniciar o servidor de upload na porta 8502.
+        """)
+        
+        st.markdown("### 🚀 Servidor de Upload")
+        if st.button("▶️ Instruções para Iniciar Servidor"):
+            st.code("""
+# 1. Via terminal, execute:
+./start_upload_server.sh
+
+# 2. O servidor rodará em:
+http://localhost:8502
+
+# 3. Configure seu proxy/DNS para apontar:
+https://uploadnf.novomundo.com.br -> http://localhost:8502
+            """)
+            
+            st.warning("⚠️ **Importante:** Configure seu servidor web (nginx/apache) para fazer proxy da URL pública para a porta 8502.")

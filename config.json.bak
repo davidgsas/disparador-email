@@ -1,7 +1,7 @@
 {
-    "prestador_cc": "projetos.qualidade@novomundo.com.br",
-    "prestador_subject": "Novo Mundo Resolve | Nota Fiscal Eletrônica de Prestação de Serviços | Período: {{periodo}} | Prestador: {{nome_prestador}}",
-    "prestador_body": "",
+    "prestador_cc": "",
+    "prestador_subject": "",
+    "prestador_body": "{{link_upload_nf}}",
     "montador_cc": "projetos.qualidade@novomundo.com.br",
     "montador_subject": "teste",
     "montador_body": "{{link_upload_nf}}",
