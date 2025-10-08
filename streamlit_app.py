@@ -724,27 +724,90 @@ elif app_mode == "Serviços (Prestadores)":
                     cols[3].text(lote['data_envio'].strftime('%d/%m/%Y'))
                     cols[4].markdown(f"**{lote['status']}**")
 
-                    with st.expander("Ver O.S. do Lote e Gerenciar"):
-                        # Informações de Upload
+                    with st.expander("Ver O.S. do Lote e Gerenciar", expanded=True):
+                        # CSS para melhorar o layout
+                        st.markdown("""
+                        <style>
+                        .upload-card {
+                            background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+                            padding: 1.5rem;
+                            border-radius: 12px;
+                            border-left: 5px solid #1f77b4;
+                            margin: 1rem 0;
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        }
+                        .success-card {
+                            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+                            border-left: 5px solid #28a745;
+                        }
+                        .warning-card {
+                            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+                            border-left: 5px solid #ffc107;
+                        }
+                        .error-card {
+                            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+                            border-left: 5px solid #dc3545;
+                        }
+                        .edit-section {
+                            background: #f8f9fa;
+                            padding: 1rem;
+                            border-radius: 8px;
+                            border: 2px dashed #6c757d;
+                            margin: 1rem 0;
+                        }
+                        </style>
+                        """, unsafe_allow_html=True)
+                        
+                        # Informações de Upload com layout melhorado
                         upload_info = db.get_upload_info_por_lote('prestador', lote['id'])
                         
                         if upload_info:
-                            st.markdown("### 📄 Status do Upload de Nota Fiscal")
-                            col1, col2, col3 = st.columns(3)
+                            # Determinar status e estilo do card
+                            if upload_info['usado']:
+                                card_class = "upload-card success-card"
+                                status_icon = "✅"
+                                status_text = "NF RECEBIDA"
+                                status_color = "#28a745"
+                            elif upload_info['data_expiracao'] > datetime.datetime.now():
+                                card_class = "upload-card warning-card"
+                                status_icon = "⏳"
+                                status_text = "AGUARDANDO NF"
+                                status_color = "#ffc107"
+                            else:
+                                card_class = "upload-card error-card"
+                                status_icon = "❌"
+                                status_text = "TOKEN EXPIRADO"
+                                status_color = "#dc3545"
+                            
+                            st.markdown(f"""
+                            <div class="{card_class}">
+                                <h3 style="margin: 0 0 1rem 0; color: #333; display: flex; align-items: center;">
+                                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">{status_icon}</span>
+                                    Status do Upload de Nota Fiscal
+                                    <span style="margin-left: auto; background: {status_color}; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">
+                                        {status_text}
+                                    </span>
+                                </h3>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            # Informações em colunas melhoradas
+                            col1, col2, col3 = st.columns([2, 2, 1.5])
                             
                             with col1:
                                 if upload_info['usado']:
-                                    st.success("✅ NF Recebida")
-                                    st.write(f"**Upload em:** {upload_info['data_upload'].strftime('%d/%m/%Y %H:%M')}")
+                                    st.success(f"📅 **Upload realizado:** {upload_info['data_upload'].strftime('%d/%m/%Y às %H:%M')}")
+                                    if upload_info['arquivo_nome']:
+                                        st.info(f"📄 **Arquivo:** {upload_info['arquivo_nome']}")
                                 else:
-                                    if upload_info['data_expiracao'] > datetime.datetime.now():
-                                        st.warning("⏳ Aguardando NF")
-                                    else:
-                                        st.error("❌ Link Expirado")
+                                    st.warning(f"⏰ **Token criado:** {upload_info['data_criacao'].strftime('%d/%m/%Y às %H:%M')}")
+                                    st.error(f"⏰ **Expira em:** {upload_info['data_expiracao'].strftime('%d/%m/%Y às %H:%M')}")
                             
                             with col2:
-                                st.write(f"**Token gerado:** {upload_info['data_criacao'].strftime('%d/%m/%Y %H:%M')}")
-                                st.write(f"**Expira em:** {upload_info['data_expiracao'].strftime('%d/%m/%Y %H:%M')}")
+                                if not upload_info['usado']:
+                                    st.markdown("**🔗 Link de Upload:**")
+                                    link_upload = f"{os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={upload_info['token']}"
+                                    st.code(link_upload)
                             
                             with col3:
                                 if upload_info['usado'] and upload_info['arquivo_path'] and os.path.exists(upload_info['arquivo_path']):
@@ -755,22 +818,297 @@ elif app_mode == "Serviços (Prestadores)":
                                             file_name=upload_info['arquivo_nome'],
                                             mime="application/octet-stream",
                                             key=f"download_nf_prestador_{lote['id']}",
-                                            use_container_width=True
+                                            use_container_width=True,
+                                            type="primary"
                                         )
-                                else:
-                                    if not upload_info['usado']:
-                                        st.code(f"Link: {os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={upload_info['token']}")
+                            
+                            # Seção de Edição e Reenvio
+                            st.markdown("---")
+                            st.markdown("### ✏️ Editar e Reenviar Pagamento")
+                            
+                            # Importar funções necessárias
+                            from database import (editar_pagamento_prestador, invalidar_token_antigo, 
+                                                gerar_token_upload, prestador_info)
+                            
+                            # Estado de edição
+                            editing_key = f"editing_lote_{lote['id']}"
+                            
+                            col1, col2, col3 = st.columns([1, 1, 1])
+                            
+                            with col1:
+                                if st.button("✏️ Editar Valores", key=f"edit_btn_{lote['id']}", use_container_width=True):
+                                    st.session_state[editing_key] = True
+                            
+                            with col2:
+                                if st.button("🔄 Reenviar Link", key=f"resend_btn_{lote['id']}", use_container_width=True, type="secondary"):
+                                    try:
+                                        # Obter info do prestador
+                                        prestador_data = prestador_info(lote['id'])
+                                        if prestador_data:
+                                            # Invalidar token antigo
+                                            invalidar_token_antigo('prestador', prestador_data['id'], lote['id'])
+                                            
+                                            # Gerar novo token
+                                            novo_token = gerar_token_upload('prestador', prestador_data['id'], lote['id'])
+                                            
+                                            # Mostrar sucesso
+                                            novo_link = f"{os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={novo_token}"
+                                            st.success("✅ Novo link gerado com sucesso!")
+                                            st.info(f"🔗 **Novo link:** {novo_link}")
+                                            st.info(f"📧 **Enviar para:** {prestador_data['email']}")
+                                            st.rerun()
+                                        else:
+                                            st.error("❌ Erro ao obter dados do prestador")
+                                    except Exception as e:
+                                        st.error(f"❌ Erro: {str(e)}")
+                            
+                            with col3:
+                                if st.button("📧 Ir para Envios", key=f"goto_envios_{lote['id']}", use_container_width=True, help="Ir para página de envio de emails"):
+                                    st.session_state['goto_page'] = 'Serviços (Prestadores)'
+                                    st.rerun()
+                            
+                            # Modal de edição
+                            if st.session_state.get(editing_key, False):
+                                st.markdown('<div class="edit-section">', unsafe_allow_html=True)
+                                st.markdown("#### 💰 Editar Valores do Pagamento")
+                                
+                                col1, col2 = st.columns(2)
+                                with col1:
+                                    novo_valor = st.number_input(
+                                        "💰 Novo Valor Total", 
+                                        value=float(lote['valor_total']), 
+                                        min_value=0.01,
+                                        key=f"novo_valor_{lote['id']}"
+                                    )
+                                
+                                with col2:
+                                    novo_periodo = st.text_input(
+                                        "📅 Novo Período", 
+                                        value=lote['periodo'],
+                                        key=f"novo_periodo_{lote['id']}"
+                                    )
+                                
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    if st.button("💾 Salvar Alterações", key=f"save_edit_{lote['id']}", type="primary"):
+                                        try:
+                                            sucesso = editar_pagamento_prestador(lote['id'], novo_valor, novo_periodo)
+                                            if sucesso:
+                                                st.success("✅ Pagamento atualizado com sucesso!")
+                                                st.session_state[editing_key] = False
+                                                st.rerun()
+                                            else:
+                                                st.error("❌ Erro ao atualizar pagamento")
+                                        except Exception as e:
+                                            st.error(f"❌ Erro: {str(e)}")
+                                
+                                with col2:
+                                    if st.button("❌ Cancelar", key=f"cancel_edit_{lote['id']}"):
+                                        st.session_state[editing_key] = False
+                                        st.rerun()
+                                
+                                with col3:
+                                    if st.button("💾 + 🔄 Salvar e Reenviar", key=f"save_and_resend_{lote['id']}", type="secondary"):
+                                        try:
+                                            # Salvar alterações
+                                            sucesso = editar_pagamento_prestador(lote['id'], novo_valor, novo_periodo)
+                                            if sucesso:
+                                                # Reenviar link
+                                                prestador_data = prestador_info(lote['id'])
+                                                if prestador_data:
+                                                    invalidar_token_antigo('prestador', prestador_data['id'], lote['id'])
+                                                    novo_token = gerar_token_upload('prestador', prestador_data['id'], lote['id'])
+                                                    novo_link = f"{os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={novo_token}"
+                                                    
+                                                    st.success("✅ Pagamento atualizado e novo link gerado!")
+                                                    st.info(f"🔗 **Novo link:** {novo_link}")
+                                                    st.info(f"📧 **Enviar para:** {prestador_data['email']}")
+                                                    st.session_state[editing_key] = False
+                                                    st.rerun()
+                                            else:
+                                                st.error("❌ Erro ao atualizar pagamento")
+                                        except Exception as e:
+                                            st.error(f"❌ Erro: {str(e)}")
+                                
+                                st.markdown('</div>', unsafe_allow_html=True)
+                        
                         else:
                             st.info("ℹ️ Este lote não possui sistema de upload (anterior à implementação)")
                         
                         st.markdown("---")
                         
-                        # O.S. do Lote
+                        # O.S. do Lote - EDITÁVEL
                         st.markdown("### 📋 Ordens de Serviço")
                         os_do_lote = db.get_os_by_lote_id(lote['id'])
                         if os_do_lote:
+                            # Criar DataFrame das O.S.
                             df_os = pd.DataFrame([item['detalhes'] for item in os_do_lote])
-                            st.dataframe(df_os)
+                            
+                            # Verificar se tem colunas necessárias
+                            if not df_os.empty:
+                                # Garantir que as colunas editáveis existam
+                                if 'valor_extra' not in df_os.columns:
+                                    df_os['valor_extra'] = 0
+                                if 'valor_total' not in df_os.columns:
+                                    df_os['valor_total'] = 0
+                                if 'motivo_extra' not in df_os.columns:
+                                    df_os['motivo_extra'] = None
+                                
+                                # Reordenar colunas para melhor visualização
+                                cols_order = []
+                                for col in ['o_s', 'periodo', 'modalidade', 'valor_extra', 'valor_total', 'motivo_extra', 'status_envio', 'data_execucao', 'nome_prestador', 'valor_custo_prestador']:
+                                    if col in df_os.columns:
+                                        cols_order.append(col)
+                                
+                                # Adicionar colunas restantes
+                                for col in df_os.columns:
+                                    if col not in cols_order:
+                                        cols_order.append(col)
+                                
+                                df_os = df_os[cols_order]
+                                
+                                st.markdown("#### ✏️ Editar Valores das O.S.")
+                                st.info("💡 **Editável:** valor_extra, valor_total, motivo_extra")
+                                
+                                # Editor de dados interativo
+                                edited_df = st.data_editor(
+                                    df_os,
+                                    key=f"os_editor_{lote['id']}",
+                                    use_container_width=True,
+                                    num_rows="dynamic",
+                                    column_config={
+                                        "valor_extra": st.column_config.NumberColumn(
+                                            "💰 Valor Extra",
+                                            help="Valor adicional para esta O.S.",
+                                            min_value=0,
+                                            step=1,
+                                            format="R$ %.2f"
+                                        ),
+                                        "valor_total": st.column_config.NumberColumn(
+                                            "💵 Valor Total",
+                                            help="Valor total desta O.S.",
+                                            min_value=0,
+                                            step=1,
+                                            format="R$ %.2f"
+                                        ),
+                                        "motivo_extra": st.column_config.TextColumn(
+                                            "📝 Motivo Extra",
+                                            help="Justificativa para valor extra",
+                                            max_chars=100
+                                        ),
+                                        "o_s": st.column_config.TextColumn(
+                                            "🔢 O.S.",
+                                            disabled=True
+                                        ),
+                                        "periodo": st.column_config.TextColumn(
+                                            "📅 Período",
+                                            disabled=True
+                                        ),
+                                        "modalidade": st.column_config.TextColumn(
+                                            "⚙️ Modalidade",
+                                            disabled=True
+                                        ),
+                                        "status_envio": st.column_config.TextColumn(
+                                            "📊 Status",
+                                            disabled=True
+                                        ),
+                                        "data_execucao": st.column_config.DateColumn(
+                                            "📆 Data Execução",
+                                            disabled=True
+                                        ),
+                                        "nome_prestador": st.column_config.TextColumn(
+                                            "👤 Prestador",
+                                            disabled=True
+                                        ),
+                                        "valor_custo_prestador": st.column_config.NumberColumn(
+                                            "💲 Valor Custo",
+                                            disabled=True,
+                                            format="R$ %.2f"
+                                        )
+                                    },
+                                    disabled=["o_s", "periodo", "modalidade", "status_envio", "data_execucao", "nome_prestador", "valor_custo_prestador"]
+                                )
+                                
+                                # Calcular novo total automaticamente
+                                if not edited_df.empty:
+                                    novo_total_lote = edited_df['valor_total'].sum()
+                                    total_atual = lote['valor_total']
+                                    
+                                    col1, col2, col3 = st.columns(3)
+                                    with col1:
+                                        st.metric("💰 Total Atual", f"R$ {total_atual:,.2f}")
+                                    with col2:
+                                        st.metric("🔄 Novo Total", f"R$ {novo_total_lote:,.2f}", 
+                                                delta=f"R$ {novo_total_lote - total_atual:,.2f}")
+                                    with col3:
+                                        diferenca_pct = ((novo_total_lote - total_atual) / total_atual * 100) if total_atual > 0 else 0
+                                        st.metric("📊 Variação", f"{diferenca_pct:+.1f}%")
+                                
+                                # Botões de ação
+                                col1, col2, col3 = st.columns(3)
+                                
+                                with col1:
+                                    if st.button("💾 Salvar O.S.", key=f"save_os_{lote['id']}", type="primary", use_container_width=True):
+                                        try:
+                                            # Importar funções necessárias
+                                            from database import update_os_detalhes, update_lote_valor_total
+                                            
+                                            # Atualizar cada O.S. individual
+                                            for idx, row in edited_df.iterrows():
+                                                os_id = os_do_lote[idx]['id']
+                                                novos_detalhes = row.to_dict()
+                                                
+                                                # Atualizar O.S. específica
+                                                update_os_detalhes(os_id, novos_detalhes)
+                                            
+                                            # Atualizar valor total do lote
+                                            update_lote_valor_total(lote['id'], novo_total_lote)
+                                            
+                                            st.success("✅ O.S. e valor total do lote atualizados!")
+                                            st.rerun()
+                                            
+                                        except Exception as e:
+                                            st.error(f"❌ Erro ao salvar: {str(e)}")
+                                
+                                with col2:
+                                    if st.button("💾 + 🔄 Salvar e Reenviar", key=f"save_os_and_resend_{lote['id']}", type="secondary", use_container_width=True):
+                                        try:
+                                            # Importar funções necessárias  
+                                            from database import (update_os_detalhes, update_lote_valor_total, 
+                                                                prestador_info, invalidar_token_antigo, gerar_token_upload)
+                                            
+                                            # Salvar O.S.
+                                            for idx, row in edited_df.iterrows():
+                                                os_id = os_do_lote[idx]['id']
+                                                novos_detalhes = row.to_dict()
+                                                update_os_detalhes(os_id, novos_detalhes)
+                                            
+                                            # Atualizar valor total do lote
+                                            update_lote_valor_total(lote['id'], novo_total_lote)
+                                            
+                                            # Reenviar link
+                                            prestador_data = prestador_info(lote['id'])
+                                            if prestador_data:
+                                                invalidar_token_antigo('prestador', prestador_data['id'], lote['id'])
+                                                novo_token = gerar_token_upload('prestador', prestador_data['id'], lote['id'])
+                                                novo_link = f"{os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={novo_token}"
+                                                
+                                                st.success("✅ O.S. salvas e novo link gerado!")
+                                                st.info(f"🔗 **Novo link:** {novo_link}")
+                                                st.info(f"📧 **Enviar para:** {prestador_data['email']}")
+                                                st.rerun()
+                                            else:
+                                                st.error("❌ Erro ao obter dados do prestador")
+                                                
+                                        except Exception as e:
+                                            st.error(f"❌ Erro: {str(e)}")
+                                
+                                with col3:
+                                    if st.button("🔄 Reset", key=f"reset_os_{lote['id']}", use_container_width=True):
+                                        st.rerun()
+                            
+                            else:
+                                st.info("📋 DataFrame vazio")
                         else:
                             st.warning("Não há O.S. detalhadas para este lote.")
                         
@@ -1274,27 +1612,57 @@ elif app_mode == "Montagem (Montadores)":
                     cols[3].text(item['data_envio'].strftime('%d/%m/%Y'))
                     cols[4].markdown(f"**{item['status']}**")
 
-                    with st.expander("Ver Detalhes e Gerenciar"):
-                        # Informações de Upload
+                    with st.expander("Ver Detalhes e Gerenciar", expanded=True):
+                        # Informações de Upload com layout melhorado
                         upload_info = db.get_upload_info_por_lote('montador', item['id'])
                         
                         if upload_info:
-                            st.markdown("### 📄 Status do Upload de Nota Fiscal")
-                            col1, col2, col3 = st.columns(3)
+                            # Determinar status e estilo do card
+                            if upload_info['usado']:
+                                card_class = "upload-card success-card"
+                                status_icon = "✅"
+                                status_text = "NF RECEBIDA"
+                                status_color = "#28a745"
+                            elif upload_info['data_expiracao'] > datetime.datetime.now():
+                                card_class = "upload-card warning-card"
+                                status_icon = "⏳"
+                                status_text = "AGUARDANDO NF"
+                                status_color = "#ffc107"
+                            else:
+                                card_class = "upload-card error-card"
+                                status_icon = "❌"
+                                status_text = "TOKEN EXPIRADO"
+                                status_color = "#dc3545"
+                            
+                            st.markdown(f"""
+                            <div class="{card_class}">
+                                <h3 style="margin: 0 0 1rem 0; color: #333; display: flex; align-items: center;">
+                                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">{status_icon}</span>
+                                    Status do Upload de Nota Fiscal
+                                    <span style="margin-left: auto; background: {status_color}; color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">
+                                        {status_text}
+                                    </span>
+                                </h3>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            # Informações em colunas melhoradas
+                            col1, col2, col3 = st.columns([2, 2, 1.5])
                             
                             with col1:
                                 if upload_info['usado']:
-                                    st.success("✅ NF Recebida")
-                                    st.write(f"**Upload em:** {upload_info['data_upload'].strftime('%d/%m/%Y %H:%M')}")
+                                    st.success(f"📅 **Upload realizado:** {upload_info['data_upload'].strftime('%d/%m/%Y às %H:%M')}")
+                                    if upload_info['arquivo_nome']:
+                                        st.info(f"📄 **Arquivo:** {upload_info['arquivo_nome']}")
                                 else:
-                                    if upload_info['data_expiracao'] > datetime.datetime.now():
-                                        st.warning("⏳ Aguardando NF")
-                                    else:
-                                        st.error("❌ Link Expirado")
+                                    st.warning(f"⏰ **Token criado:** {upload_info['data_criacao'].strftime('%d/%m/%Y às %H:%M')}")
+                                    st.error(f"⏰ **Expira em:** {upload_info['data_expiracao'].strftime('%d/%m/%Y às %H:%M')}")
                             
                             with col2:
-                                st.write(f"**Token gerado:** {upload_info['data_criacao'].strftime('%d/%m/%Y %H:%M')}")
-                                st.write(f"**Expira em:** {upload_info['data_expiracao'].strftime('%d/%m/%Y %H:%M')}")
+                                if not upload_info['usado']:
+                                    st.markdown("**🔗 Link de Upload:**")
+                                    link_upload = f"{os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={upload_info['token']}"
+                                    st.code(link_upload)
                             
                             with col3:
                                 if upload_info['usado'] and upload_info['arquivo_path'] and os.path.exists(upload_info['arquivo_path']):
@@ -1305,11 +1673,125 @@ elif app_mode == "Montagem (Montadores)":
                                             file_name=upload_info['arquivo_nome'],
                                             mime="application/octet-stream",
                                             key=f"download_nf_mont_{item['id']}",
-                                            use_container_width=True
+                                            use_container_width=True,
+                                            type="primary"
                                         )
-                                else:
-                                    if not upload_info['usado']:
-                                        st.code(f"Link: {os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={upload_info['token']}")
+                            
+                            # Seção de Edição e Reenvio para Montadores
+                            st.markdown("---")
+                            st.markdown("### ✏️ Editar e Reenviar Pagamento")
+                            
+                            # Importar funções necessárias
+                            from database import (editar_pagamento_montador, invalidar_token_antigo, 
+                                                gerar_token_upload, montador_info)
+                            
+                            # Estado de edição
+                            editing_key = f"editing_mont_{item['id']}"
+                            
+                            col1, col2, col3 = st.columns([1, 1, 1])
+                            
+                            with col1:
+                                if st.button("✏️ Editar Valores", key=f"edit_mont_btn_{item['id']}", use_container_width=True):
+                                    st.session_state[editing_key] = True
+                            
+                            with col2:
+                                if st.button("🔄 Reenviar Link", key=f"resend_mont_btn_{item['id']}", use_container_width=True, type="secondary"):
+                                    try:
+                                        # Obter info do montador
+                                        montador_data = montador_info(item['id'])
+                                        if montador_data:
+                                            # Invalidar token antigo
+                                            invalidar_token_antigo('montador', montador_data['id'], item['id'])
+                                            
+                                            # Gerar novo token
+                                            novo_token = gerar_token_upload('montador', montador_data['id'], item['id'])
+                                            
+                                            # Mostrar sucesso
+                                            novo_link = f"{os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={novo_token}"
+                                            st.success("✅ Novo link gerado com sucesso!")
+                                            st.info(f"🔗 **Novo link:** {novo_link}")
+                                            st.info(f"📧 **Enviar para:** {montador_data['email']}")
+                                            st.rerun()
+                                        else:
+                                            st.error("❌ Erro ao obter dados do montador")
+                                    except Exception as e:
+                                        st.error(f"❌ Erro: {str(e)}")
+                            
+                            with col3:
+                                if st.button("📧 Ir para Envios", key=f"goto_mont_envios_{item['id']}", use_container_width=True, help="Ir para página de envio de emails"):
+                                    st.session_state['goto_page'] = 'Montagem (Montadores)'
+                                    st.rerun()
+                            
+                            # Modal de edição para montadores
+                            if st.session_state.get(editing_key, False):
+                                st.markdown('<div class="edit-section">', unsafe_allow_html=True)
+                                st.markdown("#### 💰 Editar Valores do Pagamento")
+                                
+                                # Obter valores atuais
+                                current_details = details or {}
+                                current_valor = current_details.get('total_geral', 0)
+                                current_periodo = current_details.get('periodo_relatorio', 'N/A')
+                                
+                                col1, col2 = st.columns(2)
+                                with col1:
+                                    novo_valor = st.number_input(
+                                        "💰 Novo Valor Total", 
+                                        value=float(current_valor) if current_valor else 0.0, 
+                                        min_value=0.01,
+                                        key=f"novo_valor_mont_{item['id']}"
+                                    )
+                                
+                                with col2:
+                                    novo_periodo = st.text_input(
+                                        "📅 Novo Período", 
+                                        value=current_periodo,
+                                        key=f"novo_periodo_mont_{item['id']}"
+                                    )
+                                
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    if st.button("💾 Salvar Alterações", key=f"save_mont_edit_{item['id']}", type="primary"):
+                                        try:
+                                            sucesso = editar_pagamento_montador(item['id'], novo_valor, novo_periodo)
+                                            if sucesso:
+                                                st.success("✅ Pagamento atualizado com sucesso!")
+                                                st.session_state[editing_key] = False
+                                                st.rerun()
+                                            else:
+                                                st.error("❌ Erro ao atualizar pagamento")
+                                        except Exception as e:
+                                            st.error(f"❌ Erro: {str(e)}")
+                                
+                                with col2:
+                                    if st.button("❌ Cancelar", key=f"cancel_mont_edit_{item['id']}"):
+                                        st.session_state[editing_key] = False
+                                        st.rerun()
+                                
+                                with col3:
+                                    if st.button("💾 + 🔄 Salvar e Reenviar", key=f"save_mont_and_resend_{item['id']}", type="secondary"):
+                                        try:
+                                            # Salvar alterações
+                                            sucesso = editar_pagamento_montador(item['id'], novo_valor, novo_periodo)
+                                            if sucesso:
+                                                # Reenviar link
+                                                montador_data = montador_info(item['id'])
+                                                if montador_data:
+                                                    invalidar_token_antigo('montador', montador_data['id'], item['id'])
+                                                    novo_token = gerar_token_upload('montador', montador_data['id'], item['id'])
+                                                    novo_link = f"{os.getenv('UPLOAD_BASE_URL', 'http://localhost:8502')}/?token={novo_token}"
+                                                    
+                                                    st.success("✅ Pagamento atualizado e novo link gerado!")
+                                                    st.info(f"🔗 **Novo link:** {novo_link}")
+                                                    st.info(f"📧 **Enviar para:** {montador_data['email']}")
+                                                    st.session_state[editing_key] = False
+                                                    st.rerun()
+                                            else:
+                                                st.error("❌ Erro ao atualizar pagamento")
+                                        except Exception as e:
+                                            st.error(f"❌ Erro: {str(e)}")
+                                
+                                st.markdown('</div>', unsafe_allow_html=True)
+                        
                         else:
                             st.info("ℹ️ Este envio não possui sistema de upload (anterior à implementação)")
                         
@@ -1888,3 +2370,5 @@ https://uploadnf.novomundo.com.br -> http://localhost:8502
             """)
             
             st.warning("⚠️ **Importante:** Configure seu servidor web (nginx/apache) para fazer proxy da URL pública para a porta 8502.")
+
+

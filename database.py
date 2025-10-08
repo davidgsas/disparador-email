@@ -669,4 +669,224 @@ def get_upload_info_por_lote(tipo, lote_id):
     conn.close()
     return dict(upload_info) if upload_info else None
 
+def listar_pagamentos_enviados():
+    """Lista todos os pagamentos enviados (prestadores e montadores) com status de upload"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            # Buscar prestadores
+            cur.execute("""
+                SELECT 
+                    'prestador' as tipo,
+                    l.id as lote_id,
+                    l.prestador_nome as entidade_nome,
+                    p.email as entidade_email,
+                    l.periodo,
+                    l.valor_total,
+                    l.data_envio,
+                    l.status,
+                    ut.token,
+                    ut.usado as upload_feito,
+                    ut.data_upload,
+                    ut.arquivo_nome,
+                    ut.data_expiracao as token_expira
+                FROM lotes_servico l
+                JOIN prestadores p ON l.prestador_id = p.id
+                LEFT JOIN upload_tokens ut ON ut.tipo = 'prestador' AND ut.entidade_id = p.id AND ut.lote_id = l.id
+                ORDER BY l.data_envio DESC
+            """)
+            prestadores = cur.fetchall()
+            
+            # Buscar montadores
+            cur.execute("""
+                SELECT 
+                    'montador' as tipo,
+                    e.id as lote_id,
+                    m.nome as entidade_nome,
+                    m.email as entidade_email,
+                    (e.detalhes->>'periodo_relatorio') as periodo,
+                    CAST(e.detalhes->>'total_geral' AS REAL) as valor_total,
+                    e.data_envio,
+                    e.status,
+                    ut.token,
+                    ut.usado as upload_feito,
+                    ut.data_upload,
+                    ut.arquivo_nome,
+                    ut.data_expiracao as token_expira
+                FROM envios_montagem e
+                JOIN montadores m ON e.montador_id = m.id
+                LEFT JOIN upload_tokens ut ON ut.tipo = 'montador' AND ut.entidade_id = m.id AND ut.lote_id = e.id
+                ORDER BY e.data_envio DESC
+            """)
+            montadores = cur.fetchall()
+            
+            # Combinar e ordenar por data
+            todos_pagamentos = list(prestadores) + list(montadores)
+            todos_pagamentos.sort(key=lambda x: x['data_envio'], reverse=True)
+            
+            return [dict(p) for p in todos_pagamentos]
+            
+    finally:
+        conn.close()
+
+def editar_pagamento_prestador(lote_id, novo_valor, novo_periodo=None):
+    """Edita valor e período de um lote de prestador"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            if novo_periodo:
+                cur.execute("""
+                    UPDATE lotes_servico 
+                    SET valor_total = %s, periodo = %s
+                    WHERE id = %s
+                """, (novo_valor, novo_periodo, lote_id))
+            else:
+                cur.execute("""
+                    UPDATE lotes_servico 
+                    SET valor_total = %s
+                    WHERE id = %s
+                """, (novo_valor, lote_id))
+            
+            conn.commit()
+            return cur.rowcount > 0
+    finally:
+        conn.close()
+
+def editar_pagamento_montador(envio_id, novo_valor, novo_periodo=None):
+    """Edita valor e período de um envio de montador"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            # Obter detalhes atuais
+            cur.execute("SELECT detalhes FROM envios_montagem WHERE id = %s", (envio_id,))
+            resultado = cur.fetchone()
+            if not resultado:
+                return False
+            
+            detalhes = resultado[0]
+            detalhes['total_geral'] = novo_valor
+            
+            if novo_periodo:
+                detalhes['periodo_relatorio'] = novo_periodo
+            
+            # Atualizar
+            cur.execute("""
+                UPDATE envios_montagem 
+                SET detalhes = %s
+                WHERE id = %s
+            """, (json.dumps(detalhes), envio_id))
+            
+            conn.commit()
+            return cur.rowcount > 0
+    finally:
+        conn.close()
+
+def invalidar_token_antigo(tipo, entidade_id, lote_id):
+    """Invalida token antigo para permitir reenvio"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                DELETE FROM upload_tokens 
+                WHERE tipo = %s AND entidade_id = %s AND lote_id = %s
+            """, (tipo, entidade_id, lote_id))
+            conn.commit()
+            return cur.rowcount > 0
+    finally:
+        conn.close()
+
+def prestador_info(lote_id):
+    """Obter informações do prestador por lote_id"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT p.id, p.nome, p.email 
+                FROM prestadores p
+                JOIN lotes_servico l ON p.id = l.prestador_id
+                WHERE l.id = %s
+            """, (lote_id,))
+            resultado = cur.fetchone()
+            return dict(resultado) if resultado else None
+    finally:
+        conn.close()
+
+def montador_info(envio_id):
+    """Obter informações do montador por envio_id"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT m.id, m.nome, m.email 
+                FROM montadores m
+                JOIN envios_montagem e ON m.id = e.montador_id
+                WHERE e.id = %s
+            """, (envio_id,))
+            resultado = cur.fetchone()
+            return dict(resultado) if resultado else None
+    finally:
+        conn.close()
+
+def get_lote_by_id(lote_id):
+    """Obter dados completos de um lote por ID"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT l.*, p.nome as prestador_nome, p.email as prestador_email
+                FROM lotes_servico l
+                JOIN prestadores p ON l.prestador_id = p.id
+                WHERE l.id = %s
+            """, (lote_id,))
+            resultado = cur.fetchone()
+            return dict(resultado) if resultado else None
+    finally:
+        conn.close()
+
+def get_envio_by_id(envio_id):
+    """Obter dados completos de um envio por ID"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT e.*, m.nome as montador_nome, m.email as montador_email
+                FROM envios_montagem e
+                JOIN montadores m ON e.montador_id = m.id
+                WHERE e.id = %s
+            """, (envio_id,))
+            resultado = cur.fetchone()
+            return dict(resultado) if resultado else None
+    finally:
+        conn.close()
+
+def update_os_detalhes(os_id, novos_detalhes):
+    """Atualizar detalhes de uma O.S. específica"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE os_enviadas 
+                SET detalhes = %s
+                WHERE id = %s
+            """, (json.dumps(novos_detalhes), os_id))
+            conn.commit()
+            return cur.rowcount > 0
+    finally:
+        conn.close()
+
+def update_lote_valor_total(lote_id, novo_valor):
+    """Atualizar valor total de um lote"""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE lotes_servico 
+                SET valor_total = %s
+                WHERE id = %s
+            """, (novo_valor, lote_id))
+            conn.commit()
+            return cur.rowcount > 0
+    finally:
+        conn.close()
+
 run_migrations()

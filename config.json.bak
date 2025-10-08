@@ -1,7 +1,7 @@
 {
     "prestador_cc": "",
     "prestador_subject": "",
-    "prestador_body": "{{link_upload_nf}}",
+    "prestador_body": ".",
     "montador_cc": "projetos.qualidade@novomundo.com.br",
     "montador_subject": "teste",
     "montador_body": "{{link_upload_nf}}",
