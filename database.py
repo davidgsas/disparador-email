@@ -89,6 +89,23 @@ def update_prestador(prestador_id, regra_envio, dias_envio, emails_adicionais=No
     conn.commit()
     conn.close()
 
+def update_prestador_completo(prestador_id, nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais=None):
+    """Atualizar todos os campos de um prestador"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute('''
+            UPDATE prestadores SET 
+                nome = %s, 
+                email = %s, 
+                fornecedor_id = %s, 
+                regra_envio = %s, 
+                dias_envio = %s, 
+                emails_adicionais = %s 
+            WHERE id = %s
+        ''', (nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais, prestador_id))
+    conn.commit()
+    conn.close()
+
 def get_all_prestadores():
     conn = get_db_connection()
     with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
@@ -489,5 +506,35 @@ def check_os_blacklist(os_numbers):
         blacklisted = [row[0] for row in cur.fetchall()]
     conn.close()
     return blacklisted
+
+def get_lotes_servico_by_prestador(fornecedor_id):
+    """Busca lotes de serviço por fornecedor"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('''
+            SELECT ls.*, p.nome as prestador_nome 
+            FROM lotes_servico ls
+            JOIN prestadores p ON p.fornecedor_id = ls.prestador_fornecedor_id
+            WHERE ls.prestador_fornecedor_id = %s
+            ORDER BY ls.data_envio DESC
+        ''', (fornecedor_id,))
+        lotes = cur.fetchall()
+    conn.close()
+    return lotes
+
+def get_montagens_by_montador(codigo_montador):
+    """Busca montagens por código do montador"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('''
+            SELECT em.*, m.nome as montador_nome 
+            FROM envios_montagem em
+            JOIN montadores m ON m.codigo = em.montador_codigo
+            WHERE em.montador_codigo = %s
+            ORDER BY em.data_envio DESC
+        ''', (codigo_montador,))
+        montagens = cur.fetchall()
+    conn.close()
+    return montagens
 
 run_migrations()
