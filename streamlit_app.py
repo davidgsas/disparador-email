@@ -132,7 +132,7 @@ if "access_token" not in st.session_state:
 config = load_config()
 
 st.sidebar.title("MENU")
-app_mode = st.sidebar.selectbox("Selecione a Página", ["Dashboard de Pendências", "Serviços (Prestadores)", "Montagem (Montadores)"])
+app_mode = st.sidebar.selectbox("Selecione a Página", ["Dashboard de Pendências", "Serviços (Prestadores)", "Montagem (Montadores)", "🗄️ Backups do Banco"])
 st.sidebar.info(f"**Conectado como:** \n{st.session_state.user}")
 
 if app_mode == "Dashboard de Pendências":
@@ -192,7 +192,10 @@ elif app_mode == "Serviços (Prestadores)":
                     st.warning("Nenhum prestador cadastrado.")
                 else:
                     nome_prestador = st.selectbox("Prestador", options=prestador_nomes)
-                    periodo, o_s, modalidade = st.text_input("Período"), st.text_input("O.S"), st.text_input("Modalidade")
+                    periodo, o_s = st.text_input("Período"), st.text_input("O.S")
+                    cliente = st.text_input("Cliente")
+                    localidade = st.text_input("Localidade")
+                    modalidade = st.text_input("Modalidade")
                     data_execucao = st.date_input("Data de Execução")
                     valor, valor_extra = st.number_input("Valor", 0.0, format="%.2f"), st.number_input("Valor Extra", 0.0, format="%.2f")
                     motivo_valor_extra = st.text_input("Motivo Valor Extra")
@@ -204,6 +207,8 @@ elif app_mode == "Serviços (Prestadores)":
                             "nome_prestador": nome_prestador, 
                             "periodo": periodo, 
                             "o_s": o_s, 
+                            "cliente": cliente,
+                            "localidade": localidade,
                             "modalidade": modalidade, 
                             "data_execucao": data_execucao, 
                             "valor_custo_prestador": valor, 
@@ -301,6 +306,8 @@ elif app_mode == "Serviços (Prestadores)":
                                 data_exec = item.get('data_execucao')
                                 items_fmt.append({
                                     "OS": item.get('o_s'), 
+                                    "Cliente": item.get('cliente', '-'),
+                                    "Localidade": item.get('localidade', '-'),
                                     "Modalidade": item.get('modalidade'), 
                                     "Data_execucao": data_exec.strftime('%d/%m/%Y') if hasattr(data_exec, 'strftime') else str(data_exec), 
                                     "Valor": f"{item.get('valor_custo_prestador', 0):.2f}", 
@@ -993,3 +1000,442 @@ elif app_mode == "Montagem (Montadores)":
                                 db.delete_envio_montagem(item['id'])
                                 st.success("Pagamento excluído!")
                                 st.rerun()
+
+elif app_mode == "🗄️ Backups do Banco":
+    st.title("🗄️ Sistema de Backup do Banco de Dados")
+    
+    backup_dir = Path("backups")
+    
+    # Criar diretório se não existir
+    if not backup_dir.exists():
+        backup_dir.mkdir()
+    
+    # Tabs para organizar a interface
+    tab1, tab2, tab3 = st.tabs(["📋 Listar Backups", "➕ Criar Backup", "⚙️ Configurações"])
+    
+    with tab1:
+        st.header("📋 Backups Disponíveis")
+        
+        # Listar backups
+        backups = sorted(backup_dir.glob("backup_*.sql"), key=lambda x: x.stat().st_mtime, reverse=True)
+        
+        if not backups:
+            st.info("📭 Nenhum backup encontrado. Crie seu primeiro backup!")
+        else:
+            st.success(f"✅ {len(backups)} backup(s) disponível(eis)")
+            
+            # Criar dataframe com informações dos backups
+            backup_data = []
+            for backup in backups:
+                stat = backup.stat()
+                size_mb = stat.st_size / (1024 * 1024)
+                mtime = datetime.datetime.fromtimestamp(stat.st_mtime)
+                
+                backup_data.append({
+                    "Arquivo": backup.name,
+                    "Data/Hora": mtime.strftime("%d/%m/%Y %H:%M:%S"),
+                    "Tamanho (MB)": f"{size_mb:.2f}",
+                    "Caminho": str(backup)
+                })
+            
+            df_backups = pd.DataFrame(backup_data)
+            
+            # Mostrar tabela
+            st.dataframe(df_backups[["Arquivo", "Data/Hora", "Tamanho (MB)"]], use_container_width=True)
+            
+            st.divider()
+            
+            # Opções para cada backup
+            st.subheader("🔧 Ações nos Backups")
+            
+            backup_selecionado = st.selectbox(
+                "Selecione um backup:",
+                options=[b.name for b in backups],
+                format_func=lambda x: f"{x} - {next((b['Data/Hora'] for b in backup_data if b['Arquivo'] == x), '')}"
+            )
+            
+            if backup_selecionado:
+                backup_path = backup_dir / backup_selecionado
+                
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    # Download backup
+                    with open(backup_path, "rb") as f:
+                        st.download_button(
+                            label="⬇️ Download Backup",
+                            data=f,
+                            file_name=backup_selecionado,
+                            mime="application/octet-stream",
+                            use_container_width=True
+                        )
+                
+                with col2:
+                    # Visualizar informações
+                    if st.button("ℹ️ Ver Detalhes", use_container_width=True):
+                        st.session_state.show_backup_details = backup_selecionado
+                
+                with col3:
+                    # Excluir backup
+                    if st.button("🗑️ Excluir Backup", use_container_width=True, type="secondary"):
+                        st.session_state.confirmar_exclusao = backup_selecionado
+                
+                # Mostrar detalhes se solicitado
+                if st.session_state.get('show_backup_details') == backup_selecionado:
+                    st.info(f"""
+                    **📊 Detalhes do Backup**
+                    
+                    - **Arquivo**: {backup_selecionado}
+                    - **Caminho Completo**: {backup_path}
+                    - **Tamanho**: {backup_path.stat().st_size / (1024 * 1024):.2f} MB
+                    - **Criado em**: {datetime.datetime.fromtimestamp(backup_path.stat().st_mtime).strftime("%d/%m/%Y às %H:%M:%S")}
+                    - **Formato**: PostgreSQL Custom Format (comprimido)
+                    """)
+                
+                # Confirmação de exclusão
+                if st.session_state.get('confirmar_exclusao') == backup_selecionado:
+                    st.warning(f"⚠️ Tem certeza que deseja excluir o backup **{backup_selecionado}**?")
+                    col_sim, col_nao = st.columns(2)
+                    
+                    with col_sim:
+                        if st.button("✅ Sim, excluir", type="primary", use_container_width=True):
+                            backup_path.unlink()
+                            st.success(f"✅ Backup {backup_selecionado} excluído!")
+                            del st.session_state.confirmar_exclusao
+                            time.sleep(1)
+                            st.rerun()
+                    
+                    with col_nao:
+                        if st.button("❌ Cancelar", use_container_width=True):
+                            del st.session_state.confirmar_exclusao
+                            st.rerun()
+    
+    with tab2:
+        st.header("➕ Criar Novo Backup")
+        
+        st.info("""
+        💡 **Sobre os Backups**
+        
+        - Backups são criados no formato PostgreSQL Custom (comprimido)
+        - Incluem todas as tabelas e dados do sistema
+        - Podem ser restaurados usando `pg_restore` ou o script de backup
+        """)
+        
+        if st.button("🚀 Criar Backup Agora", type="primary", use_container_width=True):
+            with st.spinner("Criando backup..."):
+                import subprocess
+                
+                # Gerar nome do backup
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                backup_file = backup_dir / f"backup_email_{timestamp}.sql"
+                
+                try:
+                    # Executar pg_dump
+                    load_dotenv()
+                    cmd = [
+                        "pg_dump",
+                        "-h", os.getenv("DB_HOST", "localhost"),
+                        "-p", os.getenv("DB_PORT", "5432"),
+                        "-U", os.getenv("DB_USER", "davidgabriel"),
+                        "-F", "c",  # Formato custom (comprimido)
+                        "-b",  # Incluir large objects
+                        "-f", str(backup_file),
+                        os.getenv("DB_NAME", "email")
+                    ]
+                    
+                    result = subprocess.run(cmd, capture_output=True, text=True)
+                    
+                    if result.returncode == 0:
+                        size_mb = backup_file.stat().st_size / (1024 * 1024)
+                        st.success(f"""
+                        ✅ **Backup criado com sucesso!**
+                        
+                        - **Arquivo**: {backup_file.name}
+                        - **Tamanho**: {size_mb:.2f} MB
+                        - **Local**: {backup_file}
+                        """)
+                        time.sleep(2)
+                        st.rerun()
+                    else:
+                        st.error(f"❌ Erro ao criar backup: {result.stderr}")
+                
+                except Exception as e:
+                    st.error(f"❌ Erro ao criar backup: {str(e)}")
+        
+        st.divider()
+        
+        # Backup manual via script
+        st.subheader("📝 Backup via Terminal")
+        st.code("""
+# Criar backup manualmente
+python backup_database.py --auto
+
+# Ou usar o script rápido
+./backup.sh
+        """, language="bash")
+    
+    with tab3:
+        st.header("⚙️ Configurações de Backup")
+        
+        # Importar o scheduler
+        try:
+            from backup_scheduler import scheduler
+            scheduler_available = True
+        except:
+            scheduler_available = False
+        
+        # Configuração do agendamento automático
+        st.subheader("🤖 Agendamento Automático de Backup")
+        
+        if not scheduler_available:
+            st.warning("⚠️ Módulo de agendamento não disponível. Certifique-se de que backup_scheduler.py existe.")
+        else:
+            # Verificar agendamento atual
+            current_schedule = scheduler.get_current_schedule()
+            
+            if current_schedule:
+                st.success(f"✅ **Backup automático está ATIVO**")
+                st.code(current_schedule, language="bash")
+                
+                # Tentar interpretar o agendamento
+                parts = current_schedule.strip().split()
+                if len(parts) >= 5:
+                    cron_expr = " ".join(parts[:5])
+                    descricao = scheduler.get_schedule_description(cron_expr)
+                    st.info(f"📅 Frequência: **{descricao}**")
+                
+                if st.button("🗑️ Remover Agendamento", type="secondary"):
+                    success, message = scheduler.remove_schedule()
+                    if success:
+                        st.success(message)
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(message)
+            else:
+                st.info("ℹ️ Nenhum backup automático configurado")
+            
+            st.divider()
+            
+            # Configurar novo agendamento
+            st.subheader("➕ Configurar Novo Agendamento")
+            
+            # Opções pré-definidas
+            opcao_agendamento = st.selectbox(
+                "Escolha a frequência:",
+                [
+                    "Personalizado",
+                    "Diário às 3h da manhã",
+                    "A cada 6 horas",
+                    "A cada 12 horas",
+                    "Toda segunda-feira às 2h",
+                    "Todo domingo às 23h",
+                    "De hora em hora"
+                ]
+            )
+            
+            # Mapeamento de opções para expressões cron
+            cron_presets = {
+                "Diário às 3h da manhã": "0 3 * * *",
+                "A cada 6 horas": "0 */6 * * *",
+                "A cada 12 horas": "0 */12 * * *",
+                "Toda segunda-feira às 2h": "0 2 * * 1",
+                "Todo domingo às 23h": "0 23 * * 0",
+                "De hora em hora": "0 * * * *"
+            }
+            
+            if opcao_agendamento == "Personalizado":
+                st.markdown("""
+                **Formato Cron:** `minuto hora dia mês dia_da_semana`
+                
+                Exemplos:
+                - `0 3 * * *` - Todo dia às 3h
+                - `0 */6 * * *` - A cada 6 horas
+                - `30 2 * * 1` - Toda segunda às 2:30
+                """)
+                
+                cron_expression = st.text_input(
+                    "Expressão Cron:",
+                    value="0 3 * * *",
+                    help="Digite a expressão cron personalizada"
+                )
+            else:
+                cron_expression = cron_presets[opcao_agendamento]
+                st.code(cron_expression, language="bash")
+                descricao = scheduler.get_schedule_description(cron_expression)
+                st.info(f"📅 Será executado: **{descricao}**")
+            
+            # Caminho do script
+            script_path = Path.cwd() / "backup_auto.sh"
+            
+            if not script_path.exists():
+                st.warning(f"⚠️ Script backup_auto.sh não encontrado em {script_path}")
+            else:
+                st.text_input("Script a executar:", value=str(script_path), disabled=True)
+            
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                if st.button("💾 Salvar Agendamento", type="primary", use_container_width=True, disabled=not script_path.exists()):
+                    success, message = scheduler.set_schedule(cron_expression, str(script_path))
+                    if success:
+                        st.success(message)
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(message)
+            
+            with col2:
+                if st.button("ℹ️ Ajuda", use_container_width=True):
+                    st.session_state.show_cron_help = not st.session_state.get('show_cron_help', False)
+            
+            # Ajuda sobre cron
+            if st.session_state.get('show_cron_help', False):
+                st.markdown("""
+                ### � Guia de Expressões Cron
+                
+                **Formato:** `minuto hora dia mês dia_da_semana`
+                
+                **Valores:**
+                - Minuto: 0-59
+                - Hora: 0-23
+                - Dia do mês: 1-31
+                - Mês: 1-12
+                - Dia da semana: 0-6 (0 = Domingo)
+                
+                **Caracteres especiais:**
+                - `*` : qualquer valor
+                - `/` : incremento (ex: */6 = a cada 6)
+                - `,` : lista (ex: 1,3,5)
+                - `-` : intervalo (ex: 1-5)
+                
+                **Exemplos:**
+                - `0 3 * * *` - Todo dia às 3:00
+                - `30 */2 * * *` - A cada 2 horas no minuto 30
+                - `0 9-17 * * 1-5` - De hora em hora, das 9h às 17h, seg a sex
+                - `0 0 1 * *` - Todo dia 1º do mês à meia-noite
+                """)
+        
+        st.divider()
+        
+        # Informações sobre o sistema de backup
+        st.markdown("""
+        ### �📊 Política de Backups
+        
+        **Retenção de Backups:**
+        - Máximo de backups mantidos: **30**
+        - Backups mais antigos são automaticamente removidos
+        - Backups podem ser baixados antes da exclusão
+        
+        **Frequência Recomendada:**
+        - ✅ Diário: Para ambientes de produção
+        - ✅ A cada 6 horas: Para dados críticos
+        - ✅ Semanal: Para ambientes de teste
+        """)
+        
+        st.divider()
+        
+        # Manual do crontab
+        st.subheader("📝 Configuração Manual (Avançado)")
+        
+        with st.expander("📝 Ver instruções de configuração manual"):
+            st.markdown("""
+            Se preferir configurar manualmente no crontab:
+            
+            ```bash
+            # Editar crontab
+            crontab -e
+            
+            # Adicionar linha para backup diário às 3h
+            0 3 * * * /Users/davidgabriel/projetos/disparador-email/backup_auto.sh
+            ```
+            
+            **Outras frequências:**
+            - A cada 6 horas: `0 */6 * * *`
+            - Toda segunda às 2h: `0 2 * * 1`
+            - De hora em hora: `0 * * * *`
+            
+            **Verificar crontab:**
+            ```bash
+            crontab -l
+            ```
+            """)
+        
+        st.divider()
+        
+        # Estatísticas
+        st.subheader("📈 Estatísticas")
+        
+        total_backups = len(list(backup_dir.glob("backup_*.sql")))
+        
+        if total_backups > 0:
+            backups_list = list(backup_dir.glob("backup_*.sql"))
+            total_size = sum(b.stat().st_size for b in backups_list) / (1024 * 1024)
+            oldest = min(backups_list, key=lambda x: x.stat().st_mtime)
+            newest = max(backups_list, key=lambda x: x.stat().st_mtime)
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric("Total de Backups", total_backups)
+            
+            with col2:
+                st.metric("Espaço Utilizado", f"{total_size:.2f} MB")
+            
+            with col3:
+                avg_size = total_size / total_backups
+                st.metric("Tamanho Médio", f"{avg_size:.2f} MB")
+            
+            st.markdown("---")
+            
+            st.info(f"""
+            **📅 Backup mais antigo:** {oldest.name}  
+            ({datetime.datetime.fromtimestamp(oldest.stat().st_mtime).strftime("%d/%m/%Y %H:%M")})
+            
+            **📅 Backup mais recente:** {newest.name}  
+            ({datetime.datetime.fromtimestamp(newest.stat().st_mtime).strftime("%d/%m/%Y %H:%M")})
+            """)
+        else:
+            st.warning("Nenhum backup encontrado para mostrar estatísticas.")
+        
+        st.divider()
+        
+        # Limpar backups antigos
+        st.subheader("🧹 Manutenção")
+        
+        max_backups = st.number_input("Máximo de backups a manter:", min_value=5, max_value=100, value=30)
+        
+        if st.button("🧹 Limpar Backups Antigos", use_container_width=True):
+            backups_list = sorted(backup_dir.glob("backup_*.sql"), key=lambda x: x.stat().st_mtime, reverse=True)
+            
+            if len(backups_list) > max_backups:
+                backups_para_remover = backups_list[max_backups:]
+                
+                for backup in backups_para_remover:
+                    backup.unlink()
+                
+                st.success(f"✅ {len(backups_para_remover)} backup(s) antigo(s) removido(s)! Mantidos os {max_backups} mais recentes.")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.info(f"✅ Nenhum backup removido. Total atual: {len(backups_list)}")
+        
+        # Informações sobre restauração
+        st.divider()
+        st.subheader("♻️ Como Restaurar um Backup")
+        
+        st.markdown("""
+        **Via Interface Python:**
+        ```bash
+        python backup_database.py
+        # Selecione opção 3 (Restaurar backup)
+        ```
+        
+        **Via Terminal (pg_restore):**
+        ```bash
+        pg_restore -h localhost -p 5432 -U davidgabriel -d email -c -v backups/backup_email_XXXXXXXX_XXXXXX.sql
+        ```
+        
+        ⚠️ **ATENÇÃO**: A restauração irá **substituir todos os dados** do banco atual!
+        """)
+

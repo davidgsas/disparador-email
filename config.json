@@ -1,5 +1,5 @@
 {
-    "prestador_cc": "centralclientes01@novomundo.com.br",
+    "prestador_cc": "",
     "prestador_subject": "Novo Mundo Resolve | Nota Fiscal Eletr\u00f4nica de Presta\u00e7\u00e3o de Servi\u00e7os | Per\u00edodo: {{periodo}} | Prestador: {{periodo}}",
     "prestador_body": "Ol\u00e1, {{nome_prestador}}.\n\nEspero que estejam tendo um \u00f3timo dia. A seguir, envio a rela\u00e7\u00e3o de boletins finalizados, para que possam emitir a nota fiscal referente aos servi\u00e7os prestados entre {{periodo}}.\n\nA nota fiscal deve ser emitida com o valor igual ao deste relat\u00f3rio.\n\nPor gentileza, envie a nota fiscal em at\u00e9 1 dia \u00fatil ap\u00f3s o recebimento deste e-mail. Caso contr\u00e1rio, as ordens de servi\u00e7o (OS) ser\u00e3o inclu\u00eddas no pr\u00f3ximo fechamento.\n\nLembrando que a nota fiscal deve ser emitida no CNPJ 01.534.080/0008-02.\n\nInformamos que o encaminhamento de notas fiscais deve ser feito exclusivamente por meio deste e-mail. N\u00e3o ser\u00e3o considerados e-mails enviados separadamente (avulsos) com a nota fiscal em anexo.\n\nPara garantir o correto recebimento e processamento, responda diretamente a este e-mail utilizando a op\u00e7\u00e3o 'Responder a todos'.\n\nAgradecemos sua aten\u00e7\u00e3o e colabora\u00e7\u00e3o.",
     "montador_cc": "",

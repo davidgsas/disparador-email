@@ -35,6 +35,8 @@
         <thead>
             <tr>
                 <th>O.S</th>
+                <th>Cliente</th>
+                <th>Localidade</th>
                 <th>Modalidade de Serviço</th>
                 <th>Data de Execução</th>
                 <th>Valor (R$)</th>
@@ -47,6 +49,8 @@
             {% for item in items %}
             <tr>
                 <td>{{ item.OS }}</td>
+                <td>{{ item.Cliente }}</td>
+                <td>{{ item.Localidade }}</td>
                 <td>{{ item.Modalidade }}</td>
                 <td>{{ item.Data_execucao }}</td>
                 <td>{{ item.Valor }}</td>
@@ -56,7 +60,7 @@
             </tr>
             {% endfor %}
             <tr class="total-row">
-                <td colspan="6">TOTAL GERAL (R$)</td>
+                <td colspan="8">TOTAL GERAL (R$)</td>
                 <td>{{ total_geral }}</td>
             </tr>
         </tbody>

@@ -23,23 +23,20 @@ def run_migrations():
         # Garante que as tabelas base existam
         cur.execute('''CREATE TABLE IF NOT EXISTS prestadores (id SERIAL PRIMARY KEY, nome TEXT NOT NULL UNIQUE, email TEXT NOT NULL, fornecedor_id TEXT UNIQUE, regra_envio TEXT, dias_envio TEXT)''')
         cur.execute('''CREATE TABLE IF NOT EXISTS montadores (id SERIAL PRIMARY KEY, nome TEXT NOT NULL, identificador TEXT NOT NULL UNIQUE, email TEXT NOT NULL, percentual_comissao REAL NOT NULL, auxilio_semanal REAL NOT NULL, ativo BOOLEAN NOT NULL DEFAULT TRUE, fornecedor_id TEXT UNIQUE, regra_envio TEXT, dias_envio TEXT)''')
-
-        # Migrações para adicionar colunas se não existirem
-        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS prestador_id INTEGER REFERENCES prestadores(id);")
-        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS montador_id INTEGER REFERENCES montadores(id);")
-        cur.execute("ALTER TABLE envios_montagem DROP COLUMN IF EXISTS montador_identificador;")
         
-        # Adicionar coluna para múltiplos emails em prestadores
-        cur.execute("ALTER TABLE prestadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
-        
-        # Adicionar coluna para múltiplos emails em montadores
-        cur.execute("ALTER TABLE montadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
-
-
+        # Criar tabelas principais ANTES de tentar adicionar colunas
         cur.execute('''CREATE TABLE IF NOT EXISTS lotes_servico (id SERIAL PRIMARY KEY, prestador_id INTEGER REFERENCES prestadores(id), prestador_nome TEXT, periodo TEXT NOT NULL, valor_total REAL NOT NULL, data_envio TIMESTAMP NOT NULL, status TEXT NOT NULL DEFAULT 'Em Aberto', conversation_id TEXT, anexo_path TEXT)''')
         cur.execute('''CREATE TABLE IF NOT EXISTS os_enviadas (id SERIAL PRIMARY KEY, lote_id INTEGER REFERENCES lotes_servico(id) ON DELETE CASCADE, os_numero TEXT NOT NULL UNIQUE, detalhes JSONB)''')
         cur.execute('''CREATE TABLE IF NOT EXISTS envios_montagem (id SERIAL PRIMARY KEY, montador_id INTEGER REFERENCES montadores(id), data_envio TIMESTAMP NOT NULL, status TEXT NOT NULL DEFAULT 'Em Aberto', detalhes JSONB, conversation_id TEXT, anexo_path TEXT)''')
+        
+        # Agora podemos adicionar colunas adicionais se não existirem
+        cur.execute("ALTER TABLE prestadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
+        cur.execute("ALTER TABLE montadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
+        
+        # Criar índices
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_montagem ON envios_montagem ((detalhes->>'periodo_relatorio'), montador_id);''')
+        
+        # Tabela de envios ignorados
         cur.execute('''CREATE TABLE IF NOT EXISTS envios_ignorados (id SERIAL PRIMARY KEY, tipo TEXT NOT NULL, entidade_id INTEGER NOT NULL, ano INTEGER NOT NULL, periodo_chave TEXT NOT NULL, data_ignorada TIMESTAMP NOT NULL)''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_ignore ON envios_ignorados (tipo, entidade_id, ano, periodo_chave);''')
         
