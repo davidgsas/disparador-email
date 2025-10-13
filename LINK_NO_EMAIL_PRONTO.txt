@@ -1,0 +1,299 @@
+╔════════════════════════════════════════════════════════════════════╗
+║              ✅ VARIÁVEL {{link_upload}} CONFIGURADA              ║
+╚════════════════════════════════════════════════════════════════════╝
+
+📧 A variável para enviar o link de upload de NF já está pronta!
+
+═══════════════════════════════════════════════════════════════════
+
+🎯 O QUE MUDOU
+═══════════════════════════════════════════════════════════════════
+
+✅ Template padrão ATUALIZADO com {{link_upload}}
+✅ Email agora INCLUI link automaticamente
+✅ Validação SE link existir ({% if link_upload %})
+✅ Mensagem alternativa se link não foi gerado
+
+═══════════════════════════════════════════════════════════════════
+
+📧 COMO FICA O EMAIL
+═══════════════════════════════════════════════════════════════════
+
+De: novomundo@empresa.com.br
+Para: prestador@acme.com.br
+Assunto: Novo Mundo Resolve | Nota Fiscal | Período: 10/2025
+Anexo: Relatorio_ACME_Lote_142.pdf
+
+─────────────────────────────────────────────────────────────────
+
+Boa tarde!
+
+Segue a relação de boletins para emissão da nota fiscal de 
+serviços entre **10/2025**.
+
+📎 Para anexar a Nota Fiscal, acesse o link abaixo:
+https://api.link.com.br/dvprocessamento/envio-nf/7bd6a6b681b9...
+
+⚠️ Este link é válido por 30 dias.
+
+Obrigado.
+
+─────────────────────────────────────────────────────────────────
+
+═══════════════════════════════════════════════════════════════════
+
+📝 TEMPLATE PADRÃO ATUALIZADO
+═══════════════════════════════════════════════════════════════════
+
+Corpo do E-mail (editável na interface):
+
+┌──────────────────────────────────────────────────────────────┐
+│ Segue a relação de boletins para emissão da nota fiscal de  │
+│ serviços entre **{{periodo}}**.                              │
+│                                                              │
+│ {% if link_upload %}                                         │
+│ 📎 Para anexar a Nota Fiscal, acesse o link abaixo:         │
+│ {{link_upload}}                                              │
+│                                                              │
+│ ⚠️ Este link é válido por 30 dias.                          │
+│ {% else %}                                                   │
+│ 📧 O link para anexar a Nota Fiscal será enviado em breve.  │
+│ {% endif %}                                                  │
+│                                                              │
+│ Obrigado.                                                    │
+└──────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+
+✏️ COMO PERSONALIZAR
+═══════════════════════════════════════════════════════════════════
+
+1. Abrir Streamlit
+2. Menu lateral: "⚙️ Configurações de Envio (Serviços)"
+3. Campo: "Corpo do E-mail"
+4. Editar texto à vontade
+5. Usar {{link_upload}} onde quiser
+6. Salva automaticamente!
+
+═══════════════════════════════════════════════════════════════════
+
+🎨 EXEMPLOS DE USO
+═══════════════════════════════════════════════════════════════════
+
+SIMPLES:
+┌──────────────────────────────────────────────────────────────┐
+│ Para anexar a NF:                                            │
+│ {{link_upload}}                                              │
+└──────────────────────────────────────────────────────────────┘
+
+COM INSTRUÇÕES:
+┌──────────────────────────────────────────────────────────────┐
+│ 🔗 LINK PARA ANEXAR NOTA FISCAL:                            │
+│ {{link_upload}}                                              │
+│                                                              │
+│ ⚠️ IMPORTANTE:                                               │
+│ • Link válido por 30 dias                                   │
+│ • Anexe PDF da nota fiscal                                  │
+│ • Valor deve corresponder ao relatório                      │
+└──────────────────────────────────────────────────────────────┘
+
+FORMAL:
+┌──────────────────────────────────────────────────────────────┐
+│ Prezado {{nome_prestador}},                                  │
+│                                                              │
+│ Solicitamos a gentileza de anexar a Nota Fiscal através     │
+│ do link abaixo:                                              │
+│                                                              │
+│ {{link_upload}}                                              │
+│                                                              │
+│ O prazo para anexo é de 30 dias a partir desta data.        │
+│                                                              │
+│ Atenciosamente,                                              │
+│ Equipe Novo Mundo                                            │
+└──────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+
+✅ VALIDAÇÃO (RECOMENDADO)
+═══════════════════════════════════════════════════════════════════
+
+SEMPRE use esta estrutura para garantir que funciona mesmo se
+o link não for gerado:
+
+┌──────────────────────────────────────────────────────────────┐
+│ {% if link_upload %}                                         │
+│     Seu conteúdo COM link aqui                               │
+│     {{link_upload}}                                          │
+│ {% else %}                                                   │
+│     Mensagem alternativa SEM link                            │
+│ {% endif %}                                                  │
+└──────────────────────────────────────────────────────────────┘
+
+Exemplo:
+┌──────────────────────────────────────────────────────────────┐
+│ {% if link_upload %}                                         │
+│ ✅ Link disponível: {{link_upload}}                         │
+│ {% else %}                                                   │
+│ ⏳ Link será enviado em breve por email                     │
+│ {% endif %}                                                  │
+└──────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+
+📋 VARIÁVEIS DISPONÍVEIS
+═══════════════════════════════════════════════════════════════════
+
+Você pode usar TODAS estas variáveis no template:
+
+┌─────────────────────┬──────────────────────────────────────┐
+│ {{nome_prestador}}  │ Nome do prestador                    │
+│ {{periodo}}         │ Período (MM/YYYY)                    │
+│ {{total_geral}}     │ Valor total                          │
+│ {{lote_id}}         │ Número do lote                       │
+│ {{saudacao}}        │ "Bom dia", "Boa tarde", etc          │
+│ {{link_upload}}     │ 🔗 LINK DE UPLOAD DE NF              │
+└─────────────────────┴──────────────────────────────────────┘
+
+Exemplo usando todas:
+┌──────────────────────────────────────────────────────────────┐
+│ {{saudacao}}, {{nome_prestador}}!                            │
+│                                                              │
+│ Lote #{{lote_id}} - Período {{periodo}}                     │
+│ Valor: R$ {{total_geral}}                                   │
+│                                                              │
+│ {% if link_upload %}                                         │
+│ Link NF: {{link_upload}}                                    │
+│ {% endif %}                                                  │
+└──────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+
+🔄 FLUXO COMPLETO
+═══════════════════════════════════════════════════════════════════
+
+1️⃣ Sistema cria lote
+   └─ Salva no banco local
+
+2️⃣ Sistema envia para API DV
+   └─ POST com dados do lote
+   └─ Recebe link único
+
+3️⃣ Link salvo no banco
+   └─ Campo: link_upload
+
+4️⃣ Template renderizado
+   └─ {{link_upload}} substituído pelo link real
+
+5️⃣ Email enviado
+   └─ Com PDF anexo
+   └─ Com link no corpo
+
+6️⃣ Prestador recebe
+   └─ Vê relatório em PDF
+   └─ Clica no link
+   └─ Anexa nota fiscal
+
+═══════════════════════════════════════════════════════════════════
+
+⚠️ CENÁRIOS
+═══════════════════════════════════════════════════════════════════
+
+CENÁRIO 1: Tudo OK ✅
+─────────────────────────────────────────────────────────────────
+• API responde
+• Link gerado
+• Email sai COM link
+• Prestador acessa e anexa NF
+
+CENÁRIO 2: API Fora do Ar ⚠️
+─────────────────────────────────────────────────────────────────
+• API não responde
+• Link não gerado
+• Email sai SEM link (msg alternativa)
+• Job automático tentará depois (1 hora)
+• Ou enviar link manualmente depois
+
+CENÁRIO 3: Link Expirado ⏰
+─────────────────────────────────────────────────────────────────
+• Prestador demorou +30 dias
+• Link não funciona mais
+• Reenviar: Histórico > "Reenviar para API"
+• Novo link gerado
+• Copiar e enviar por WhatsApp/Email
+
+═══════════════════════════════════════════════════════════════════
+
+🧪 TESTANDO
+═══════════════════════════════════════════════════════════════════
+
+1. Editar template na interface
+2. Preencher planilha com dados teste
+3. Enviar para SEU email
+4. Verificar se link aparece
+5. Clicar no link (deve abrir página do sistema externo)
+
+═══════════════════════════════════════════════════════════════════
+
+📊 STATUS DO LINK (Interface)
+═══════════════════════════════════════════════════════════════════
+
+No "Histórico de Envios", você verá:
+
+📤 Link enviado ao prestador
+   └─ Link foi gerado e incluído no email
+   └─ Prestador pode acessar
+   └─ Aguardando anexo da NF
+
+✅ N.F. RECEBIDA VIA UPLOAD
+   └─ Prestador acessou link
+   └─ Nota fiscal foi anexada
+   └─ Processo concluído!
+
+⏰ Link de upload expirado
+   └─ Passou de 30 dias
+   └─ Prestador não consegue mais anexar
+   └─ Precisa gerar novo link
+
+📧 Aguardando N.F. (sem link)
+   └─ Link ainda não foi gerado
+   └─ API estava fora ou erro
+   └─ Clicar "Enviar para API Agora"
+
+═══════════════════════════════════════════════════════════════════
+
+✅ RESUMO
+═══════════════════════════════════════════════════════════════════
+
+O QUE ESTÁ PRONTO:
+✅ Variável {{link_upload}} disponível
+✅ Template padrão já usa a variável
+✅ Email inclui link automaticamente
+✅ Validação se link existe
+✅ Mensagem alternativa se não houver link
+
+COMO USAR:
+1️⃣ Editar template (se quiser personalizar)
+2️⃣ Enviar lote normalmente
+3️⃣ Link é incluído automaticamente no email
+4️⃣ Prestador recebe email com link
+5️⃣ Prestador clica e anexa NF
+6️⃣ Você vê status ✅ no histórico
+
+PRONTO! 🎉
+Não precisa fazer mais nada, está funcionando!
+
+═══════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTAÇÃO COMPLETA
+═══════════════════════════════════════════════════════════════════
+
+📄 GUIA_VARIAVEL_LINK_UPLOAD.md  ← Guia detalhado
+📄 DOCUMENTACAO_API_DV...md      ← Documentação técnica
+📄 GUIA_RAPIDO_USO.md            ← Como usar o sistema
+📄 SUPER_RESUMO.txt              ← Resumão visual
+
+═══════════════════════════════════════════════════════════════════
+
+🎉 TUDO CONFIGURADO E PRONTO PARA USAR! 🎉
+
+═══════════════════════════════════════════════════════════════════

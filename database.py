@@ -33,6 +33,15 @@ def run_migrations():
         cur.execute("ALTER TABLE prestadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
         cur.execute("ALTER TABLE montadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
         
+        # Adicionar colunas para sistema de upload de notas fiscais (API DV Processamento)
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS id_controle INTEGER;")  # ID retornado pela API
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS link_upload TEXT;")  # Link de upload recebido da API
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS validade_link DATE;")  # Data de validade do link
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS status_api INTEGER DEFAULT 0;")  # 0=pendente, 1=NF recebida
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS data_envio_api TIMESTAMP;")  # Quando foi enviado para API
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS nota_fiscal_path TEXT;")  # Caminho do arquivo recebido
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS api_message TEXT;")  # Mensagem retornada pela API
+        
         # Criar índices
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_montagem ON envios_montagem ((detalhes->>'periodo_relatorio'), montador_id);''')
         
@@ -208,6 +217,93 @@ def get_lote_servico_by_conversation_id(conversation_id):
         lote = cur.fetchone()
     conn.close()
     return lote
+
+# --- Funções de Upload de Notas Fiscais (API DV Processamento) ---
+def salvar_resposta_api(lote_id, id_controle, link, validade_link, status_api, message):
+    """Salva a resposta da API após envio do lote"""
+    conn = get_db_connection()
+    now = datetime.datetime.now()
+    with conn.cursor() as cur:
+        cur.execute(
+            '''UPDATE lotes_servico 
+               SET id_controle = %s, link_upload = %s, validade_link = %s, 
+                   status_api = %s, data_envio_api = %s, api_message = %s 
+               WHERE id = %s''',
+            (id_controle, link, validade_link, status_api, now, message, lote_id)
+        )
+    conn.commit()
+    conn.close()
+
+def get_lotes_para_enviar_api():
+    """Retorna lotes que ainda não foram enviados para a API"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT * FROM lotes_servico 
+               WHERE id_controle IS NULL 
+               AND status != 'N.F. RECEBIDA'
+               ORDER BY data_envio DESC"""
+        )
+        lotes = cur.fetchall()
+    conn.close()
+    return lotes
+
+def atualizar_status_api(lote_id, status_api):
+    """Atualiza o status da API (0=pendente, 1=NF recebida)"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute('UPDATE lotes_servico SET status_api = %s WHERE id = %s', (status_api, lote_id))
+        if status_api == 1:
+            cur.execute('UPDATE lotes_servico SET status = %s WHERE id = %s', ('N.F. RECEBIDA', lote_id))
+    conn.commit()
+    conn.close()
+
+def salvar_nota_fiscal(lote_id, file_path):
+    """Salva o caminho da nota fiscal recebida"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            'UPDATE lotes_servico SET nota_fiscal_path = %s, status_api = %s, status = %s WHERE id = %s',
+            (file_path, 1, 'N.F. RECEBIDA', lote_id)
+        )
+    conn.commit()
+    conn.close()
+
+def get_lotes_com_link_pendente():
+    """Retorna lotes que têm link gerado mas ainda não receberam NF"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT * FROM lotes_servico 
+               WHERE link_upload IS NOT NULL 
+               AND status_api = 0
+               AND validade_link >= CURRENT_DATE
+               ORDER BY data_envio DESC"""
+        )
+        lotes = cur.fetchall()
+    conn.close()
+    return lotes
+
+def get_lote_by_id_controle(id_controle):
+    """Retorna lote pelo ID de controle da API"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('SELECT * FROM lotes_servico WHERE id_controle = %s', (id_controle,))
+        lote = cur.fetchone()
+    conn.close()
+    return lote
+
+def verificar_lote_duplicado(lote_id, periodo):
+    """Verifica se já existe envio para API deste lote e período"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            'SELECT COUNT(*) FROM lotes_servico WHERE id = %s AND periodo = %s AND id_controle IS NOT NULL',
+            (lote_id, periodo)
+        )
+        count = cur.fetchone()[0]
+    conn.close()
+    return count > 0
 
 # --- Funções de Montadores ---
 def add_montador(nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais=None):
