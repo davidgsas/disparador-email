@@ -594,10 +594,11 @@ Obrigado."""
                                         st.info(f"✅ Válido até: {validade_dt.strftime('%d/%m/%Y')} ({dias_restantes} dias)")
                                 
                                 # Mostrar link com botão para copiar
-                                with st.expander("🔗 Ver Link de Upload"):
-                                    st.code(lote['link_upload'], language="text")
-                                    if st.button("📋 Copiar Link", key=f"copy_upload_{lote['id']}"):
-                                        st.info("Link exibido acima - use Ctrl+C para copiar")
+                                st.markdown("---")
+                                st.markdown("**🔗 Link de Upload da Nota Fiscal:**")
+                                st.code(lote['link_upload'], language="text")
+                                if st.button("📋 Copiar Link", key=f"copy_upload_{lote['id']}"):
+                                    st.info("Link exibido acima - use Ctrl+C para copiar")
                                 
                                 # Mostrar mensagem da API se houver
                                 if lote.get('api_message'):

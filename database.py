@@ -284,6 +284,10 @@ def get_lotes_com_link_pendente():
     conn.close()
     return lotes
 
+def get_lotes_upload_pendente():
+    """Retorna lotes aguardando upload de nota fiscal (mesmo que get_lotes_com_link_pendente)"""
+    return get_lotes_com_link_pendente()
+
 def get_lote_by_id_controle(id_controle):
     """Retorna lote pelo ID de controle da API"""
     conn = get_db_connection()
