@@ -17216,3 +17216,1079 @@ OSError: [Errno 5] Input/output error
 2025-10-15 01:34:08,281 - JobConsultaNotas - INFO -    📅 Período: teste David
 2025-10-15 01:34:08,281 - JobConsultaNotas - INFO -    🔑 Hash: 8b51f9d0c8afb8f91834...
 2025-10-15 01:34:08,281 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:34:08,927 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:34:08,927 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:34:08,927 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:34:08,927 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:34:09,428 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:34:09,429 - JobConsultaNotas - INFO - 📦 Lote #10
+2025-10-15 01:34:09,429 - JobConsultaNotas - INFO -    👤 Prestador: thiago
+2025-10-15 01:34:09,429 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:34:09,429 - JobConsultaNotas - INFO -    🔑 Hash: d9d43a5b6b47e72892ec...
+2025-10-15 01:34:09,430 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:34:09,899 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:34:09,900 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:34:09,900 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:34:09,900 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:34:10,405 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:34:10,405 - JobConsultaNotas - INFO - 📦 Lote #9
+2025-10-15 01:34:10,405 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:34:10,405 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:34:10,406 - JobConsultaNotas - INFO -    🔑 Hash: 4e9f783708d8614792da...
+2025-10-15 01:34:10,406 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:34:10,877 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:34:10,878 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:34:10,878 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:34:10,878 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:34:11,383 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:34:11,384 - JobConsultaNotas - INFO - 📦 Lote #8
+2025-10-15 01:34:11,384 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:34:11,384 - JobConsultaNotas - INFO -    📅 Período: 23/02/2025 – 04/03/2025
+2025-10-15 01:34:11,384 - JobConsultaNotas - INFO -    🔑 Hash: a041c8301d7186f88c80...
+2025-10-15 01:34:11,384 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:34:11,849 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:34:11,849 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:34:11,850 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:34:11,850 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:34:12,355 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:34:12,355 - JobConsultaNotas - INFO - 📦 Lote #7
+2025-10-15 01:34:12,355 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:34:12,356 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 02/01/2025
+2025-10-15 01:34:12,356 - JobConsultaNotas - INFO -    🔑 Hash: 5beacc41380934a07a40...
+2025-10-15 01:34:12,356 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:34:12,842 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:34:12,842 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:34:12,842 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:34:12,842 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:34:13,346 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:34:13,346 - JobConsultaNotas - INFO - 📦 Lote #6
+2025-10-15 01:34:13,346 - JobConsultaNotas - INFO -    👤 Prestador: 52.417.932 Leogilson Dos Santos Silva
+2025-10-15 01:34:13,346 - JobConsultaNotas - INFO -    📅 Período: 05/10/2025 – 22/10/2025
+2025-10-15 01:34:13,346 - JobConsultaNotas - INFO -    🔑 Hash: 22b406a239a4fdf9331d...
+2025-10-15 01:34:13,346 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:34:13,827 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:34:13,827 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:34:13,827 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:34:13,827 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:34:14,333 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:34:14,334 - JobConsultaNotas - INFO - 📦 Lote #4
+2025-10-15 01:34:14,334 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:34:14,334 - JobConsultaNotas - INFO -    📅 Período: teste
+2025-10-15 01:34:14,335 - JobConsultaNotas - INFO -    🔑 Hash: d2b4cb34ff85c6ed6e1b...
+2025-10-15 01:34:14,335 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:34:14,969 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:34:14,969 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:34:14,969 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:34:14,970 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:34:15,473 - JobConsultaNotas - INFO - 
+============================================================
+2025-10-15 01:34:15,474 - JobConsultaNotas - INFO - 📊 RESUMO DO PROCESSAMENTO
+2025-10-15 01:34:15,474 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:34:15,474 - JobConsultaNotas - INFO - 📁 Lotes com arquivos: 14
+2025-10-15 01:34:15,474 - JobConsultaNotas - INFO - ⬇️  Arquivos baixados: 0
+2025-10-15 01:34:15,475 - JobConsultaNotas - INFO - ⏳ Ainda pendentes: 14
+2025-10-15 01:34:15,475 - JobConsultaNotas - INFO - 
+⏰ Concluído em: 15/10/2025 01:34:15
+2025-10-15 01:34:15,475 - JobConsultaNotas - INFO - ============================================================
+
+2025-10-15 01:34:15,498 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-15 01:34:15,498 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 01:34:58 -03)" executed successfully
+2025-10-15 01:34:58,575 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 01:35:58 -03)" (scheduled at 2025-10-15 01:34:58.564829-03:00)
+2025-10-15 01:34:58,578 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 01:34:58,625 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:34:58,625 - JobConsultaNotas - INFO - 🔍 JOB DE CONSULTA DE NOTAS FISCAIS
+2025-10-15 01:34:58,625 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:34:58,626 - JobConsultaNotas - INFO - ⏰ Executado em: 15/10/2025 01:34:58
+2025-10-15 01:34:58,641 - JobConsultaNotas - INFO - 📋 28 lote(s) aguardando nota fiscal
+2025-10-15 01:34:58,641 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:34:58,641 - JobConsultaNotas - INFO - 📦 Lote #32
+2025-10-15 01:34:58,642 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:34:58,642 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:34:58,642 - JobConsultaNotas - INFO -    🔑 Hash: 20e1148ba750825f9819...
+2025-10-15 01:34:58,642 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:34:59,126 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:34:59,126 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:34:59,126 - JobConsultaNotas - INFO -    📦 Total: 4.15 KB
+2025-10-15 01:34:59,127 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:34:59,127 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:34:59,127 - JobConsultaNotas - INFO - 📦 Lote #31
+2025-10-15 01:34:59,127 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:34:59,127 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:34:59,127 - JobConsultaNotas - INFO -    🔑 Hash: 48c5a75fc806b68215b5...
+2025-10-15 01:34:59,127 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:34:59,581 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:34:59,582 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:34:59,582 - JobConsultaNotas - INFO -    📦 Total: 4.57 KB
+2025-10-15 01:34:59,582 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:34:59,582 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:34:59,582 - JobConsultaNotas - INFO - 📦 Lote #30
+2025-10-15 01:34:59,582 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:34:59,582 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:34:59,582 - JobConsultaNotas - INFO -    🔑 Hash: 2fc87cacd12b4e4b09c7...
+2025-10-15 01:34:59,582 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:00,036 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:00,036 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:00,036 - JobConsultaNotas - INFO -    📦 Total: 4.09 KB
+2025-10-15 01:35:00,037 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:00,037 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:00,037 - JobConsultaNotas - INFO - 📦 Lote #29
+2025-10-15 01:35:00,037 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:00,037 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:35:00,037 - JobConsultaNotas - INFO -    🔑 Hash: 9fd7c7ccc9f7c3c11fcb...
+2025-10-15 01:35:00,037 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:00,511 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:00,512 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:00,512 - JobConsultaNotas - INFO -    📦 Total: 4.15 KB
+2025-10-15 01:35:00,512 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:00,512 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:00,512 - JobConsultaNotas - INFO - 📦 Lote #28
+2025-10-15 01:35:00,512 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:00,512 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:35:00,512 - JobConsultaNotas - INFO -    🔑 Hash: cb735f8e4056142d368b...
+2025-10-15 01:35:00,512 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:01,818 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:01,818 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:01,818 - JobConsultaNotas - INFO -    📦 Total: 4.1 KB
+2025-10-15 01:35:01,818 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:01,818 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:01,818 - JobConsultaNotas - INFO - 📦 Lote #27
+2025-10-15 01:35:01,818 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:01,818 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:35:01,818 - JobConsultaNotas - INFO -    🔑 Hash: 9ca30b1784296ca9a6cb...
+2025-10-15 01:35:01,819 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:02,281 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:02,281 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:02,281 - JobConsultaNotas - INFO -    📦 Total: 4.09 KB
+2025-10-15 01:35:02,281 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:02,281 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:02,281 - JobConsultaNotas - INFO - 📦 Lote #26
+2025-10-15 01:35:02,281 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:02,282 - JobConsultaNotas - INFO -    📅 Período: 23/02/2025 – 04/03/2025
+2025-10-15 01:35:02,282 - JobConsultaNotas - INFO -    🔑 Hash: 9866fd9608965620c951...
+2025-10-15 01:35:02,282 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:02,728 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:02,728 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:02,728 - JobConsultaNotas - INFO -    📦 Total: 4.1 KB
+2025-10-15 01:35:02,729 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:02,729 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:02,729 - JobConsultaNotas - INFO - 📦 Lote #25
+2025-10-15 01:35:02,729 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:02,729 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:35:02,729 - JobConsultaNotas - INFO -    🔑 Hash: 8087a85e38cea73d0050...
+2025-10-15 01:35:02,730 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:03,191 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:03,191 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:03,191 - JobConsultaNotas - INFO -    📦 Total: 249.63 KB
+2025-10-15 01:35:03,191 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:03,191 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:03,191 - JobConsultaNotas - INFO - 📦 Lote #24
+2025-10-15 01:35:03,192 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:03,192 - JobConsultaNotas - INFO -    📅 Período: 01/01/2023
+2025-10-15 01:35:03,192 - JobConsultaNotas - INFO -    🔑 Hash: 72d3f4254bd10917fc3d...
+2025-10-15 01:35:03,192 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:03,670 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:03,670 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:03,670 - JobConsultaNotas - INFO -    📦 Total: 95.95 KB
+2025-10-15 01:35:03,670 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:03,670 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:03,670 - JobConsultaNotas - INFO - 📦 Lote #23
+2025-10-15 01:35:03,670 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:03,670 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:35:03,671 - JobConsultaNotas - INFO -    🔑 Hash: f5b5a723645837e04231...
+2025-10-15 01:35:03,671 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:04,141 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:04,141 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:04,141 - JobConsultaNotas - INFO -    📦 Total: 448.68 KB
+2025-10-15 01:35:04,141 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:04,141 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:04,141 - JobConsultaNotas - INFO - 📦 Lote #22
+2025-10-15 01:35:04,141 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:04,142 - JobConsultaNotas - INFO -    📅 Período: 01/01/2026
+2025-10-15 01:35:04,142 - JobConsultaNotas - INFO -    🔑 Hash: 74b1ab63d2f02d33f992...
+2025-10-15 01:35:04,142 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:04,614 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:04,615 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:04,615 - JobConsultaNotas - INFO -    📦 Total: 95.95 KB
+2025-10-15 01:35:04,615 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:04,615 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:04,615 - JobConsultaNotas - INFO - 📦 Lote #21
+2025-10-15 01:35:04,615 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:04,615 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:35:04,615 - JobConsultaNotas - INFO -    🔑 Hash: 68cacb30a7ae736d4b63...
+2025-10-15 01:35:04,615 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:05,127 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:05,127 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:05,127 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 01:35:05,128 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:05,128 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:05,128 - JobConsultaNotas - INFO - 📦 Lote #20
+2025-10-15 01:35:05,128 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:05,128 - JobConsultaNotas - INFO -    📅 Período: 01/09/2025
+2025-10-15 01:35:05,128 - JobConsultaNotas - INFO -    🔑 Hash: 4c16655f79a49f01877c...
+2025-10-15 01:35:05,128 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:05,589 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:05,589 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:05,589 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 01:35:05,589 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:05,589 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:05,589 - JobConsultaNotas - INFO - 📦 Lote #19
+2025-10-15 01:35:05,590 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:05,590 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:35:05,590 - JobConsultaNotas - INFO -    🔑 Hash: fe6bf11bea73b8936b83...
+2025-10-15 01:35:05,590 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:06,068 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:06,068 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:06,069 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 01:35:06,069 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:06,069 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:06,069 - JobConsultaNotas - INFO - 📦 Lote #18
+2025-10-15 01:35:06,069 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:06,069 - JobConsultaNotas - INFO -    📅 Período: 10/10/2025
+2025-10-15 01:35:06,069 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:35:06,069 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:06,069 - JobConsultaNotas - INFO - 📦 Lote #17
+2025-10-15 01:35:06,070 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:06,070 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 01/10/2025
+2025-10-15 01:35:06,070 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:35:06,070 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:06,070 - JobConsultaNotas - INFO - 📦 Lote #16
+2025-10-15 01:35:06,070 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:06,070 - JobConsultaNotas - INFO -    📅 Período: 01/05/2025 - 03/05/2025
+2025-10-15 01:35:06,071 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:35:06,071 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:06,071 - JobConsultaNotas - INFO - 📦 Lote #15
+2025-10-15 01:35:06,071 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:06,071 - JobConsultaNotas - INFO -    📅 Período: 01/11/2025 - 02/11/2025
+2025-10-15 01:35:06,071 - JobConsultaNotas - INFO -    🔑 Hash: 67bcacecaae861214627...
+2025-10-15 01:35:06,071 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:06,547 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:06,547 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:06,548 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:06,548 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:07,053 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:07,053 - JobConsultaNotas - INFO - 📦 Lote #14
+2025-10-15 01:35:07,054 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:07,054 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 02/01/2025
+2025-10-15 01:35:07,054 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:35:07,054 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:07,054 - JobConsultaNotas - INFO - 📦 Lote #13
+2025-10-15 01:35:07,054 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:07,054 - JobConsultaNotas - INFO -    📅 Período: 10/10/2025 - 11/10/2025
+2025-10-15 01:35:07,054 - JobConsultaNotas - INFO -    🔑 Hash: 3ccc68bbbc1a794bb040...
+2025-10-15 01:35:07,054 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:07,705 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:07,706 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:07,706 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:07,706 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:08,211 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:08,212 - JobConsultaNotas - INFO - 📦 Lote #12
+2025-10-15 01:35:08,212 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:08,212 - JobConsultaNotas - INFO -    📅 Período: sei la
+2025-10-15 01:35:08,212 - JobConsultaNotas - INFO -    🔑 Hash: 2ef59838fd858c04281e...
+2025-10-15 01:35:08,212 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:08,696 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:08,696 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:08,696 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:08,696 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:09,201 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:09,202 - JobConsultaNotas - INFO - 📦 Lote #11
+2025-10-15 01:35:09,202 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:09,202 - JobConsultaNotas - INFO -    📅 Período: teste David
+2025-10-15 01:35:09,202 - JobConsultaNotas - INFO -    🔑 Hash: 8b51f9d0c8afb8f91834...
+2025-10-15 01:35:09,202 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:09,661 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:09,661 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:09,661 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:09,662 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:10,165 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:10,166 - JobConsultaNotas - INFO - 📦 Lote #10
+2025-10-15 01:35:10,166 - JobConsultaNotas - INFO -    👤 Prestador: thiago
+2025-10-15 01:35:10,166 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:35:10,166 - JobConsultaNotas - INFO -    🔑 Hash: d9d43a5b6b47e72892ec...
+2025-10-15 01:35:10,166 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:10,617 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:10,617 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:10,617 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:10,617 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:11,122 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:11,123 - JobConsultaNotas - INFO - 📦 Lote #9
+2025-10-15 01:35:11,123 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:11,123 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:35:11,123 - JobConsultaNotas - INFO -    🔑 Hash: 4e9f783708d8614792da...
+2025-10-15 01:35:11,123 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:11,589 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:11,589 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:11,589 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:11,589 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:12,093 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:12,094 - JobConsultaNotas - INFO - 📦 Lote #8
+2025-10-15 01:35:12,094 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:12,094 - JobConsultaNotas - INFO -    📅 Período: 23/02/2025 – 04/03/2025
+2025-10-15 01:35:12,094 - JobConsultaNotas - INFO -    🔑 Hash: a041c8301d7186f88c80...
+2025-10-15 01:35:12,094 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:12,572 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:12,572 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:12,572 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:12,572 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:13,073 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:13,073 - JobConsultaNotas - INFO - 📦 Lote #7
+2025-10-15 01:35:13,073 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:13,073 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 02/01/2025
+2025-10-15 01:35:13,073 - JobConsultaNotas - INFO -    🔑 Hash: 5beacc41380934a07a40...
+2025-10-15 01:35:13,073 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:13,557 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:13,557 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:13,558 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:13,558 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:14,062 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:14,062 - JobConsultaNotas - INFO - 📦 Lote #6
+2025-10-15 01:35:14,062 - JobConsultaNotas - INFO -    👤 Prestador: 52.417.932 Leogilson Dos Santos Silva
+2025-10-15 01:35:14,062 - JobConsultaNotas - INFO -    📅 Período: 05/10/2025 – 22/10/2025
+2025-10-15 01:35:14,062 - JobConsultaNotas - INFO -    🔑 Hash: 22b406a239a4fdf9331d...
+2025-10-15 01:35:14,062 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:14,524 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:14,524 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:14,524 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:14,524 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:15,028 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:15,028 - JobConsultaNotas - INFO - 📦 Lote #4
+2025-10-15 01:35:15,028 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:15,028 - JobConsultaNotas - INFO -    📅 Período: teste
+2025-10-15 01:35:15,028 - JobConsultaNotas - INFO -    🔑 Hash: d2b4cb34ff85c6ed6e1b...
+2025-10-15 01:35:15,028 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:15,951 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:35:15,951 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:35:15,951 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:35:15,951 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:35:16,456 - JobConsultaNotas - INFO - 
+============================================================
+2025-10-15 01:35:16,456 - JobConsultaNotas - INFO - 📊 RESUMO DO PROCESSAMENTO
+2025-10-15 01:35:16,456 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:35:16,456 - JobConsultaNotas - INFO - 📁 Lotes com arquivos: 14
+2025-10-15 01:35:16,456 - JobConsultaNotas - INFO - ⬇️  Arquivos baixados: 0
+2025-10-15 01:35:16,457 - JobConsultaNotas - INFO - ⏳ Ainda pendentes: 14
+2025-10-15 01:35:16,457 - JobConsultaNotas - INFO - 
+⏰ Concluído em: 15/10/2025 01:35:16
+2025-10-15 01:35:16,457 - JobConsultaNotas - INFO - ============================================================
+
+2025-10-15 01:35:16,472 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-15 01:35:16,472 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 01:35:58 -03)" executed successfully
+2025-10-15 01:35:58,570 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 01:36:58 -03)" (scheduled at 2025-10-15 01:35:58.564829-03:00)
+2025-10-15 01:35:58,571 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 01:35:58,588 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:35:58,588 - JobConsultaNotas - INFO - 🔍 JOB DE CONSULTA DE NOTAS FISCAIS
+2025-10-15 01:35:58,588 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:35:58,588 - JobConsultaNotas - INFO - ⏰ Executado em: 15/10/2025 01:35:58
+2025-10-15 01:35:58,600 - JobConsultaNotas - INFO - 📋 28 lote(s) aguardando nota fiscal
+2025-10-15 01:35:58,600 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:58,600 - JobConsultaNotas - INFO - 📦 Lote #32
+2025-10-15 01:35:58,600 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:58,600 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:35:58,600 - JobConsultaNotas - INFO -    🔑 Hash: 20e1148ba750825f9819...
+2025-10-15 01:35:58,601 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:59,091 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:59,091 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:59,091 - JobConsultaNotas - INFO -    📦 Total: 4.15 KB
+2025-10-15 01:35:59,091 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:59,091 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:59,092 - JobConsultaNotas - INFO - 📦 Lote #31
+2025-10-15 01:35:59,092 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:59,092 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:35:59,092 - JobConsultaNotas - INFO -    🔑 Hash: 48c5a75fc806b68215b5...
+2025-10-15 01:35:59,092 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:35:59,575 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:35:59,576 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:35:59,576 - JobConsultaNotas - INFO -    📦 Total: 4.57 KB
+2025-10-15 01:35:59,576 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:35:59,576 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:35:59,576 - JobConsultaNotas - INFO - 📦 Lote #30
+2025-10-15 01:35:59,576 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:35:59,576 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:35:59,576 - JobConsultaNotas - INFO -    🔑 Hash: 2fc87cacd12b4e4b09c7...
+2025-10-15 01:35:59,577 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:00,039 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:00,039 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:00,039 - JobConsultaNotas - INFO -    📦 Total: 4.09 KB
+2025-10-15 01:36:00,039 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:00,039 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:00,039 - JobConsultaNotas - INFO - 📦 Lote #29
+2025-10-15 01:36:00,040 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:00,040 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:36:00,040 - JobConsultaNotas - INFO -    🔑 Hash: 9fd7c7ccc9f7c3c11fcb...
+2025-10-15 01:36:00,040 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:00,508 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:00,508 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:00,508 - JobConsultaNotas - INFO -    📦 Total: 4.15 KB
+2025-10-15 01:36:00,508 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:00,508 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:00,508 - JobConsultaNotas - INFO - 📦 Lote #28
+2025-10-15 01:36:00,508 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:00,509 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:36:00,509 - JobConsultaNotas - INFO -    🔑 Hash: cb735f8e4056142d368b...
+2025-10-15 01:36:00,509 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:00,968 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:00,968 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:00,969 - JobConsultaNotas - INFO -    📦 Total: 4.1 KB
+2025-10-15 01:36:00,969 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:00,969 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:00,969 - JobConsultaNotas - INFO - 📦 Lote #27
+2025-10-15 01:36:00,969 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:00,969 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:36:00,969 - JobConsultaNotas - INFO -    🔑 Hash: 9ca30b1784296ca9a6cb...
+2025-10-15 01:36:00,970 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO -    📦 Total: 4.09 KB
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO - 📦 Lote #26
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO -    📅 Período: 23/02/2025 – 04/03/2025
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO -    🔑 Hash: 9866fd9608965620c951...
+2025-10-15 01:36:01,413 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:01,881 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:01,882 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:01,882 - JobConsultaNotas - INFO -    📦 Total: 4.1 KB
+2025-10-15 01:36:01,882 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:01,882 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:01,882 - JobConsultaNotas - INFO - 📦 Lote #25
+2025-10-15 01:36:01,882 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:01,883 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:36:01,883 - JobConsultaNotas - INFO -    🔑 Hash: 8087a85e38cea73d0050...
+2025-10-15 01:36:01,883 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:02,354 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:02,354 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:02,354 - JobConsultaNotas - INFO -    📦 Total: 249.63 KB
+2025-10-15 01:36:02,354 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:02,354 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:02,355 - JobConsultaNotas - INFO - 📦 Lote #24
+2025-10-15 01:36:02,355 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:02,355 - JobConsultaNotas - INFO -    📅 Período: 01/01/2023
+2025-10-15 01:36:02,355 - JobConsultaNotas - INFO -    🔑 Hash: 72d3f4254bd10917fc3d...
+2025-10-15 01:36:02,355 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:02,817 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:02,818 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:02,818 - JobConsultaNotas - INFO -    📦 Total: 95.95 KB
+2025-10-15 01:36:02,818 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:02,818 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:02,818 - JobConsultaNotas - INFO - 📦 Lote #23
+2025-10-15 01:36:02,818 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:02,818 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:36:02,818 - JobConsultaNotas - INFO -    🔑 Hash: f5b5a723645837e04231...
+2025-10-15 01:36:02,818 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:03,292 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:03,293 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:03,293 - JobConsultaNotas - INFO -    📦 Total: 448.68 KB
+2025-10-15 01:36:03,293 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:03,293 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:03,293 - JobConsultaNotas - INFO - 📦 Lote #22
+2025-10-15 01:36:03,293 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:03,293 - JobConsultaNotas - INFO -    📅 Período: 01/01/2026
+2025-10-15 01:36:03,293 - JobConsultaNotas - INFO -    🔑 Hash: 74b1ab63d2f02d33f992...
+2025-10-15 01:36:03,293 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:03,767 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:03,768 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:03,768 - JobConsultaNotas - INFO -    📦 Total: 95.95 KB
+2025-10-15 01:36:03,768 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:03,768 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:03,768 - JobConsultaNotas - INFO - 📦 Lote #21
+2025-10-15 01:36:03,768 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:03,768 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:36:03,768 - JobConsultaNotas - INFO -    🔑 Hash: 68cacb30a7ae736d4b63...
+2025-10-15 01:36:03,768 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:04,234 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:04,234 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:04,234 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 01:36:04,234 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:04,234 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:04,235 - JobConsultaNotas - INFO - 📦 Lote #20
+2025-10-15 01:36:04,235 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:04,235 - JobConsultaNotas - INFO -    📅 Período: 01/09/2025
+2025-10-15 01:36:04,235 - JobConsultaNotas - INFO -    🔑 Hash: 4c16655f79a49f01877c...
+2025-10-15 01:36:04,235 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:04,703 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:04,703 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:04,704 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 01:36:04,704 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:04,704 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:04,704 - JobConsultaNotas - INFO - 📦 Lote #19
+2025-10-15 01:36:04,704 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:04,704 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:36:04,704 - JobConsultaNotas - INFO -    🔑 Hash: fe6bf11bea73b8936b83...
+2025-10-15 01:36:04,704 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:05,176 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:05,176 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:05,176 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO - 📦 Lote #18
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO -    📅 Período: 10/10/2025
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO - 📦 Lote #17
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 01/10/2025
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:05,177 - JobConsultaNotas - INFO - 📦 Lote #16
+2025-10-15 01:36:05,178 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:05,178 - JobConsultaNotas - INFO -    📅 Período: 01/05/2025 - 03/05/2025
+2025-10-15 01:36:05,178 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:36:05,178 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:05,178 - JobConsultaNotas - INFO - 📦 Lote #15
+2025-10-15 01:36:05,178 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:05,178 - JobConsultaNotas - INFO -    📅 Período: 01/11/2025 - 02/11/2025
+2025-10-15 01:36:05,179 - JobConsultaNotas - INFO -    🔑 Hash: 67bcacecaae861214627...
+2025-10-15 01:36:05,179 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:05,652 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:05,653 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:05,653 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:05,653 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:06,157 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:06,157 - JobConsultaNotas - INFO - 📦 Lote #14
+2025-10-15 01:36:06,157 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:06,157 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 02/01/2025
+2025-10-15 01:36:06,157 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:36:06,158 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:06,158 - JobConsultaNotas - INFO - 📦 Lote #13
+2025-10-15 01:36:06,158 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:06,158 - JobConsultaNotas - INFO -    📅 Período: 10/10/2025 - 11/10/2025
+2025-10-15 01:36:06,158 - JobConsultaNotas - INFO -    🔑 Hash: 3ccc68bbbc1a794bb040...
+2025-10-15 01:36:06,158 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:06,609 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:06,610 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:06,610 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:06,610 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:07,112 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:07,113 - JobConsultaNotas - INFO - 📦 Lote #12
+2025-10-15 01:36:07,113 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:07,113 - JobConsultaNotas - INFO -    📅 Período: sei la
+2025-10-15 01:36:07,113 - JobConsultaNotas - INFO -    🔑 Hash: 2ef59838fd858c04281e...
+2025-10-15 01:36:07,113 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:07,579 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:07,579 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:07,579 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:07,579 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:08,082 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:08,082 - JobConsultaNotas - INFO - 📦 Lote #11
+2025-10-15 01:36:08,082 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:08,082 - JobConsultaNotas - INFO -    📅 Período: teste David
+2025-10-15 01:36:08,082 - JobConsultaNotas - INFO -    🔑 Hash: 8b51f9d0c8afb8f91834...
+2025-10-15 01:36:08,082 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:08,550 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:08,550 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:08,550 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:08,550 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:09,056 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:09,056 - JobConsultaNotas - INFO - 📦 Lote #10
+2025-10-15 01:36:09,056 - JobConsultaNotas - INFO -    👤 Prestador: thiago
+2025-10-15 01:36:09,056 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:36:09,056 - JobConsultaNotas - INFO -    🔑 Hash: d9d43a5b6b47e72892ec...
+2025-10-15 01:36:09,056 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:09,551 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:09,551 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:09,552 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:09,552 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:10,052 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:10,052 - JobConsultaNotas - INFO - 📦 Lote #9
+2025-10-15 01:36:10,053 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:10,053 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:36:10,053 - JobConsultaNotas - INFO -    🔑 Hash: 4e9f783708d8614792da...
+2025-10-15 01:36:10,053 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:10,517 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:10,517 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:10,517 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:10,518 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:11,021 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:11,021 - JobConsultaNotas - INFO - 📦 Lote #8
+2025-10-15 01:36:11,021 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:11,021 - JobConsultaNotas - INFO -    📅 Período: 23/02/2025 – 04/03/2025
+2025-10-15 01:36:11,021 - JobConsultaNotas - INFO -    🔑 Hash: a041c8301d7186f88c80...
+2025-10-15 01:36:11,021 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:11,489 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:11,489 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:11,489 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:11,489 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:11,993 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:11,994 - JobConsultaNotas - INFO - 📦 Lote #7
+2025-10-15 01:36:11,994 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:11,994 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 02/01/2025
+2025-10-15 01:36:11,995 - JobConsultaNotas - INFO -    🔑 Hash: 5beacc41380934a07a40...
+2025-10-15 01:36:11,995 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:12,464 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:12,465 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:12,465 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:12,465 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:12,969 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:12,969 - JobConsultaNotas - INFO - 📦 Lote #6
+2025-10-15 01:36:12,969 - JobConsultaNotas - INFO -    👤 Prestador: 52.417.932 Leogilson Dos Santos Silva
+2025-10-15 01:36:12,969 - JobConsultaNotas - INFO -    📅 Período: 05/10/2025 – 22/10/2025
+2025-10-15 01:36:12,970 - JobConsultaNotas - INFO -    🔑 Hash: 22b406a239a4fdf9331d...
+2025-10-15 01:36:12,970 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:13,453 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:13,454 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:13,454 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:13,454 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:13,957 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:13,957 - JobConsultaNotas - INFO - 📦 Lote #4
+2025-10-15 01:36:13,957 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:13,957 - JobConsultaNotas - INFO -    📅 Período: teste
+2025-10-15 01:36:13,957 - JobConsultaNotas - INFO -    🔑 Hash: d2b4cb34ff85c6ed6e1b...
+2025-10-15 01:36:13,957 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:14,441 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:36:14,441 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:36:14,441 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:36:14,441 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:36:14,946 - JobConsultaNotas - INFO - 
+============================================================
+2025-10-15 01:36:14,947 - JobConsultaNotas - INFO - 📊 RESUMO DO PROCESSAMENTO
+2025-10-15 01:36:14,947 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:36:14,947 - JobConsultaNotas - INFO - 📁 Lotes com arquivos: 14
+2025-10-15 01:36:14,947 - JobConsultaNotas - INFO - ⬇️  Arquivos baixados: 0
+2025-10-15 01:36:14,947 - JobConsultaNotas - INFO - ⏳ Ainda pendentes: 14
+2025-10-15 01:36:14,947 - JobConsultaNotas - INFO - 
+⏰ Concluído em: 15/10/2025 01:36:14
+2025-10-15 01:36:14,947 - JobConsultaNotas - INFO - ============================================================
+
+2025-10-15 01:36:14,960 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-15 01:36:14,960 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 01:36:58 -03)" executed successfully
+2025-10-15 01:36:58,571 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 01:37:58 -03)" (scheduled at 2025-10-15 01:36:58.564829-03:00)
+2025-10-15 01:36:58,573 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 01:36:58,599 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:36:58,599 - JobConsultaNotas - INFO - 🔍 JOB DE CONSULTA DE NOTAS FISCAIS
+2025-10-15 01:36:58,599 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:36:58,600 - JobConsultaNotas - INFO - ⏰ Executado em: 15/10/2025 01:36:58
+2025-10-15 01:36:58,609 - JobConsultaNotas - INFO - 📋 28 lote(s) aguardando nota fiscal
+2025-10-15 01:36:58,609 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:58,609 - JobConsultaNotas - INFO - 📦 Lote #32
+2025-10-15 01:36:58,609 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:58,609 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:36:58,610 - JobConsultaNotas - INFO -    🔑 Hash: 20e1148ba750825f9819...
+2025-10-15 01:36:58,610 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO -    📦 Total: 4.15 KB
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO - 📦 Lote #31
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO -    🔑 Hash: 48c5a75fc806b68215b5...
+2025-10-15 01:36:59,094 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:36:59,562 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:36:59,562 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:36:59,562 - JobConsultaNotas - INFO -    📦 Total: 4.57 KB
+2025-10-15 01:36:59,562 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:36:59,562 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:36:59,562 - JobConsultaNotas - INFO - 📦 Lote #30
+2025-10-15 01:36:59,562 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:36:59,562 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:36:59,563 - JobConsultaNotas - INFO -    🔑 Hash: 2fc87cacd12b4e4b09c7...
+2025-10-15 01:36:59,563 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:00,011 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:00,011 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:00,011 - JobConsultaNotas - INFO -    📦 Total: 4.09 KB
+2025-10-15 01:37:00,011 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:00,012 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:00,012 - JobConsultaNotas - INFO - 📦 Lote #29
+2025-10-15 01:37:00,012 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:00,012 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:37:00,012 - JobConsultaNotas - INFO -    🔑 Hash: 9fd7c7ccc9f7c3c11fcb...
+2025-10-15 01:37:00,012 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:00,487 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:00,487 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:00,487 - JobConsultaNotas - INFO -    📦 Total: 4.15 KB
+2025-10-15 01:37:00,487 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:00,487 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:00,487 - JobConsultaNotas - INFO - 📦 Lote #28
+2025-10-15 01:37:00,488 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:00,488 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:37:00,488 - JobConsultaNotas - INFO -    🔑 Hash: cb735f8e4056142d368b...
+2025-10-15 01:37:00,488 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:00,948 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:00,948 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:00,948 - JobConsultaNotas - INFO -    📦 Total: 4.1 KB
+2025-10-15 01:37:00,949 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:00,949 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:00,949 - JobConsultaNotas - INFO - 📦 Lote #27
+2025-10-15 01:37:00,949 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:00,949 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:37:00,949 - JobConsultaNotas - INFO -    🔑 Hash: 9ca30b1784296ca9a6cb...
+2025-10-15 01:37:00,949 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:01,426 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:01,426 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:01,426 - JobConsultaNotas - INFO -    📦 Total: 4.09 KB
+2025-10-15 01:37:01,426 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:01,426 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:01,427 - JobConsultaNotas - INFO - 📦 Lote #26
+2025-10-15 01:37:01,427 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:01,427 - JobConsultaNotas - INFO -    📅 Período: 23/02/2025 – 04/03/2025
+2025-10-15 01:37:01,427 - JobConsultaNotas - INFO -    🔑 Hash: 9866fd9608965620c951...
+2025-10-15 01:37:01,427 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:01,902 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:01,903 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:01,903 - JobConsultaNotas - INFO -    📦 Total: 4.1 KB
+2025-10-15 01:37:01,903 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:01,903 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:01,903 - JobConsultaNotas - INFO - 📦 Lote #25
+2025-10-15 01:37:01,903 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:01,903 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:37:01,903 - JobConsultaNotas - INFO -    🔑 Hash: 8087a85e38cea73d0050...
+2025-10-15 01:37:01,903 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:02,497 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:02,498 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:02,498 - JobConsultaNotas - INFO -    📦 Total: 249.63 KB
+2025-10-15 01:37:02,498 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:02,498 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:02,498 - JobConsultaNotas - INFO - 📦 Lote #24
+2025-10-15 01:37:02,499 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:02,499 - JobConsultaNotas - INFO -    📅 Período: 01/01/2023
+2025-10-15 01:37:02,499 - JobConsultaNotas - INFO -    🔑 Hash: 72d3f4254bd10917fc3d...
+2025-10-15 01:37:02,499 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:02,964 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:02,964 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:02,965 - JobConsultaNotas - INFO -    📦 Total: 95.95 KB
+2025-10-15 01:37:02,965 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:02,965 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:02,965 - JobConsultaNotas - INFO - 📦 Lote #23
+2025-10-15 01:37:02,965 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:02,965 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:37:02,965 - JobConsultaNotas - INFO -    🔑 Hash: f5b5a723645837e04231...
+2025-10-15 01:37:02,965 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:03,445 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:03,445 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:03,445 - JobConsultaNotas - INFO -    📦 Total: 448.68 KB
+2025-10-15 01:37:03,446 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:03,446 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:03,446 - JobConsultaNotas - INFO - 📦 Lote #22
+2025-10-15 01:37:03,446 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:03,446 - JobConsultaNotas - INFO -    📅 Período: 01/01/2026
+2025-10-15 01:37:03,446 - JobConsultaNotas - INFO -    🔑 Hash: 74b1ab63d2f02d33f992...
+2025-10-15 01:37:03,446 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO -    📦 Total: 95.95 KB
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO - 📦 Lote #21
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO -    🔑 Hash: 68cacb30a7ae736d4b63...
+2025-10-15 01:37:03,920 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:04,390 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:04,390 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:04,390 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 01:37:04,390 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:04,390 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:04,390 - JobConsultaNotas - INFO - 📦 Lote #20
+2025-10-15 01:37:04,391 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:04,391 - JobConsultaNotas - INFO -    📅 Período: 01/09/2025
+2025-10-15 01:37:04,391 - JobConsultaNotas - INFO -    🔑 Hash: 4c16655f79a49f01877c...
+2025-10-15 01:37:04,391 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:04,858 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:04,858 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:04,858 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 01:37:04,858 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:04,858 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:04,858 - JobConsultaNotas - INFO - 📦 Lote #19
+2025-10-15 01:37:04,859 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:04,859 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:37:04,859 - JobConsultaNotas - INFO -    🔑 Hash: fe6bf11bea73b8936b83...
+2025-10-15 01:37:04,859 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:05,323 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:05,323 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO - 📦 Lote #18
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO -    📅 Período: 10/10/2025
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO - 📦 Lote #17
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 01/10/2025
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:37:05,324 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO - 📦 Lote #16
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO -    📅 Período: 01/05/2025 - 03/05/2025
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO - 📦 Lote #15
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO -    📅 Período: 01/11/2025 - 02/11/2025
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO -    🔑 Hash: 67bcacecaae861214627...
+2025-10-15 01:37:05,325 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:05,784 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:05,785 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:05,785 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:05,785 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:06,290 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:06,290 - JobConsultaNotas - INFO - 📦 Lote #14
+2025-10-15 01:37:06,290 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:06,291 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 02/01/2025
+2025-10-15 01:37:06,291 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 01:37:06,291 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:06,291 - JobConsultaNotas - INFO - 📦 Lote #13
+2025-10-15 01:37:06,291 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:06,291 - JobConsultaNotas - INFO -    📅 Período: 10/10/2025 - 11/10/2025
+2025-10-15 01:37:06,291 - JobConsultaNotas - INFO -    🔑 Hash: 3ccc68bbbc1a794bb040...
+2025-10-15 01:37:06,291 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:06,783 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:06,783 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:06,783 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:06,784 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:07,289 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:07,289 - JobConsultaNotas - INFO - 📦 Lote #12
+2025-10-15 01:37:07,289 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:07,289 - JobConsultaNotas - INFO -    📅 Período: sei la
+2025-10-15 01:37:07,289 - JobConsultaNotas - INFO -    🔑 Hash: 2ef59838fd858c04281e...
+2025-10-15 01:37:07,289 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:07,776 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:07,776 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:07,776 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:07,776 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:08,280 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:08,281 - JobConsultaNotas - INFO - 📦 Lote #11
+2025-10-15 01:37:08,281 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:08,281 - JobConsultaNotas - INFO -    📅 Período: teste David
+2025-10-15 01:37:08,281 - JobConsultaNotas - INFO -    🔑 Hash: 8b51f9d0c8afb8f91834...
+2025-10-15 01:37:08,281 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:08,747 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:08,747 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:08,748 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:08,748 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:09,251 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:09,252 - JobConsultaNotas - INFO - 📦 Lote #10
+2025-10-15 01:37:09,252 - JobConsultaNotas - INFO -    👤 Prestador: thiago
+2025-10-15 01:37:09,252 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:37:09,252 - JobConsultaNotas - INFO -    🔑 Hash: d9d43a5b6b47e72892ec...
+2025-10-15 01:37:09,252 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:09,717 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:09,717 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:09,717 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:09,717 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:10,221 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:10,221 - JobConsultaNotas - INFO - 📦 Lote #9
+2025-10-15 01:37:10,221 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:10,221 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:37:10,221 - JobConsultaNotas - INFO -    🔑 Hash: 4e9f783708d8614792da...
+2025-10-15 01:37:10,221 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:10,700 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:10,700 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:10,700 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:10,701 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:11,202 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:11,203 - JobConsultaNotas - INFO - 📦 Lote #8
+2025-10-15 01:37:11,203 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:11,203 - JobConsultaNotas - INFO -    📅 Período: 23/02/2025 – 04/03/2025
+2025-10-15 01:37:11,203 - JobConsultaNotas - INFO -    🔑 Hash: a041c8301d7186f88c80...
+2025-10-15 01:37:11,203 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:11,666 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:11,667 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:11,667 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:11,667 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:12,168 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:12,169 - JobConsultaNotas - INFO - 📦 Lote #7
+2025-10-15 01:37:12,169 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:12,169 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 02/01/2025
+2025-10-15 01:37:12,169 - JobConsultaNotas - INFO -    🔑 Hash: 5beacc41380934a07a40...
+2025-10-15 01:37:12,169 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:12,628 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:12,628 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:12,629 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:12,629 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:13,130 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:13,131 - JobConsultaNotas - INFO - 📦 Lote #6
+2025-10-15 01:37:13,131 - JobConsultaNotas - INFO -    👤 Prestador: 52.417.932 Leogilson Dos Santos Silva
+2025-10-15 01:37:13,131 - JobConsultaNotas - INFO -    📅 Período: 05/10/2025 – 22/10/2025
+2025-10-15 01:37:13,131 - JobConsultaNotas - INFO -    🔑 Hash: 22b406a239a4fdf9331d...
+2025-10-15 01:37:13,131 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:13,678 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:13,678 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:13,678 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:13,678 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:14,184 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:14,184 - JobConsultaNotas - INFO - 📦 Lote #4
+2025-10-15 01:37:14,184 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:14,184 - JobConsultaNotas - INFO -    📅 Período: teste
+2025-10-15 01:37:14,184 - JobConsultaNotas - INFO -    🔑 Hash: d2b4cb34ff85c6ed6e1b...
+2025-10-15 01:37:14,184 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:14,648 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 01:37:14,648 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 01:37:14,648 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 01:37:14,649 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 01:37:15,151 - JobConsultaNotas - INFO - 
+============================================================
+2025-10-15 01:37:15,152 - JobConsultaNotas - INFO - 📊 RESUMO DO PROCESSAMENTO
+2025-10-15 01:37:15,152 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:37:15,152 - JobConsultaNotas - INFO - 📁 Lotes com arquivos: 14
+2025-10-15 01:37:15,152 - JobConsultaNotas - INFO - ⬇️  Arquivos baixados: 0
+2025-10-15 01:37:15,152 - JobConsultaNotas - INFO - ⏳ Ainda pendentes: 14
+2025-10-15 01:37:15,152 - JobConsultaNotas - INFO - 
+⏰ Concluído em: 15/10/2025 01:37:15
+2025-10-15 01:37:15,152 - JobConsultaNotas - INFO - ============================================================
+
+2025-10-15 01:37:15,169 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-15 01:37:15,169 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 01:37:58 -03)" executed successfully
+2025-10-15 01:37:58,571 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 01:38:58 -03)" (scheduled at 2025-10-15 01:37:58.564829-03:00)
+2025-10-15 01:37:58,573 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 01:37:58,599 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:37:58,599 - JobConsultaNotas - INFO - 🔍 JOB DE CONSULTA DE NOTAS FISCAIS
+2025-10-15 01:37:58,600 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 01:37:58,600 - JobConsultaNotas - INFO - ⏰ Executado em: 15/10/2025 01:37:58
+2025-10-15 01:37:58,615 - JobConsultaNotas - INFO - 📋 28 lote(s) aguardando nota fiscal
+2025-10-15 01:37:58,615 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:58,616 - JobConsultaNotas - INFO - 📦 Lote #32
+2025-10-15 01:37:58,616 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:58,616 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:37:58,616 - JobConsultaNotas - INFO -    🔑 Hash: 20e1148ba750825f9819...
+2025-10-15 01:37:58,616 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:59,100 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:59,100 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:59,100 - JobConsultaNotas - INFO -    📦 Total: 4.15 KB
+2025-10-15 01:37:59,100 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:59,100 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:59,101 - JobConsultaNotas - INFO - 📦 Lote #31
+2025-10-15 01:37:59,101 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:59,101 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:37:59,101 - JobConsultaNotas - INFO -    🔑 Hash: 48c5a75fc806b68215b5...
+2025-10-15 01:37:59,101 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:37:59,635 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:37:59,636 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:37:59,636 - JobConsultaNotas - INFO -    📦 Total: 4.57 KB
+2025-10-15 01:37:59,636 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:37:59,636 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:37:59,636 - JobConsultaNotas - INFO - 📦 Lote #30
+2025-10-15 01:37:59,637 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:37:59,637 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:37:59,637 - JobConsultaNotas - INFO -    🔑 Hash: 2fc87cacd12b4e4b09c7...
+2025-10-15 01:37:59,637 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:38:00,126 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:38:00,127 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:38:00,127 - JobConsultaNotas - INFO -    📦 Total: 4.09 KB
+2025-10-15 01:38:00,127 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:38:00,127 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:38:00,127 - JobConsultaNotas - INFO - 📦 Lote #29
+2025-10-15 01:38:00,127 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:38:00,127 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:38:00,128 - JobConsultaNotas - INFO -    🔑 Hash: 9fd7c7ccc9f7c3c11fcb...
+2025-10-15 01:38:00,128 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:38:00,614 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:38:00,614 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:38:00,614 - JobConsultaNotas - INFO -    📦 Total: 4.15 KB
+2025-10-15 01:38:00,614 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:38:00,614 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:38:00,615 - JobConsultaNotas - INFO - 📦 Lote #28
+2025-10-15 01:38:00,615 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:38:00,615 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 01:38:00,615 - JobConsultaNotas - INFO -    🔑 Hash: cb735f8e4056142d368b...
+2025-10-15 01:38:00,615 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 01:38:01,068 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 01:38:01,069 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 01:38:01,069 - JobConsultaNotas - INFO -    📦 Total: 4.1 KB
+2025-10-15 01:38:01,069 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 01:38:01,069 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 01:38:01,069 - JobConsultaNotas - INFO - 📦 Lote #27
+2025-10-15 01:38:01,069 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 01:38:01,069 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 01:38:01,069 - JobConsultaNotas - INFO -    🔑 Hash: 9ca30b1784296ca9a6cb...
+2025-10-15 01:38:01,069 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
