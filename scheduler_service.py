@@ -100,10 +100,43 @@ def executar_job_enviar_api():
         logger.error(f"❌ {job_nome}: {mensagem}", exc_info=True)
 
 
+def executar_job_backup_banco():
+    """Executa job de backup do banco de dados"""
+    job_nome = 'backup_banco'
+    logger.info(f"💾 Iniciando job: {job_nome}")
+    
+    try:
+        # Verificar se job está ativo antes de executar
+        job_config = db.get_job_config(job_nome)
+        if not job_config or not job_config['ativo']:
+            logger.info(f"⏸️  Job {job_nome} não está ativo, pulando execução")
+            return
+        
+        # Importar e executar o job
+        from job_backup_banco import criar_backup_automatico
+        
+        sucesso = criar_backup_automatico()
+        
+        if sucesso:
+            mensagem = "Backup criado com sucesso"
+            db.registrar_execucao_job(job_nome, sucesso=True, mensagem=mensagem)
+            logger.info(f"✅ {job_nome}: {mensagem}")
+        else:
+            mensagem = "Falha ao criar backup"
+            db.registrar_execucao_job(job_nome, sucesso=False, mensagem=mensagem)
+            logger.error(f"❌ {job_nome}: {mensagem}")
+        
+    except Exception as e:
+        mensagem = f"Erro: {str(e)}"
+        db.registrar_execucao_job(job_nome, sucesso=False, mensagem=mensagem)
+        logger.error(f"❌ {job_nome}: {mensagem}", exc_info=True)
+
+
 # Mapa de jobs disponíveis
 JOBS_DISPONIVEIS = {
     'consultar_notas': executar_job_consultar_notas,
-    'enviar_api': executar_job_enviar_api
+    'enviar_api': executar_job_enviar_api,
+    'backup_banco': executar_job_backup_banco
 }
 
 

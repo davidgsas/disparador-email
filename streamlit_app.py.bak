@@ -1780,11 +1780,11 @@ elif app_mode == "📤 Upload de Notas Fiscais":
 elif app_mode == "⚙️ Jobs Automáticos":
     mostrar_painel_jobs()
 
-elif app_mode == "🔌 Integrações":
+elif app_mode == "� Integrações":
     from painel_integracoes import mostrar_painel_integracoes
     mostrar_painel_integracoes()
 
-elif app_mode == "🗄️ Backups do Banco":
+elif app_mode == "�🗄️ Backups do Banco":
     st.title("🗄️ Sistema de Backup do Banco de Dados")
     
     backup_dir = Path("backups")

@@ -52,24 +52,24 @@ def processar_uploads_pendentes():
             prestador = lote['prestador_nome']
             periodo = lote['periodo']
             
-            logger.info(f"\n{'─'*60}")
-            logger.info(f"📦 Lote #{lote_id}")
-            logger.info(f"   👤 Prestador: {prestador}")
-            logger.info(f"   📅 Período: {periodo}")
+            print(f"\n{'─'*60}")
+            print(f"📦 Lote #{lote_id}")
+            print(f"   👤 Prestador: {prestador}")
+            print(f"   📅 Período: {periodo}")
             
             # Verificar se tem hash
             if not upload_hash:
-                logger.info(f"   ⚠️  Sem hash de upload (lote antigo)")
+                print(f"   ⚠️  Sem hash de upload (lote antigo)")
                 continue
             
-            logger.info(f"   🔑 Hash: {upload_hash[:20]}...")
+            print(f"   🔑 Hash: {upload_hash[:20]}...")
             
             # Consultar status na API
-            logger.info(f"   🔍 Consultando arquivos...")
+            print(f"   🔍 Consultando arquivos...")
             sucesso, dados, erro = client.consultar_e_processar(upload_hash)
             
             if not sucesso:
-                logger.info(f"   ❌ Erro ao consultar: {erro}")
+                print(f"   ❌ Erro ao consultar: {erro}")
                 erros += 1
                 continue
             
@@ -78,20 +78,20 @@ def processar_uploads_pendentes():
             arquivos = dados['arquivos']
             stats = dados['estatisticas']
             
-            logger.info(f"   📊 Status: {nota['status_descricao']}")
-            logger.info(f"   📁 Arquivos encontrados: {stats['total_arquivos']}")
+            print(f"   📊 Status: {nota['status_descricao']}")
+            print(f"   📁 Arquivos encontrados: {stats['total_arquivos']}")
             
             # Processar arquivos
             if len(arquivos) > 0:
                 arquivos_encontrados += 1
-                logger.info(f"   📦 Total: {stats['total_tamanho_formatado']}")
+                print(f"   📦 Total: {stats['total_tamanho_formatado']}")
                 
                 # Verificar se já foi processado antes (evitar duplicações)
                 status_arquivo_atual = lote.get('status_arquivo', 0)
                 ja_processado = status_arquivo_atual == 2  # 2 = Arquivos baixados
                 
                 if ja_processado:
-                    logger.info(f"   ℹ️  Arquivos já foram baixados anteriormente")
+                    print(f"   ℹ️  Arquivos já foram baixados anteriormente")
                     continue
                 
                 # Verificar se já existe notificação para este lote (dupla proteção)
@@ -103,12 +103,12 @@ def processar_uploads_pendentes():
                 conn_check.close()
                 
                 if ja_tem_notificacao:
-                    logger.info(f"   ℹ️  Notificação já existe para este lote")
+                    print(f"   ℹ️  Notificação já existe para este lote")
                     # Continua o processamento mas não cria notificação
                 
                 # Salvar informações no banco
                 db.salvar_arquivos_nf(lote_id, arquivos, stats)
-                logger.info(f"   ✅ Dados salvos no banco")
+                print(f"   ✅ Dados salvos no banco")
                 
                 # Baixar cada arquivo
                 pasta_destino = f"uploads/lote_{lote_id}"
@@ -121,11 +121,11 @@ def processar_uploads_pendentes():
                     
                     # Verificar se arquivo já existe
                     if os.path.exists(caminho_local):
-                        logger.info(f"   ✓ Já existe: {nome_arquivo}")
+                        print(f"   ✓ Já existe: {nome_arquivo}")
                         downloads_realizados += 1
                         continue
                     
-                    logger.info(f"   ⬇️  Baixando: {nome_arquivo} ({arquivo['tamanho_formatado']})")
+                    print(f"   ⬇️  Baixando: {nome_arquivo} ({arquivo['tamanho_formatado']})")
                     
                     sucesso_download, mensagem = client.baixar_arquivo(
                         arquivo['link_download'],
@@ -135,12 +135,12 @@ def processar_uploads_pendentes():
                     if sucesso_download:
                         downloads_realizados += 1
                     else:
-                        logger.info(f"      ❌ {mensagem}")
+                        print(f"      ❌ {mensagem}")
                         erros += 1
                 
                 # Atualizar status do arquivo para "baixado"
                 db.atualizar_status_arquivo(lote_id, 2)
-                logger.info(f"   ✅ Status atualizado: Arquivos baixados")
+                print(f"   ✅ Status atualizado: Arquivos baixados")
                 
                 # Criar notificação APENAS se não existir
                 if not ja_tem_notificacao:
@@ -156,14 +156,14 @@ def processar_uploads_pendentes():
                         icone='📥',
                         prioridade=1
                     )
-                    logger.info(f"   🔔 Notificação criada")
+                    print(f"   🔔 Notificação criada")
                 
                 # 🎯 INTEGRAÇÃO TRELLO: Criar card automaticamente (apenas se não existir)
                 if not ja_tem_notificacao:
                     try:
                         trello = TrelloIntegration()
                         if trello.is_configured():
-                            logger.info(f"   📋 Criando card no Trello...")
+                            print(f"   📋 Criando card no Trello...")
                             
                             # Obter nome do montador
                             montador_nome = lote.get('montador_nome', 'N/A')
@@ -186,40 +186,40 @@ def processar_uploads_pendentes():
                             )
                             
                             if card_result:
-                                logger.info(f"   ✅ Card Trello criado: {card_result['shortUrl']}")
+                                print(f"   ✅ Card Trello criado: {card_result['shortUrl']}")
                             else:
-                                logger.info(f"   ⚠️  Não foi possível criar card no Trello")
+                                print(f"   ⚠️  Não foi possível criar card no Trello")
                         else:
-                            logger.info(f"   ℹ️  Integração Trello não configurada")
+                            print(f"   ℹ️  Integração Trello não configurada")
                     except Exception as e:
-                        logger.info(f"   ⚠️  Erro ao criar card Trello: {e}")
+                        print(f"   ⚠️  Erro ao criar card Trello: {e}")
                         # Não interrompe o fluxo se houver erro no Trello
             
             elif nota['link_valido']:
-                logger.info(f"   ⏳ Aguardando upload do prestador")
-                logger.info(f"   📅 Link válido por mais {nota['dias_restantes']} dia(s)")
+                print(f"   ⏳ Aguardando upload do prestador")
+                print(f"   📅 Link válido por mais {nota['dias_restantes']} dia(s)")
             
             else:
-                logger.info(f"   ⏰ Link expirado")
+                print(f"   ⏰ Link expirado")
                 db.atualizar_status_api(lote_id, 2)  # Status expirado
             
             # Pequena pausa entre requisições
             time.sleep(0.5)
         
         # Resumo final
-        logger.info(f"\n{'='*60}")
-        logger.info(f"📊 RESUMO DO PROCESSAMENTO")
-        logger.info(f"{'='*60}")
-        logger.info(f"📁 Lotes com arquivos: {arquivos_encontrados}")
-        logger.info(f"⬇️  Arquivos baixados: {downloads_realizados}")
-        logger.info(f"⏳ Ainda pendentes: {len(lotes) - arquivos_encontrados}")
+        print(f"\n{'='*60}")
+        print(f"📊 RESUMO DO PROCESSAMENTO")
+        print(f"{'='*60}")
+        print(f"📁 Lotes com arquivos: {arquivos_encontrados}")
+        print(f"⬇️  Arquivos baixados: {downloads_realizados}")
+        print(f"⏳ Ainda pendentes: {len(lotes) - arquivos_encontrados}")
         if erros > 0:
-            logger.info(f"❌ Erros encontrados: {erros}")
-        logger.info(f"\n⏰ Concluído em: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
-        logger.info(f"{'='*60}\n")
+            print(f"❌ Erros encontrados: {erros}")
+        print(f"\n⏰ Concluído em: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+        print(f"{'='*60}\n")
         
     except Exception as e:
-        logger.info(f"\n❌ ERRO CRÍTICO: {str(e)}")
+        print(f"\n❌ ERRO CRÍTICO: {str(e)}")
         import traceback
         traceback.print_exc()
 

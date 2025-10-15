@@ -503,3 +503,453 @@
 2025-10-14 23:27:55,031 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
 2025-10-14 23:28:15,418 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
 2025-10-14 23:28:15,419 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:32:55 -03)" executed successfully
+2025-10-14 23:32:55,029 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:37:55 -03)" (scheduled at 2025-10-14 23:32:55.025501-03:00)
+2025-10-14 23:32:55,033 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-14 23:33:15,355 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-14 23:33:15,356 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:37:55 -03)" executed successfully
+2025-10-14 23:37:55,029 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:42:55 -03)" (scheduled at 2025-10-14 23:37:55.025501-03:00)
+2025-10-14 23:37:55,034 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-14 23:38:15,586 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-14 23:38:15,586 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:42:55 -03)" executed successfully
+2025-10-14 23:42:55,050 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:47:55 -03)" (scheduled at 2025-10-14 23:42:55.025501-03:00)
+2025-10-14 23:42:55,053 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-14 23:43:15,208 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-14 23:43:15,208 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:47:55 -03)" executed successfully
+2025-10-14 23:47:55,042 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:52:55 -03)" (scheduled at 2025-10-14 23:47:55.025501-03:00)
+2025-10-14 23:47:55,047 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-14 23:48:15,735 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-14 23:48:15,736 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:52:55 -03)" executed successfully
+2025-10-14 23:52:55,031 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:57:55 -03)" (scheduled at 2025-10-14 23:52:55.025501-03:00)
+2025-10-14 23:52:55,035 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-14 23:53:15,212 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-14 23:53:15,212 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-14 23:57:55 -03)" executed successfully
+2025-10-14 23:54:37,301 - SchedulerService - INFO - 🔄 Recarregando configurações...
+2025-10-14 23:54:37,303 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-14 23:54:37,312 - SchedulerService - WARNING - ⚠️  Job 'backup_banco' não encontrado nos jobs disponíveis
+2025-10-14 23:54:37,316 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-14 23:54:37,326 - SchedulerService - INFO - ✅ Job 'consultar_notas' configurado: a cada 5 minutos
+2025-10-14 23:54:37,327 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-14 23:54:37,336 - SchedulerService - INFO - ✅ Job 'enviar_api' configurado: a cada 100 minutos
+2025-10-14 23:54:37,336 - SchedulerService - INFO - ✅ Configuração de jobs concluída
+2025-10-14 23:54:52,150 - SchedulerService - INFO - 🛑 Parando serviço...
+2025-10-14 23:54:52,152 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-14 23:54:52,153 - SchedulerService - INFO - ✅ Serviço parado
+2025-10-14 23:54:54,302 - SchedulerService - INFO - ======================================================================
+2025-10-14 23:54:54,303 - SchedulerService - INFO - 🚀 SERVIÇO DE JOBS AUTOMÁTICOS
+2025-10-14 23:54:54,303 - SchedulerService - INFO - ======================================================================
+2025-10-14 23:54:54,303 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-14 23:54:54,312 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-14 23:54:54,319 - SchedulerService - INFO - ✅ Job 'backup_banco' configurado: a cada 1440 minutos
+2025-10-14 23:54:54,319 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-14 23:54:54,324 - SchedulerService - INFO - ✅ Job 'consultar_notas' configurado: a cada 5 minutos
+2025-10-14 23:54:54,325 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-14 23:54:54,329 - SchedulerService - INFO - ✅ Job 'enviar_api' configurado: a cada 100 minutos
+2025-10-14 23:54:54,329 - SchedulerService - INFO - ✅ Configuração de jobs concluída
+2025-10-14 23:54:54,329 - apscheduler.scheduler - INFO - Added job "backup_banco" to job store "default"
+2025-10-14 23:54:54,329 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-14 23:54:54,329 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-14 23:54:54,329 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-14 23:54:54,330 - SchedulerService - INFO - ✅ Scheduler iniciado
+2025-10-14 23:54:54,330 - SchedulerService - INFO - ======================================================================
+2025-10-14 23:54:54,330 - SchedulerService - INFO - 📊 Jobs configurados:
+2025-10-14 23:54:54,330 - SchedulerService - INFO -    - consultar_notas: próxima execução em 2025-10-14 23:59:54.319727-03:00
+2025-10-14 23:54:54,330 - SchedulerService - INFO -    - enviar_api: próxima execução em 2025-10-15 01:34:54.325043-03:00
+2025-10-14 23:54:54,330 - SchedulerService - INFO -    - backup_banco: próxima execução em 2025-10-15 23:54:54.312635-03:00
+2025-10-14 23:54:54,330 - SchedulerService - INFO - ======================================================================
+2025-10-14 23:54:54,330 - SchedulerService - INFO - 
+💡 Comandos:
+2025-10-14 23:54:54,330 - SchedulerService - INFO -    - Para parar: Ctrl+C ou kill <PID>
+2025-10-14 23:54:54,330 - SchedulerService - INFO -    - Para recarregar config: kill -HUP <PID>
+2025-10-14 23:54:54,330 - SchedulerService - INFO -    - Ver logs: tail -f scheduler.log
+2025-10-14 23:54:54,330 - SchedulerService - INFO - 
+🔄 Serviço rodando... (pressione Ctrl+C para parar)
+
+2025-10-14 23:55:52,618 - SchedulerService - INFO - 🔄 Recarregando configurações...
+2025-10-14 23:55:52,621 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-14 23:55:52,639 - apscheduler.scheduler - INFO - Added job "backup_banco" to job store "default"
+2025-10-14 23:55:52,649 - SchedulerService - INFO - ✅ Job 'backup_banco' configurado: a cada 1440 minutos
+2025-10-14 23:55:52,649 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-14 23:55:52,655 - SchedulerService - INFO - ✅ Job 'consultar_notas' configurado: a cada 5 minutos
+2025-10-14 23:55:52,655 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-14 23:55:52,661 - SchedulerService - INFO - ✅ Job 'enviar_api' configurado: a cada 100 minutos
+2025-10-14 23:55:52,661 - SchedulerService - INFO - ✅ Configuração de jobs concluída
+2025-10-15 00:00:52,653 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:00:52 -03)" (scheduled at 2025-10-15 00:00:52.649631-03:00)
+2025-10-15 00:00:52,654 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 00:00:52,787 - SchedulerService - ERROR - ❌ consultar_notas: Erro: [Errno 5] Input/output error
+Traceback (most recent call last):
+  File "/Users/davidgabriel/projetos/disparador-email/scheduler_service.py", line 62, in executar_job_consultar_notas
+    processar_uploads_pendentes()
+  File "/Users/davidgabriel/projetos/disparador-email/job_consultar_notas.py", line 24, in processar_uploads_pendentes
+    print(f"\n{'='*60}")
+OSError: [Errno 5] Input/output error
+2025-10-15 00:00:52,788 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:05:52 -03)" executed successfully
+2025-10-15 00:05:52,652 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:10:52 -03)" (scheduled at 2025-10-15 00:05:52.649631-03:00)
+2025-10-15 00:05:52,655 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 00:05:52,702 - SchedulerService - ERROR - ❌ consultar_notas: Erro: [Errno 5] Input/output error
+Traceback (most recent call last):
+  File "/Users/davidgabriel/projetos/disparador-email/scheduler_service.py", line 62, in executar_job_consultar_notas
+    processar_uploads_pendentes()
+  File "/Users/davidgabriel/projetos/disparador-email/job_consultar_notas.py", line 24, in processar_uploads_pendentes
+    print(f"\n{'='*60}")
+OSError: [Errno 5] Input/output error
+2025-10-15 00:05:52,702 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:10:52 -03)" executed successfully
+2025-10-15 00:10:52,653 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:15:52 -03)" (scheduled at 2025-10-15 00:10:52.649631-03:00)
+2025-10-15 00:10:52,656 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 00:10:52,707 - SchedulerService - ERROR - ❌ consultar_notas: Erro: [Errno 5] Input/output error
+Traceback (most recent call last):
+  File "/Users/davidgabriel/projetos/disparador-email/scheduler_service.py", line 62, in executar_job_consultar_notas
+    processar_uploads_pendentes()
+  File "/Users/davidgabriel/projetos/disparador-email/job_consultar_notas.py", line 24, in processar_uploads_pendentes
+    print(f"\n{'='*60}")
+OSError: [Errno 5] Input/output error
+2025-10-15 00:10:52,708 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:15:52 -03)" executed successfully
+2025-10-15 00:13:22,574 - SchedulerService - INFO - 🔄 Recarregando configurações...
+2025-10-15 00:13:22,578 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-15 00:13:22,598 - apscheduler.scheduler - INFO - Added job "backup_banco" to job store "default"
+2025-10-15 00:13:22,606 - SchedulerService - INFO - ✅ Job 'backup_banco' configurado: a cada 10 minutos
+2025-10-15 00:13:22,606 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-15 00:13:22,612 - SchedulerService - INFO - ✅ Job 'consultar_notas' configurado: a cada 5 minutos
+2025-10-15 00:13:22,613 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-15 00:13:22,618 - SchedulerService - INFO - ✅ Job 'enviar_api' configurado: a cada 100 minutos
+2025-10-15 00:13:22,619 - SchedulerService - INFO - ✅ Configuração de jobs concluída
+2025-10-15 00:18:22,627 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:23:22 -03)" (scheduled at 2025-10-15 00:18:22.606470-03:00)
+2025-10-15 00:18:22,632 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 00:18:22,677 - SchedulerService - ERROR - ❌ consultar_notas: Erro: [Errno 5] Input/output error
+Traceback (most recent call last):
+  File "/Users/davidgabriel/projetos/disparador-email/scheduler_service.py", line 62, in executar_job_consultar_notas
+    processar_uploads_pendentes()
+  File "/Users/davidgabriel/projetos/disparador-email/job_consultar_notas.py", line 24, in processar_uploads_pendentes
+    print(f"\n{'='*60}")
+OSError: [Errno 5] Input/output error
+2025-10-15 00:18:22,679 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:23:22 -03)" executed successfully
+2025-10-15 00:23:22,596 - apscheduler.executors.default - INFO - Running job "backup_banco (trigger: interval[0:10:00], next run at: 2025-10-15 00:33:22 -03)" (scheduled at 2025-10-15 00:23:22.593152-03:00)
+2025-10-15 00:23:22,598 - SchedulerService - INFO - 💾 Iniciando job: backup_banco
+2025-10-15 00:23:22,612 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:23:22 -03)" (scheduled at 2025-10-15 00:23:22.606470-03:00)
+2025-10-15 00:23:22,613 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 00:23:22,658 - SchedulerService - ERROR - ❌ consultar_notas: Erro: [Errno 5] Input/output error
+Traceback (most recent call last):
+  File "/Users/davidgabriel/projetos/disparador-email/scheduler_service.py", line 62, in executar_job_consultar_notas
+    processar_uploads_pendentes()
+  File "/Users/davidgabriel/projetos/disparador-email/job_consultar_notas.py", line 24, in processar_uploads_pendentes
+    print(f"\n{'='*60}")
+OSError: [Errno 5] Input/output error
+2025-10-15 00:23:22,659 - SchedulerService - ERROR - ❌ backup_banco: Erro: [Errno 5] Input/output error
+Traceback (most recent call last):
+  File "/Users/davidgabriel/projetos/disparador-email/scheduler_service.py", line 118, in executar_job_backup_banco
+    sucesso = criar_backup_automatico()
+  File "/Users/davidgabriel/projetos/disparador-email/job_backup_banco.py", line 18, in criar_backup_automatico
+    print(f"\n{'='*60}")
+OSError: [Errno 5] Input/output error
+2025-10-15 00:23:22,659 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:05:00], next run at: 2025-10-15 00:28:22 -03)" executed successfully
+2025-10-15 00:23:22,682 - apscheduler.executors.default - INFO - Job "backup_banco (trigger: interval[0:10:00], next run at: 2025-10-15 00:33:22 -03)" executed successfully
+2025-10-15 00:27:53,730 - SchedulerService - INFO - 🛑 Parando serviço...
+2025-10-15 00:27:53,745 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-15 00:27:53,747 - SchedulerService - INFO - ✅ Serviço parado
+2025-10-15 00:27:55,909 - SchedulerService - INFO - ======================================================================
+2025-10-15 00:27:55,909 - SchedulerService - INFO - 🚀 SERVIÇO DE JOBS AUTOMÁTICOS
+2025-10-15 00:27:55,909 - SchedulerService - INFO - ======================================================================
+2025-10-15 00:27:55,910 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-15 00:27:55,924 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-15 00:27:55,933 - SchedulerService - INFO - ✅ Job 'backup_banco' configurado: a cada 10 minutos
+2025-10-15 00:27:55,933 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-15 00:27:55,944 - SchedulerService - INFO - ✅ Job 'consultar_notas' configurado: a cada 1 minutos
+2025-10-15 00:27:55,944 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-15 00:27:55,954 - SchedulerService - INFO - ✅ Job 'enviar_api' configurado: a cada 100 minutos
+2025-10-15 00:27:55,954 - SchedulerService - INFO - ✅ Configuração de jobs concluída
+2025-10-15 00:27:55,955 - apscheduler.scheduler - INFO - Added job "backup_banco" to job store "default"
+2025-10-15 00:27:55,955 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-15 00:27:55,955 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-15 00:27:55,955 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-15 00:27:55,955 - SchedulerService - INFO - ✅ Scheduler iniciado
+2025-10-15 00:27:55,955 - SchedulerService - INFO - ======================================================================
+2025-10-15 00:27:55,955 - SchedulerService - INFO - 📊 Jobs configurados:
+2025-10-15 00:27:55,955 - SchedulerService - INFO -    - consultar_notas: próxima execução em 2025-10-15 00:28:55.933353-03:00
+2025-10-15 00:27:55,955 - SchedulerService - INFO -    - backup_banco: próxima execução em 2025-10-15 00:37:55.924771-03:00
+2025-10-15 00:27:55,955 - SchedulerService - INFO -    - enviar_api: próxima execução em 2025-10-15 02:07:55.944197-03:00
+2025-10-15 00:27:55,955 - SchedulerService - INFO - ======================================================================
+2025-10-15 00:27:55,955 - SchedulerService - INFO - 
+💡 Comandos:
+2025-10-15 00:27:55,955 - SchedulerService - INFO -    - Para parar: Ctrl+C ou kill <PID>
+2025-10-15 00:27:55,955 - SchedulerService - INFO -    - Para recarregar config: kill -HUP <PID>
+2025-10-15 00:27:55,955 - SchedulerService - INFO -    - Ver logs: tail -f scheduler.log
+2025-10-15 00:27:55,955 - SchedulerService - INFO - 
+🔄 Serviço rodando... (pressione Ctrl+C para parar)
+
+2025-10-15 00:28:30,356 - SchedulerService - INFO - 🔄 Recarregando configurações...
+2025-10-15 00:28:30,357 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-15 00:28:30,410 - apscheduler.scheduler - INFO - Added job "backup_banco" to job store "default"
+2025-10-15 00:28:30,421 - SchedulerService - INFO - ✅ Job 'backup_banco' configurado: a cada 10 minutos
+2025-10-15 00:28:30,421 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-15 00:28:30,427 - SchedulerService - INFO - ✅ Job 'consultar_notas' configurado: a cada 1 minutos
+2025-10-15 00:28:30,427 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-15 00:28:30,432 - SchedulerService - INFO - ✅ Job 'enviar_api' configurado: a cada 100 minutos
+2025-10-15 00:28:30,432 - SchedulerService - INFO - ✅ Configuração de jobs concluída
+2025-10-15 00:29:26,031 - SchedulerService - INFO - 🛑 Parando serviço...
+2025-10-15 00:29:26,032 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-15 00:29:26,033 - SchedulerService - INFO - ✅ Serviço parado
+2025-10-15 00:29:28,378 - SchedulerService - INFO - ======================================================================
+2025-10-15 00:29:28,378 - SchedulerService - INFO - 🚀 SERVIÇO DE JOBS AUTOMÁTICOS
+2025-10-15 00:29:28,378 - SchedulerService - INFO - ======================================================================
+2025-10-15 00:29:28,378 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-15 00:29:28,386 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-15 00:29:28,394 - SchedulerService - INFO - ✅ Job 'backup_banco' configurado: a cada 10 minutos
+2025-10-15 00:29:28,394 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-15 00:29:28,401 - SchedulerService - INFO - ✅ Job 'consultar_notas' configurado: a cada 1 minutos
+2025-10-15 00:29:28,401 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-15 00:29:28,469 - SchedulerService - INFO - ✅ Job 'enviar_api' configurado: a cada 100 minutos
+2025-10-15 00:29:28,469 - SchedulerService - INFO - ✅ Configuração de jobs concluída
+2025-10-15 00:29:28,471 - apscheduler.scheduler - INFO - Added job "backup_banco" to job store "default"
+2025-10-15 00:29:28,471 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-15 00:29:28,471 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-15 00:29:28,471 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-15 00:29:28,472 - SchedulerService - INFO - ✅ Scheduler iniciado
+2025-10-15 00:29:28,472 - SchedulerService - INFO - ======================================================================
+2025-10-15 00:29:28,472 - SchedulerService - INFO - 📊 Jobs configurados:
+2025-10-15 00:29:28,472 - SchedulerService - INFO -    - consultar_notas: próxima execução em 2025-10-15 00:30:28.394463-03:00
+2025-10-15 00:29:28,472 - SchedulerService - INFO -    - backup_banco: próxima execução em 2025-10-15 00:39:28.386309-03:00
+2025-10-15 00:29:28,472 - SchedulerService - INFO -    - enviar_api: próxima execução em 2025-10-15 02:09:28.401681-03:00
+2025-10-15 00:29:28,472 - SchedulerService - INFO - ======================================================================
+2025-10-15 00:29:28,472 - SchedulerService - INFO - 
+💡 Comandos:
+2025-10-15 00:29:28,472 - SchedulerService - INFO -    - Para parar: Ctrl+C ou kill <PID>
+2025-10-15 00:29:28,472 - SchedulerService - INFO -    - Para recarregar config: kill -HUP <PID>
+2025-10-15 00:29:28,472 - SchedulerService - INFO -    - Ver logs: tail -f scheduler.log
+2025-10-15 00:29:28,472 - SchedulerService - INFO - 
+🔄 Serviço rodando... (pressione Ctrl+C para parar)
+
+2025-10-15 00:30:28,406 - apscheduler.executors.default - INFO - Running job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 00:30:28 -03)" (scheduled at 2025-10-15 00:30:28.394463-03:00)
+2025-10-15 00:30:28,408 - SchedulerService - INFO - 🔍 Iniciando job: consultar_notas
+2025-10-15 00:30:28,551 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 00:30:28,551 - JobConsultaNotas - INFO - 🔍 JOB DE CONSULTA DE NOTAS FISCAIS
+2025-10-15 00:30:28,551 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 00:30:28,551 - JobConsultaNotas - INFO - ⏰ Executado em: 15/10/2025 00:30:28
+2025-10-15 00:30:28,561 - JobConsultaNotas - INFO - 📋 21 lote(s) aguardando nota fiscal
+2025-10-15 00:30:28,561 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:28,561 - JobConsultaNotas - INFO - 📦 Lote #25
+2025-10-15 00:30:28,561 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:28,561 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 00:30:28,561 - JobConsultaNotas - INFO -    🔑 Hash: 8087a85e38cea73d0050...
+2025-10-15 00:30:28,561 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:29,518 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 00:30:29,519 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 00:30:29,519 - JobConsultaNotas - INFO -    📦 Total: 249.63 KB
+2025-10-15 00:30:29,543 - JobConsultaNotas - INFO -    ✅ Dados salvos no banco
+2025-10-15 00:30:29,543 - JobConsultaNotas - INFO -    ⬇️  Baixando: NFS-e 202500000000010 SNA8-UQQ4 | WebISS®.pdf (249.63 KB)
+2025-10-15 00:30:32,083 - JobConsultaNotas - INFO -    ✅ Status atualizado: Arquivos baixados
+2025-10-15 00:30:32,103 - JobConsultaNotas - INFO -    🔔 Notificação criada
+2025-10-15 00:30:32,115 - JobConsultaNotas - INFO -    📋 Criando card no Trello...
+2025-10-15 00:30:34,670 - JobConsultaNotas - INFO -    ✅ Card Trello criado: https://trello.com/c/baKVIBSS
+2025-10-15 00:30:35,174 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:35,175 - JobConsultaNotas - INFO - 📦 Lote #24
+2025-10-15 00:30:35,175 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:35,175 - JobConsultaNotas - INFO -    📅 Período: 01/01/2023
+2025-10-15 00:30:35,175 - JobConsultaNotas - INFO -    🔑 Hash: 72d3f4254bd10917fc3d...
+2025-10-15 00:30:35,175 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:35,819 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 00:30:35,820 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 00:30:35,820 - JobConsultaNotas - INFO -    📦 Total: 95.95 KB
+2025-10-15 00:30:35,820 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 00:30:35,821 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:35,821 - JobConsultaNotas - INFO - 📦 Lote #23
+2025-10-15 00:30:35,821 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:35,821 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 00:30:35,822 - JobConsultaNotas - INFO -    🔑 Hash: f5b5a723645837e04231...
+2025-10-15 00:30:35,822 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:36,277 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 00:30:36,277 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 00:30:36,277 - JobConsultaNotas - INFO -    📦 Total: 448.68 KB
+2025-10-15 00:30:36,277 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 00:30:36,277 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:36,277 - JobConsultaNotas - INFO - 📦 Lote #22
+2025-10-15 00:30:36,278 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:36,278 - JobConsultaNotas - INFO -    📅 Período: 01/01/2026
+2025-10-15 00:30:36,278 - JobConsultaNotas - INFO -    🔑 Hash: 74b1ab63d2f02d33f992...
+2025-10-15 00:30:36,278 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:36,768 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 00:30:36,769 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 00:30:36,769 - JobConsultaNotas - INFO -    📦 Total: 95.95 KB
+2025-10-15 00:30:36,769 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 00:30:36,769 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:36,769 - JobConsultaNotas - INFO - 📦 Lote #21
+2025-10-15 00:30:36,769 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:36,769 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 00:30:36,769 - JobConsultaNotas - INFO -    🔑 Hash: 68cacb30a7ae736d4b63...
+2025-10-15 00:30:36,770 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:37,217 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 00:30:37,217 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 00:30:37,217 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 00:30:37,217 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 00:30:37,218 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:37,218 - JobConsultaNotas - INFO - 📦 Lote #20
+2025-10-15 00:30:37,218 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:37,218 - JobConsultaNotas - INFO -    📅 Período: 01/09/2025
+2025-10-15 00:30:37,218 - JobConsultaNotas - INFO -    🔑 Hash: 4c16655f79a49f01877c...
+2025-10-15 00:30:37,218 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:37,709 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 00:30:37,709 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 00:30:37,709 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 00:30:37,709 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 00:30:37,709 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:37,709 - JobConsultaNotas - INFO - 📦 Lote #19
+2025-10-15 00:30:37,710 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:37,710 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025
+2025-10-15 00:30:37,710 - JobConsultaNotas - INFO -    🔑 Hash: fe6bf11bea73b8936b83...
+2025-10-15 00:30:37,710 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:38,185 - JobConsultaNotas - INFO -    📊 Status: Arquivos recebidos
+2025-10-15 00:30:38,185 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 1
+2025-10-15 00:30:38,185 - JobConsultaNotas - INFO -    📦 Total: 294.58 KB
+2025-10-15 00:30:38,186 - JobConsultaNotas - INFO -    ℹ️  Arquivos já foram baixados anteriormente
+2025-10-15 00:30:38,186 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:38,186 - JobConsultaNotas - INFO - 📦 Lote #18
+2025-10-15 00:30:38,186 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:38,186 - JobConsultaNotas - INFO -    📅 Período: 10/10/2025
+2025-10-15 00:30:38,186 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 00:30:38,186 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:38,186 - JobConsultaNotas - INFO - 📦 Lote #17
+2025-10-15 00:30:38,187 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:38,187 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 01/10/2025
+2025-10-15 00:30:38,187 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 00:30:38,187 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:38,187 - JobConsultaNotas - INFO - 📦 Lote #16
+2025-10-15 00:30:38,187 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:38,187 - JobConsultaNotas - INFO -    📅 Período: 01/05/2025 - 03/05/2025
+2025-10-15 00:30:38,188 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 00:30:38,188 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:38,188 - JobConsultaNotas - INFO - 📦 Lote #15
+2025-10-15 00:30:38,188 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:38,188 - JobConsultaNotas - INFO -    📅 Período: 01/11/2025 - 02/11/2025
+2025-10-15 00:30:38,188 - JobConsultaNotas - INFO -    🔑 Hash: 67bcacecaae861214627...
+2025-10-15 00:30:38,188 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:38,651 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:38,652 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:38,652 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:38,652 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:39,154 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:39,154 - JobConsultaNotas - INFO - 📦 Lote #14
+2025-10-15 00:30:39,154 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:39,154 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 02/01/2025
+2025-10-15 00:30:39,154 - JobConsultaNotas - INFO -    ⚠️  Sem hash de upload (lote antigo)
+2025-10-15 00:30:39,154 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:39,154 - JobConsultaNotas - INFO - 📦 Lote #13
+2025-10-15 00:30:39,154 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:39,154 - JobConsultaNotas - INFO -    📅 Período: 10/10/2025 - 11/10/2025
+2025-10-15 00:30:39,155 - JobConsultaNotas - INFO -    🔑 Hash: 3ccc68bbbc1a794bb040...
+2025-10-15 00:30:39,155 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:39,750 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:39,750 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:39,750 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:39,751 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:40,253 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:40,253 - JobConsultaNotas - INFO - 📦 Lote #12
+2025-10-15 00:30:40,253 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:40,254 - JobConsultaNotas - INFO -    📅 Período: sei la
+2025-10-15 00:30:40,254 - JobConsultaNotas - INFO -    🔑 Hash: 2ef59838fd858c04281e...
+2025-10-15 00:30:40,254 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:40,727 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:40,728 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:40,728 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:40,728 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:41,229 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:41,229 - JobConsultaNotas - INFO - 📦 Lote #11
+2025-10-15 00:30:41,230 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:41,230 - JobConsultaNotas - INFO -    📅 Período: teste David
+2025-10-15 00:30:41,230 - JobConsultaNotas - INFO -    🔑 Hash: 8b51f9d0c8afb8f91834...
+2025-10-15 00:30:41,230 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:41,698 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:41,698 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:41,698 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:41,699 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:42,200 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:42,201 - JobConsultaNotas - INFO - 📦 Lote #10
+2025-10-15 00:30:42,201 - JobConsultaNotas - INFO -    👤 Prestador: thiago
+2025-10-15 00:30:42,201 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 00:30:42,201 - JobConsultaNotas - INFO -    🔑 Hash: d9d43a5b6b47e72892ec...
+2025-10-15 00:30:42,201 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:42,664 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:42,664 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:42,664 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:42,664 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:43,165 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:43,166 - JobConsultaNotas - INFO - 📦 Lote #9
+2025-10-15 00:30:43,166 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:43,166 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 00:30:43,166 - JobConsultaNotas - INFO -    🔑 Hash: 4e9f783708d8614792da...
+2025-10-15 00:30:43,166 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:43,634 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:43,634 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:43,634 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:43,634 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:44,139 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:44,139 - JobConsultaNotas - INFO - 📦 Lote #8
+2025-10-15 00:30:44,139 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:44,139 - JobConsultaNotas - INFO -    📅 Período: 23/02/2025 – 04/03/2025
+2025-10-15 00:30:44,139 - JobConsultaNotas - INFO -    🔑 Hash: a041c8301d7186f88c80...
+2025-10-15 00:30:44,139 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:44,620 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:44,620 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:44,621 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:44,621 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:45,126 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:45,126 - JobConsultaNotas - INFO - 📦 Lote #7
+2025-10-15 00:30:45,126 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:45,126 - JobConsultaNotas - INFO -    📅 Período: 01/01/2025 - 02/01/2025
+2025-10-15 00:30:45,126 - JobConsultaNotas - INFO -    🔑 Hash: 5beacc41380934a07a40...
+2025-10-15 00:30:45,127 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:45,583 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:45,583 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:45,583 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:45,584 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:46,085 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:46,085 - JobConsultaNotas - INFO - 📦 Lote #6
+2025-10-15 00:30:46,085 - JobConsultaNotas - INFO -    👤 Prestador: 52.417.932 Leogilson Dos Santos Silva
+2025-10-15 00:30:46,085 - JobConsultaNotas - INFO -    📅 Período: 05/10/2025 – 22/10/2025
+2025-10-15 00:30:46,085 - JobConsultaNotas - INFO -    🔑 Hash: 22b406a239a4fdf9331d...
+2025-10-15 00:30:46,085 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:46,555 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:46,556 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:46,556 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:46,556 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:47,056 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 00:30:47,057 - JobConsultaNotas - INFO - 📦 Lote #4
+2025-10-15 00:30:47,057 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 00:30:47,057 - JobConsultaNotas - INFO -    📅 Período: teste
+2025-10-15 00:30:47,057 - JobConsultaNotas - INFO -    🔑 Hash: d2b4cb34ff85c6ed6e1b...
+2025-10-15 00:30:47,058 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 00:30:47,552 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 00:30:47,553 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 00:30:47,553 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 00:30:47,553 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 00:30:48,056 - JobConsultaNotas - INFO - 
+============================================================
+2025-10-15 00:30:48,057 - JobConsultaNotas - INFO - 📊 RESUMO DO PROCESSAMENTO
+2025-10-15 00:30:48,057 - JobConsultaNotas - INFO - ============================================================
+2025-10-15 00:30:48,057 - JobConsultaNotas - INFO - 📁 Lotes com arquivos: 7
+2025-10-15 00:30:48,057 - JobConsultaNotas - INFO - ⬇️  Arquivos baixados: 1
+2025-10-15 00:30:48,057 - JobConsultaNotas - INFO - ⏳ Ainda pendentes: 14
+2025-10-15 00:30:48,060 - JobConsultaNotas - INFO - 
+⏰ Concluído em: 15/10/2025 00:30:48
+2025-10-15 00:30:48,061 - JobConsultaNotas - INFO - ============================================================
+
+2025-10-15 00:30:48,100 - SchedulerService - INFO - ✅ consultar_notas: Job executado com sucesso
+2025-10-15 00:30:48,100 - apscheduler.executors.default - INFO - Job "consultar_notas (trigger: interval[0:01:00], next run at: 2025-10-15 00:31:28 -03)" executed successfully

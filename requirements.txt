@@ -1,0 +1,22 @@
+# Dependências do Sistema de Disparador de Emails
+
+# Core
+streamlit>=1.28.0
+pandas>=2.0.0
+
+# Banco de Dados
+psycopg2-binary>=2.9.0
+
+# Email e autenticação Microsoft
+msal>=1.20.0
+python-dotenv>=1.0.0
+
+# Templates e PDF
+jinja2>=3.1.0
+weasyprint>=60.0
+
+# HTTP requests
+requests>=2.31.0
+
+# Jobs automáticos
+APScheduler>=3.11.0
