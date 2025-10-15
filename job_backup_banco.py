@@ -26,17 +26,15 @@ def criar_backup_automatico():
     
     try:
         # Obter configurações do banco
-        conn = db.get_db_connection()
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
         
-        # Extrair informações de conexão
-        db_params = conn.get_dsn_parameters()
-        
-        db_name = db_params.get('dbname', 'prestadores')
-        db_host = db_params.get('host', 'localhost')
-        db_port = db_params.get('port', '5432')
-        db_user = db_params.get('user', 'postgres')
-        
-        conn.close()
+        db_name = os.getenv("DB_NAME", "prestadores")
+        db_host = os.getenv("DB_HOST", "localhost")
+        db_port = os.getenv("DB_PORT", "5432")
+        db_user = os.getenv("DB_USER", "postgres")
+        db_pass = os.getenv("DB_PASS", "")
         
         logger.info(f"\n📊 Configuração do Banco:")
         logger.info(f"   Database: {db_name}")
@@ -72,13 +70,16 @@ def criar_backup_automatico():
         logger.info(f"   🔄 Executando pg_dump...")
         
         env = os.environ.copy()
-        # Se tiver PGPASSWORD no ambiente, será usado
+        # Adicionar senha no ambiente para pg_dump
+        if db_pass:
+            env['PGPASSWORD'] = db_pass
         
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            env=env
+            env=env,
+            timeout=300  # 5 minutos timeout
         )
         
         if result.returncode == 0:

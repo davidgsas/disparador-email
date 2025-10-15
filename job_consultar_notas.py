@@ -151,6 +151,10 @@ def processar_uploads_pendentes():
                 db.atualizar_status_arquivo(lote_id, 2)
                 logger.info(f"   ✅ Status atualizado: Arquivos baixados")
                 
+                # Atualizar status do lote para "N.F RECEBIDA"
+                db.update_lote_servico_status(lote_id, 'N.F RECEBIDA')
+                logger.info(f"   ✅ Status do lote atualizado: N.F RECEBIDA")
+                
                 # Criar notificação APENAS se não existir
                 if not ja_tem_notificacao:
                     total_arqs = len(arquivos)

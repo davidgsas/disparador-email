@@ -205,10 +205,25 @@ def update_lote_servico_attachment(lote_id, anexo_path):
     conn.close()
 
 def delete_lote_servico(lote_id):
+    """Deleta um lote e todos os registros relacionados"""
     conn = get_db_connection()
-    with conn.cursor() as cur: cur.execute('DELETE FROM lotes_servico WHERE id = %s', (lote_id,))
-    conn.commit()
-    conn.close()
+    try:
+        with conn.cursor() as cur:
+            # Deletar notificações relacionadas primeiro
+            cur.execute('DELETE FROM notificacoes WHERE lote_id = %s', (lote_id,))
+            
+            # Deletar cards do Trello relacionados
+            cur.execute('DELETE FROM trello_cards WHERE lote_id = %s', (lote_id,))
+            
+            # Deletar o lote (os_enviadas já tem ON DELETE CASCADE)
+            cur.execute('DELETE FROM lotes_servico WHERE id = %s', (lote_id,))
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
 
 def get_lote_servico_by_conversation_id(conversation_id):
     conn = get_db_connection()
