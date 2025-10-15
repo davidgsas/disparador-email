@@ -146212,3 +146212,32 @@ OSError: [Errno 5] Input/output error
 2025-10-15 12:31:16,510 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
 2025-10-15 12:31:16,510 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
 2025-10-15 12:31:16,510 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 12:31:17,014 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 12:31:17,015 - JobConsultaNotas - INFO - 📦 Lote #12
+2025-10-15 12:31:17,015 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 12:31:17,015 - JobConsultaNotas - INFO -    📅 Período: sei la
+2025-10-15 12:31:17,015 - JobConsultaNotas - INFO -    🔑 Hash: 2ef59838fd858c04281e...
+2025-10-15 12:31:17,015 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 12:31:17,679 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 12:31:17,679 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 12:31:17,679 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 12:31:17,679 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 12:31:18,182 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 12:31:18,182 - JobConsultaNotas - INFO - 📦 Lote #11
+2025-10-15 12:31:18,182 - JobConsultaNotas - INFO -    👤 Prestador: david
+2025-10-15 12:31:18,183 - JobConsultaNotas - INFO -    📅 Período: teste David
+2025-10-15 12:31:18,183 - JobConsultaNotas - INFO -    🔑 Hash: 8b51f9d0c8afb8f91834...
+2025-10-15 12:31:18,183 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
+2025-10-15 12:31:18,697 - JobConsultaNotas - INFO -    📊 Status: Aguardando upload
+2025-10-15 12:31:18,697 - JobConsultaNotas - INFO -    📁 Arquivos encontrados: 0
+2025-10-15 12:31:18,697 - JobConsultaNotas - INFO -    ⏳ Aguardando upload do prestador
+2025-10-15 12:31:18,697 - JobConsultaNotas - INFO -    📅 Link válido por mais 29 dia(s)
+2025-10-15 12:31:19,199 - JobConsultaNotas - INFO - 
+────────────────────────────────────────────────────────────
+2025-10-15 12:31:19,199 - JobConsultaNotas - INFO - 📦 Lote #10
+2025-10-15 12:31:19,199 - JobConsultaNotas - INFO -    👤 Prestador: thiago
+2025-10-15 12:31:19,200 - JobConsultaNotas - INFO -    📅 Período: 23/08/2025 – 04/09/2025
+2025-10-15 12:31:19,200 - JobConsultaNotas - INFO -    🔑 Hash: d9d43a5b6b47e72892ec...
+2025-10-15 12:31:19,200 - JobConsultaNotas - INFO -    🔍 Consultando arquivos...
