@@ -5,6 +5,7 @@ Cria cards automaticamente quando arquivos são baixados
 
 import requests
 import json
+import os
 from datetime import datetime
 from typing import Optional, Dict, Any
 import database as db
@@ -89,7 +90,8 @@ class TrelloIntegration:
         prestador_nome: str,
         montador_nome: str,
         arquivos_baixados: list,
-        nota_fiscal: Optional[str] = None
+        nota_fiscal: Optional[str] = None,
+        arquivos_para_anexar: Optional[list] = None  # lista de caminhos de arquivos locais
     ) -> Optional[Dict[str, Any]]:
         """
         Cria um card no Trello quando arquivos são baixados
@@ -112,7 +114,6 @@ class TrelloIntegration:
         try:
             # Monta o título do card
             titulo = f"📦 Lote #{lote_id} - {prestador_nome}"
-            
             # Monta a descrição do card
             descricao = self._montar_descricao(
                 lote_id, 
@@ -121,10 +122,8 @@ class TrelloIntegration:
                 arquivos_baixados, 
                 nota_fiscal
             )
-            
             # Cria o card via API
             url = f"{self.base_url}/cards"
-            
             params = {
                 'key': self.api_key,
                 'token': self.token,
@@ -133,33 +132,92 @@ class TrelloIntegration:
                 'desc': descricao,
                 'pos': 'top'  # Coloca no topo da lista
             }
-            
             response = requests.post(url, params=params)
             response.raise_for_status()
-            
             card_data = response.json()
             card_id = card_data['id']
             card_url = card_data['shortUrl']
-            
             print(f"✅ Card Trello criado: {card_url}")
-            
             # Adiciona label (se configurado)
             self._adicionar_label(card_id, 'green')
-            
             # Cria checklist automática
             self._criar_checklist(card_id, arquivos_baixados)
+            # Anexa arquivos reais, se fornecidos
+            import logging
+            logger = logging.getLogger('TrelloIntegration')
             
+            if arquivos_para_anexar:
+                print(f"📎 Anexando {len(arquivos_para_anexar)} arquivo(s) ao card...")
+                logger.info(f"📎 Anexando {len(arquivos_para_anexar)} arquivo(s) ao card...")
+                for idx, caminho in enumerate(arquivos_para_anexar, 1):
+                    print(f"   [{idx}/{len(arquivos_para_anexar)}] Anexando: {os.path.basename(caminho)}")
+                    logger.info(f"   [{idx}/{len(arquivos_para_anexar)}] Anexando: {os.path.basename(caminho)}")
+                    self._anexar_arquivo(card_id, caminho)
+            else:
+                print(f"⚠️  Nenhum arquivo para anexar (lista vazia ou None)")
+                logger.warning(f"⚠️  Nenhum arquivo para anexar - lista: {arquivos_para_anexar}")
             # Salva no banco que o card foi criado
             self._salvar_card_criado(lote_id, card_id, card_url)
-            
             return card_data
-            
         except requests.exceptions.RequestException as e:
             print(f"❌ Erro ao criar card no Trello: {e}")
             return None
         except Exception as e:
             print(f"❌ Erro inesperado ao criar card: {e}")
             return None
+
+    def _anexar_arquivo(self, card_id: str, caminho_arquivo: str):
+        """Faz upload de um arquivo real como anexo ao card do Trello, com logs detalhados"""
+        import os
+        import logging
+        logger = logging.getLogger('TrelloIntegration')
+        
+        print(f"🔧 [DEBUG] Iniciando anexação de arquivo...")
+        print(f"   Card ID: {card_id}")
+        print(f"   Caminho: {caminho_arquivo}")
+        logger.info(f"Tentando anexar arquivo: {caminho_arquivo}")
+
+        if not os.path.isfile(caminho_arquivo):
+            msg = f"⚠️  Arquivo não encontrado para anexo: {caminho_arquivo}"
+            print(msg)
+            logger.warning(msg)
+            return False
+
+        print(f"   ✅ Arquivo existe no disco")
+        tamanho = os.path.getsize(caminho_arquivo)
+        print(f"   📊 Tamanho: {tamanho} bytes")
+
+        url = f"{self.base_url}/cards/{card_id}/attachments"
+        params = {
+            'key': self.api_key,
+            'token': self.token
+        }
+
+        try:
+            print(f"   🌐 Fazendo upload para: {url}")
+            with open(caminho_arquivo, 'rb') as f:
+                files = {'file': (os.path.basename(caminho_arquivo), f)}
+                response = requests.post(url, params=params, files=files)
+
+                print(f"   📡 Resposta HTTP: {response.status_code}")
+                
+                if response.status_code == 200:
+                    msg = f"📎 Anexo enviado com sucesso: {os.path.basename(caminho_arquivo)}"
+                    print(f"   ✅ {msg}")
+                    logger.info(msg)
+                    return True
+                else:
+                    msg = f"❌ Falha ao anexar {caminho_arquivo}: {response.status_code} - {response.text[:200]}"
+                    print(f"   {msg}")
+                    logger.error(msg)
+                    return False
+        except Exception as e:
+            msg = f"❌ Exceção ao anexar {caminho_arquivo}: {e}"
+            print(f"   {msg}")
+            logger.error(msg)
+            import traceback
+            traceback.print_exc()
+            return False
     
     def _montar_descricao(
         self, 

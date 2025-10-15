@@ -56,10 +56,15 @@ def executar_job_consultar_notas():
             logger.info(f"⏸️  Job {job_nome} não está ativo, pulando execução")
             return
         
-        # Importar e executar o job
-        from job_consultar_notas import processar_uploads_pendentes
+        # Importar e executar o job (com reload para pegar mudanças)
+        import importlib
+        import job_consultar_notas
+        # Recarregar também os módulos dependentes
+        from integracoes import trello_integration
+        importlib.reload(trello_integration)
+        importlib.reload(job_consultar_notas)
         
-        processar_uploads_pendentes()
+        job_consultar_notas.processar_uploads_pendentes()
         
         mensagem = "Job executado com sucesso"
         db.registrar_execucao_job(job_nome, sucesso=True, mensagem=mensagem)

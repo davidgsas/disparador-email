@@ -1,0 +1,96 @@
+<ConsultarNfseServicoPrestadoResposta xmlns="http://www.abrasf.org.br/nfse.xsd">
+  <ListaNfse>
+    <CompNfse>
+      <Nfse versao="2.04">
+        <InfNfse>
+          <Numero>9374</Numero>
+          <CodigoVerificacao>B73A9DDDA</CodigoVerificacao>
+          <DataEmissao>2025-09-18T15:05:16.563</DataEmissao>
+          <OutrasInformacoes> .</OutrasInformacoes>
+          <ValoresNfse>
+            <BaseCalculo>70.00</BaseCalculo>
+            <Aliquota>3</Aliquota>
+            <ValorIss>2.10</ValorIss>
+            <ValorLiquidoNfse>70.00</ValorLiquidoNfse>
+          </ValoresNfse>
+          <DescricaoCodigoTributacaoMunicípio>[3329-5/01] Serviços de montagem de móveis de qualquer material</DescricaoCodigoTributacaoMunicípio>
+          <ValorCredito>0.00</ValorCredito>
+          <PrestadorServico>
+            <RazaoSocial> Novo Mundo S. A.</RazaoSocial>
+            <NomeFantasia> Novo Mundo</NomeFantasia>
+            <Endereco>
+              <Endereco>Avenida Jataí</Endereco>
+              <Complemento>SALA 01 - MESA 05, Q:004, L: 0001</Complemento>
+              <Bairro>Parque Industrial Aparecida Vice-Presidente José de Alencar</Bairro>
+              <CodigoMunicipio>5201405</CodigoMunicipio>
+              <Uf>GO</Uf>
+              <Cep>74993495</Cep>
+            </Endereco>
+            <Contato>
+              <Email>controle2@novomundo.com.br</Email>
+            </Contato>
+          </PrestadorServico>
+          <OrgaoGerador>
+            <CodigoMunicipio>5201405</CodigoMunicipio>
+            <Uf>GO</Uf>
+          </OrgaoGerador>
+          <DeclaracaoPrestacaoServico>
+            <InfDeclaracaoPrestacaoServico Id="9374">
+              <Competencia>2025-09-18</Competencia>
+              <Servico>
+                <Valores>
+                  <ValorServicos>70.00</ValorServicos>
+                  <ValorDeducoes>0.00</ValorDeducoes>
+                  <ValorPis>0.00</ValorPis>
+                  <ValorCofins>0.00</ValorCofins>
+                  <ValorInss>0.00</ValorInss>
+                  <ValorIr>0.00</ValorIr>
+                  <ValorCsll>0.00</ValorCsll>
+                  <OutrasRetencoes>0.00</OutrasRetencoes>
+                  <DescontoIncondicionado>0.00</DescontoIncondicionado>
+                  <DescontoCondicionado>0.00</DescontoCondicionado>
+                </Valores>
+                <IssRetido>2</IssRetido>
+                <ItemListaServico>14.06</ItemListaServico>
+                <CodigoCnae>3329501</CodigoCnae>
+                <CodigoTributacaoMunicipio>3329501</CodigoTributacaoMunicipio>
+                <Discriminacao>Montagem Avulsa</Discriminacao>
+                <CodigoMunicipio>5201405</CodigoMunicipio>
+                <ExigibilidadeISS>1</ExigibilidadeISS>
+                <MunicipioIncidencia>5201405</MunicipioIncidencia>
+              </Servico>
+              <Prestador>
+                <CpfCnpj>
+                  <Cnpj>01534080022105</Cnpj>
+                </CpfCnpj>
+                <InscricaoMunicipal>14233850</InscricaoMunicipal>
+              </Prestador>
+              <TomadorServico>
+                <IdentificacaoTomador>
+                  <CpfCnpj>
+                    <Cpf>00037535145</Cpf>
+                  </CpfCnpj>
+                </IdentificacaoTomador>
+                <RazaoSocial>INGRIDIARA CLEMENTE BORGES</RazaoSocial>
+                <Endereco>
+                  <Endereco>Avenida Pedro Paulo de Souza</Endereco>
+                  <Complemento>Cond. Felicitá Apto. 1404 Bloco - H</Complemento>
+                  <Bairro>Goiânia 2</Bairro>
+                  <CodigoMunicipio>5208707</CodigoMunicipio>
+                  <Uf>GO</Uf>
+                  <Cep>74663520</Cep>
+                </Endereco>
+                <Contato>
+                  <Telefone>62986432715</Telefone>
+                </Contato>
+              </TomadorServico>
+              <OptanteSimplesNacional>2</OptanteSimplesNacional>
+              <IncentivoFiscal>2</IncentivoFiscal>
+            </InfDeclaracaoPrestacaoServico>
+          </DeclaracaoPrestacaoServico>
+        </InfNfse>
+      </Nfse>
+    </CompNfse>
+    <Pagina>1</Pagina>
+  </ListaNfse>
+</ConsultarNfseServicoPrestadoResposta>

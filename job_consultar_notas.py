@@ -22,6 +22,15 @@ import logging
 # Configurar logger para este job
 logger = logging.getLogger('JobConsultaNotas')
 
+# Configurar logger do TrelloIntegration para exibir no console
+trello_logger = logging.getLogger('TrelloIntegration')
+trello_logger.setLevel(logging.INFO)
+if not trello_logger.hasHandlers():
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s')
+    handler.setFormatter(formatter)
+    trello_logger.addHandler(handler)
+
 def processar_uploads_pendentes():
     """Processa lotes aguardando upload de notas fiscais"""
     
@@ -164,9 +173,11 @@ def processar_uploads_pendentes():
                         trello = TrelloIntegration()
                         if trello.is_configured():
                             logger.info(f"   📋 Criando card no Trello...")
+                            logger.info(f"   🔍 DEBUG: Iniciando preparação dos dados do card... [VERSÃO: 01:25]")
                             
                             # Obter nome do montador
                             montador_nome = lote.get('montador_nome', 'N/A')
+                            logger.info(f"   🔍 DEBUG: Montador = {montador_nome}")
                             
                             # Obter número da nota fiscal (se disponível)
                             nota_fiscal = None
@@ -175,6 +186,18 @@ def processar_uploads_pendentes():
                             
                             # Lista de nomes dos arquivos baixados
                             arquivos_baixados = [arq['nome_original'] for arq in arquivos]
+                            logger.info(f"   🔍 DEBUG: arquivos_baixados = {arquivos_baixados}")
+                            # Caminhos reais dos arquivos baixados
+                            arquivos_para_anexar = [os.path.join(pasta_destino, arq['nome_original']) for arq in arquivos]
+                            logger.info(f"   🔍 DEBUG: arquivos_para_anexar = {arquivos_para_anexar}")
+                            
+                            # Log detalhado dos arquivos para anexar
+                            logger.info(f"   📎 Arquivos para anexar no Trello:")
+                            for caminho in arquivos_para_anexar:
+                                existe = os.path.isfile(caminho)
+                                logger.info(f"      {'✅' if existe else '❌'} {caminho}")
+                            
+                            logger.info(f"   🎯 DEBUG: Chamando criar_card_download com {len(arquivos_para_anexar)} arquivos...")
                             
                             # Criar card
                             card_result = trello.criar_card_download(
@@ -182,7 +205,8 @@ def processar_uploads_pendentes():
                                 prestador_nome=prestador,
                                 montador_nome=montador_nome,
                                 arquivos_baixados=arquivos_baixados,
-                                nota_fiscal=nota_fiscal
+                                nota_fiscal=nota_fiscal,
+                                arquivos_para_anexar=arquivos_para_anexar
                             )
                             
                             if card_result:
