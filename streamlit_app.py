@@ -16,6 +16,9 @@ from weasyprint import HTML
 
 import database as db
 from templates.variaveis import mostrar_variaveis_disponiveis
+from notificacoes_widget import mostrar_badge_notificacoes, mostrar_modal_notificacoes
+from painel_jobs import mostrar_painel_jobs
+from notificacoes_toast import processar_notificacoes_toast, badge_contador_notificacoes, marcar_todas_como_lidas
 
 # --- Novas Funções de Configuração ---
 CONFIG_FILE = Path("config.json")
@@ -131,8 +134,24 @@ if "access_token" not in st.session_state:
 # --- APLICAÇÃO PRINCIPAL (SÓ EXECUTA SE LOGADO) ---
 config = load_config()
 
+# 🔔 PROCESSAR NOTIFICAÇÕES TOAST (exibe automaticamente)
+processar_notificacoes_toast()
+
 st.sidebar.title("MENU")
-app_mode = st.sidebar.selectbox("Selecione a Página", ["Dashboard de Pendências", "Serviços (Prestadores)", "Montagem (Montadores)", "� Upload de Notas Fiscais", "�🗄️ Backups do Banco"])
+
+# Mostrar contador de notificações no sidebar
+count_notif = badge_contador_notificacoes()
+if count_notif > 0:
+    col_notif1, col_notif2 = st.sidebar.columns([2, 1])
+    with col_notif1:
+        st.markdown(f"### 🔔 {count_notif}")
+    with col_notif2:
+        if st.button("✓", help="Marcar todas como lidas", key="clear_all_notif"):
+            qtd = marcar_todas_como_lidas()
+            st.toast(f"✅ {qtd} notificação(ões) marcadas como lidas", icon="✅")
+            st.rerun()
+
+app_mode = st.sidebar.selectbox("Selecione a Página", ["Dashboard de Pendências", "Serviços (Prestadores)", "Montagem (Montadores)", "📤 Upload de Notas Fiscais", "⚙️ Jobs Automáticos", "🗄️ Backups do Banco"])
 st.sidebar.info(f"**Conectado como:** \n{st.session_state.user}")
 
 if app_mode == "Dashboard de Pendências":
@@ -666,6 +685,69 @@ Obrigado."""
                                     
                                     except Exception as e:
                                         st.error(f"❌ Erro: {str(e)}")
+                        
+                        # Seção de Arquivos Recebidos
+                        if lote.get('status_arquivo', 0) >= 1 and lote.get('arquivos_nf'):
+                            st.markdown("---")
+                            st.markdown("### 📁 Arquivos da Nota Fiscal Recebidos")
+                            
+                            try:
+                                import json
+                                arquivos_data = lote['arquivos_nf']
+                                
+                                # Se for string JSON, converter
+                                if isinstance(arquivos_data, str):
+                                    arquivos_data = json.loads(arquivos_data)
+                                
+                                arquivos = arquivos_data.get('arquivos', [])
+                                stats = arquivos_data.get('estatisticas', {})
+                                data_consulta = arquivos_data.get('data_consulta', '')
+                                
+                                if arquivos:
+                                    # Estatísticas
+                                    col_stat1, col_stat2, col_stat3 = st.columns(3)
+                                    with col_stat1:
+                                        st.metric("📦 Total de Arquivos", stats.get('total_arquivos', len(arquivos)))
+                                    with col_stat2:
+                                        st.metric("💾 Tamanho Total", stats.get('total_tamanho_formatado', '-'))
+                                    with col_stat3:
+                                        if stats.get('ultimo_upload'):
+                                            st.metric("📅 Último Upload", stats['ultimo_upload'].split()[0])
+                                    
+                                    # Lista de arquivos
+                                    for i, arq in enumerate(arquivos, 1):
+                                        with st.container():
+                                            col_arq1, col_arq2 = st.columns([3, 1])
+                                            
+                                            with col_arq1:
+                                                st.markdown(f"**{i}. {arq.get('nome_original', 'Arquivo')}**")
+                                                st.caption(f"📊 {arq.get('tamanho_formatado', '-')} • {arq.get('tipo_arquivo', '-')} • Upload: {arq.get('data_upload', '-')}")
+                                            
+                                            with col_arq2:
+                                                # Verificar se arquivo existe localmente
+                                                import os
+                                                caminho_local = os.path.join('uploads', f"lote_{lote['id']}", arq.get('nome_original', ''))
+                                                
+                                                if os.path.exists(caminho_local):
+                                                    with open(caminho_local, 'rb') as f:
+                                                        st.download_button(
+                                                            label="⬇️ Download",
+                                                            data=f,
+                                                            file_name=arq.get('nome_original', 'arquivo'),
+                                                            mime=arq.get('tipo_arquivo', 'application/octet-stream'),
+                                                            key=f"download_nf_{lote['id']}_{i}"
+                                                        )
+                                                else:
+                                                    st.caption("🌐 [Download Online](" + arq.get('link_download', '#') + ")")
+                                    
+                                    if data_consulta:
+                                        st.caption(f"🕐 Última verificação: {data_consulta}")
+                                
+                                else:
+                                    st.info("⏳ Aguardando envio de arquivos pelo prestador")
+                            
+                            except Exception as e:
+                                st.error(f"❌ Erro ao exibir arquivos: {str(e)}")
                         
                         st.markdown("---")
                         
@@ -1687,7 +1769,10 @@ elif app_mode == "� Upload de Notas Fiscais":
                             with open(arquivo_path, "r", encoding="utf-8") as f:
                                 st.code(f.read(), language="markdown" if arquivo.endswith(".md") else "python")
 
-elif app_mode == "�🗄️ Backups do Banco":
+elif app_mode == "⚙️ Jobs Automáticos":
+    mostrar_painel_jobs()
+
+elif app_mode == "🗄️ Backups do Banco":
     st.title("🗄️ Sistema de Backup do Banco de Dados")
     
     backup_dir = Path("backups")

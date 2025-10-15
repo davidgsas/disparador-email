@@ -217,6 +217,7 @@ class APIUploadClient:
           "id_controle": 1,
           "lote_id": 99999,
           "link": "https://api.link.com.br/dvprocessamento/envio-nf/...",
+          "hash": "03de0449e11849318f7d67e08377f150",
           "validade_link": "2025-11-12",
           "status": 0,
           "message": "Registro criado com sucesso"
@@ -231,6 +232,7 @@ class APIUploadClient:
         return {
             'id_controle': resposta.get('id_controle'),
             'link': resposta.get('link'),
+            'hash': resposta.get('hash'),
             'validade_link': resposta.get('validade_link'),
             'status': resposta.get('status', 0),
             'message': resposta.get('message', '')
@@ -279,7 +281,8 @@ class APIUploadClient:
             link=dados['link'],
             validade_link=dados['validade_link'],
             status_api=dados['status'],
-            message=dados['message']
+            message=dados['message'],
+            upload_hash=dados.get('hash')
         )
         
         return True, dados['message'], dados

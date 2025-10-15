@@ -14,7 +14,7 @@ import datetime
 sys.path.insert(0, str(Path(__file__).parent))
 
 import database as db
-from upload_api_client import upload_api
+from consulta_nf_client import ConsultaNFClient
 import time
 
 def processar_uploads_pendentes():
@@ -34,12 +34,16 @@ def processar_uploads_pendentes():
             print("✅ Nenhum lote pendente no momento")
             return
         
+        # Criar cliente de consulta
+        client = ConsultaNFClient()
+        
+        arquivos_encontrados = 0
         downloads_realizados = 0
         erros = 0
         
         for lote in lotes:
             lote_id = lote['id']
-            token = lote['upload_token']
+            upload_hash = lote.get('upload_hash')
             prestador = lote['prestador_nome']
             periodo = lote['periodo']
             
@@ -47,61 +51,102 @@ def processar_uploads_pendentes():
             print(f"📦 Lote #{lote_id}")
             print(f"   👤 Prestador: {prestador}")
             print(f"   📅 Período: {periodo}")
-            print(f"   🎫 Token: {token[:20]}...")
+            
+            # Verificar se tem hash
+            if not upload_hash:
+                print(f"   ⚠️  Sem hash de upload (lote antigo)")
+                continue
+            
+            print(f"   🔑 Hash: {upload_hash[:20]}...")
             
             # Consultar status na API
-            print(f"   🔍 Consultando status...")
-            success, result = upload_api.consultar_status(token)
+            print(f"   🔍 Consultando arquivos...")
+            sucesso, dados, erro = client.consultar_e_processar(upload_hash)
             
-            if not success:
-                print(f"   ❌ Erro ao consultar: {result}")
+            if not sucesso:
+                print(f"   ❌ Erro ao consultar: {erro}")
                 erros += 1
                 continue
             
-            status = result.get('status')
-            print(f"   📊 Status: {status}")
+            # Extrair informações
+            nota = dados['nota']
+            arquivos = dados['arquivos']
+            stats = dados['estatisticas']
             
-            # Processar de acordo com o status
-            if status == 'completed' and result.get('file_available'):
-                print(f"   ✅ Arquivo disponível para download!")
+            print(f"   📊 Status: {nota['status_descricao']}")
+            print(f"   📁 Arquivos encontrados: {stats['total_arquivos']}")
+            
+            # Processar arquivos
+            if len(arquivos) > 0:
+                arquivos_encontrados += 1
+                print(f"   📦 Total: {stats['total_tamanho_formatado']}")
                 
-                # Obter informações do arquivo
-                file_info = result.get('file_info', {})
-                filename = file_info.get('filename', f'nota_fiscal_lote_{lote_id}.pdf')
-                filesize = file_info.get('size', 0)
+                # Verificar se já foi processado antes (evitar duplicações)
+                status_arquivo_atual = lote.get('status_arquivo', 0)
+                ja_processado = status_arquivo_atual == 2  # 2 = Arquivos baixados
                 
-                print(f"   📄 Arquivo: {filename}")
-                print(f"   📊 Tamanho: {filesize / 1024:.2f} KB")
+                if ja_processado:
+                    print(f"   ℹ️  Arquivos já foram baixados anteriormente")
+                    continue
                 
-                # Fazer download
-                save_path = f"uploads/nota_fiscal_lote_{lote_id}.pdf"
-                print(f"   ⬇️  Baixando arquivo...")
+                # Salvar informações no banco
+                db.salvar_arquivos_nf(lote_id, arquivos, stats)
+                print(f"   ✅ Dados salvos no banco")
                 
-                success_download, message = upload_api.download_arquivo(token, save_path)
+                # Baixar cada arquivo
+                pasta_destino = f"uploads/lote_{lote_id}"
+                import os
+                os.makedirs(pasta_destino, exist_ok=True)
                 
-                if success_download:
-                    print(f"   ✅ {message}")
-                    print(f"   💾 Salvo em: {save_path}")
+                for arquivo in arquivos:
+                    nome_arquivo = arquivo['nome_original']
+                    caminho_local = os.path.join(pasta_destino, nome_arquivo)
                     
-                    # Atualizar banco de dados
-                    db.salvar_nota_fiscal(lote_id, save_path)
-                    print(f"   ✅ Banco de dados atualizado")
+                    # Verificar se arquivo já existe
+                    if os.path.exists(caminho_local):
+                        print(f"   ✓ Já existe: {nome_arquivo}")
+                        downloads_realizados += 1
+                        continue
                     
-                    downloads_realizados += 1
-                else:
-                    print(f"   ❌ Erro no download: {message}")
-                    erros += 1
+                    print(f"   ⬇️  Baixando: {nome_arquivo} ({arquivo['tamanho_formatado']})")
+                    
+                    sucesso_download, mensagem = client.baixar_arquivo(
+                        arquivo['link_download'],
+                        caminho_local
+                    )
+                    
+                    if sucesso_download:
+                        downloads_realizados += 1
+                    else:
+                        print(f"      ❌ {mensagem}")
+                        erros += 1
+                
+                # Atualizar status do arquivo para "baixado"
+                db.atualizar_status_arquivo(lote_id, 2)
+                print(f"   ✅ Status atualizado: Arquivos baixados")
+                
+                # Criar notificação APENAS na primeira vez
+                total_arqs = len(arquivos)
+                titulo = f"📥 Nota Fiscal Recebida - Lote #{lote_id}"
+                mensagem = f"{prestador} enviou {total_arqs} arquivo(s) da nota fiscal ({stats['total_tamanho_formatado']})"
+                
+                db.criar_notificacao(
+                    tipo='nf_recebida',
+                    titulo=titulo,
+                    mensagem=mensagem,
+                    lote_id=lote_id,
+                    icone='📥',
+                    prioridade=1
+                )
+                print(f"   🔔 Notificação criada")
             
-            elif status == 'expired':
-                print(f"   ⏰ Link expirado (30 dias)")
-                db.atualizar_status_upload(lote_id, 'expired')
-                print(f"   ℹ️  Status atualizado no banco")
-            
-            elif status == 'pending':
+            elif nota['link_valido']:
                 print(f"   ⏳ Aguardando upload do prestador")
+                print(f"   📅 Link válido por mais {nota['dias_restantes']} dia(s)")
             
             else:
-                print(f"   ⚠️  Status desconhecido: {status}")
+                print(f"   ⏰ Link expirado")
+                db.atualizar_status_api(lote_id, 2)  # Status expirado
             
             # Pequena pausa entre requisições
             time.sleep(0.5)
@@ -110,8 +155,9 @@ def processar_uploads_pendentes():
         print(f"\n{'='*60}")
         print(f"📊 RESUMO DO PROCESSAMENTO")
         print(f"{'='*60}")
-        print(f"✅ Downloads realizados: {downloads_realizados}")
-        print(f"⏳ Ainda pendentes: {len(lotes) - downloads_realizados - erros}")
+        print(f"📁 Lotes com arquivos: {arquivos_encontrados}")
+        print(f"⬇️  Arquivos baixados: {downloads_realizados}")
+        print(f"⏳ Ainda pendentes: {len(lotes) - arquivos_encontrados}")
         if erros > 0:
             print(f"❌ Erros encontrados: {erros}")
         print(f"\n⏰ Concluído em: {datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
