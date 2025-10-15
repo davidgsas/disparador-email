@@ -42,8 +42,26 @@ def run_migrations():
         cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS nota_fiscal_path TEXT;")  # Caminho do arquivo recebido
         cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS api_message TEXT;")  # Mensagem retornada pela API
         
+        # Adicionar mesmas colunas para envios_montagem (sistema de API para montadores)
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS id_controle INTEGER;")  # ID retornado pela API
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS link_upload TEXT;")  # Link de upload recebido da API
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS validade_link DATE;")  # Data de validade do link
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS status_api INTEGER DEFAULT 0;")  # 0=pendente, 1=NF recebida
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS data_envio_api TIMESTAMP;")  # Quando foi enviado para API
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS nota_fiscal_path TEXT;")  # Caminho do arquivo recebido
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS api_message TEXT;")  # Mensagem retornada pela API
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS upload_hash TEXT;")  # Hash único para consulta
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS status_arquivo INTEGER DEFAULT 0;")  # 0=Aguardando, 1=Recebido, 2=Baixado
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS data_ultima_consulta TIMESTAMP;")  # Última consulta à API
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS quantidade_os INTEGER;")  # Quantidade de OSs no envio
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS montador_nome TEXT;")  # Nome do montador (cache)
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS periodo TEXT;")  # Período formatado para API (MM/YYYY)
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS valor_total NUMERIC(10, 2);")  # Valor total do envio
+        
         # Criar índices
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_montagem ON envios_montagem ((detalhes->>'periodo_relatorio'), montador_id);''')
+        cur.execute('''CREATE INDEX IF NOT EXISTS idx_envios_montagem_upload_hash ON envios_montagem(upload_hash);''')
+        cur.execute('''CREATE INDEX IF NOT EXISTS idx_envios_montagem_status_api ON envios_montagem(status_api);''')
         
         # Tabela de envios ignorados
         cur.execute('''CREATE TABLE IF NOT EXISTS envios_ignorados (id SERIAL PRIMARY KEY, tipo TEXT NOT NULL, entidade_id INTEGER NOT NULL, ano INTEGER NOT NULL, periodo_chave TEXT NOT NULL, data_ignorada TIMESTAMP NOT NULL)''')
@@ -110,6 +128,15 @@ def get_prestador_by_name(name):
         prestador = cur.fetchone()
     conn.close()
     return prestador
+
+def get_montador_by_name(name):
+    """Busca montador pelo nome"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('SELECT * FROM montadores WHERE nome = %s', (name,))
+        montador = cur.fetchone()
+    conn.close()
+    return montador
 
 def delete_prestador(prestador_id):
     conn = get_db_connection()
@@ -300,8 +327,19 @@ def get_lotes_com_link_pendente():
     return lotes
 
 def get_lotes_upload_pendente():
-    """Retorna lotes aguardando upload de nota fiscal (mesmo que get_lotes_com_link_pendente)"""
-    return get_lotes_com_link_pendente()
+    """Retorna lotes que têm upload_hash e estão aguardando download do arquivo"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT * FROM lotes_servico 
+               WHERE upload_hash IS NOT NULL 
+               AND (status_arquivo IS NULL OR status_arquivo != 2)
+               AND validade_link >= CURRENT_DATE
+               ORDER BY data_envio DESC"""
+        )
+        lotes = cur.fetchall()
+    conn.close()
+    return lotes
 
 def get_lote_by_id_controle(id_controle):
     """Retorna lote pelo ID de controle da API"""
@@ -618,13 +656,58 @@ def get_montador_by_identificador(identificador):
 def log_sent_montagem(montador_id, group_details, conversation_id):
     conn = get_db_connection()
     now = datetime.datetime.now()
+    
+    # Extrair dados do group_details para colunas cache
+    montador_nome = group_details.get('nome_montador')
+    quantidade_os = len(group_details.get('items', []))
+    valor_total = group_details.get('total_geral', 0)
+    periodo_relatorio = group_details.get('periodo_relatorio', '')
+    
+    # Extrair período no formato MM/YYYY
+    periodo = None
+    if periodo_relatorio:
+        # Formato: "15/10/2025 - 15/10/2025"
+        primeira_data = periodo_relatorio.split(' - ')[0].strip()
+        # Converter DD/MM/YYYY para MM/YYYY
+        if '/' in primeira_data:
+            partes = primeira_data.split('/')
+            if len(partes) == 3:
+                periodo = f"{partes[1]}/{partes[2]}"
+    
+    # Inserir registro no banco
     with conn.cursor() as cur:
         cur.execute(
-            "INSERT INTO envios_montagem (montador_id, data_envio, detalhes, conversation_id) VALUES (%s, %s, %s, %s)",
-            (montador_id, now, psycopg2.extras.Json(group_details), conversation_id)
+            """INSERT INTO envios_montagem 
+               (montador_id, data_envio, detalhes, conversation_id, montador_nome, quantidade_os, valor_total, periodo) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+               RETURNING id""",
+            (montador_id, now, psycopg2.extras.Json(group_details), conversation_id, 
+             montador_nome, quantidade_os, valor_total, periodo)
         )
+        envio_id = cur.fetchone()[0]
     conn.commit()
     conn.close()
+    
+    # 🚀 ENVIAR PARA API IMEDIATAMENTE após criar o registro
+    try:
+        from api_upload_client import APIUploadClient
+        
+        print(f"🚀 Enviando envio #{envio_id} para API automaticamente...")
+        client = APIUploadClient()
+        sucesso, mensagem, dados = client.enviar_e_salvar(envio_id, tipo='montagem')
+        
+        if sucesso:
+            print(f"   ✅ Link gerado: {dados.get('link', 'N/A')[:50]}...")
+        else:
+            print(f"   ⚠️  Erro ao gerar link: {mensagem}")
+            # Não falha o envio do email se a API falhar
+    except Exception as e:
+        print(f"   ⚠️  Exceção ao chamar API: {e}")
+        import traceback
+        traceback.print_exc()
+        # Não falha o envio do email se a API falhar
+    
+    return envio_id
 
 def get_envio_montagem_by_conversation_id(conversation_id):
     conn = get_db_connection()
@@ -671,10 +754,126 @@ def update_montagem_details(envio_id, details):
     conn.close()
 
 def delete_envio_montagem(envio_id):
+    """Deleta um envio de montagem e todos os registros relacionados"""
     conn = get_db_connection()
-    with conn.cursor() as cur: cur.execute('DELETE FROM envios_montagem WHERE id = %s', (envio_id,))
+    try:
+        with conn.cursor() as cur:
+            # Deletar notificações relacionadas primeiro
+            cur.execute('DELETE FROM notificacoes WHERE lote_id = %s AND tipo LIKE %s', (envio_id, '%montagem%'))
+            
+            # Deletar cards do Trello relacionados (se existirem)
+            cur.execute('DELETE FROM trello_cards WHERE lote_id = %s', (envio_id,))
+            
+            # Deletar o envio
+            cur.execute('DELETE FROM envios_montagem WHERE id = %s', (envio_id,))
+        
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+
+# --- Funções API para Montadores ---
+
+def get_envios_montagem_sem_api():
+    """Retorna envios de montagem que ainda não foram enviados para API"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT * FROM envios_montagem 
+               WHERE id_controle IS NULL 
+               AND status != 'N.F. RECEBIDA'
+               ORDER BY data_envio DESC"""
+        )
+        envios = cur.fetchall()
+    conn.close()
+    return envios
+
+def get_envios_montagem_upload_pendente():
+    """Retorna envios de montagem que têm upload_hash e estão aguardando download do arquivo"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT * FROM envios_montagem 
+               WHERE upload_hash IS NOT NULL 
+               AND (status_arquivo IS NULL OR status_arquivo != 2)
+               AND validade_link >= CURRENT_DATE
+               ORDER BY data_envio DESC"""
+        )
+        envios = cur.fetchall()
+    conn.close()
+    return envios
+
+def atualizar_status_api_montagem(envio_id, id_controle=None, link=None, validade_link=None, status_api=0, upload_hash=None):
+    """
+    Atualiza informações da API para envio de montagem
+    
+    Args:
+        envio_id: ID do envio
+        id_controle: ID retornado pela API
+        link: Link de upload gerado
+        validade_link: Data de validade do link
+        status_api: Status (0=pendente, 1=recebido)
+        upload_hash: Hash para consulta
+    """
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute('''
+            UPDATE envios_montagem 
+            SET id_controle = %s,
+                link_upload = %s,
+                validade_link = %s,
+                status_api = %s,
+                upload_hash = %s,
+                data_envio_api = NOW()
+            WHERE id = %s
+        ''', (id_controle, link, validade_link, status_api, upload_hash, envio_id))
+        
+        if status_api == 1:
+            cur.execute('UPDATE envios_montagem SET status = %s WHERE id = %s', ('N.F RECEBIDA', envio_id))
     conn.commit()
     conn.close()
+
+def atualizar_status_arquivo_montagem(envio_id, status):
+    """Atualiza status do arquivo de montagem (0=Aguardando, 1=Recebido, 2=Baixado)"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            'UPDATE envios_montagem SET status_arquivo = %s WHERE id = %s',
+            (status, envio_id)
+        )
+    conn.commit()
+    conn.close()
+
+def salvar_nota_fiscal_montagem(envio_id, file_path):
+    """Salva o caminho da nota fiscal recebida de montagem"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            'UPDATE envios_montagem SET nota_fiscal_path = %s, status_api = %s, status = %s WHERE id = %s',
+            (file_path, 1, 'N.F RECEBIDA', envio_id)
+        )
+    conn.commit()
+    conn.close()
+
+def get_envio_montagem_by_id(envio_id):
+    """Retorna envio de montagem pelo ID"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('SELECT * FROM envios_montagem WHERE id = %s', (envio_id,))
+        envio = cur.fetchone()
+    conn.close()
+    return envio
+
+def get_envio_montagem_by_id_controle(id_controle):
+    """Retorna envio de montagem pelo ID de controle da API"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('SELECT * FROM envios_montagem WHERE id_controle = %s', (id_controle,))
+        envio = cur.fetchone()
+    conn.close()
+    return envio
 
 def check_boletim_list(boletim_ids):
     if not boletim_ids: return []
@@ -684,6 +883,60 @@ def check_boletim_list(boletim_ids):
         sent_boletins = [row['sent_boletim'] for row in cur.fetchall()]
     conn.close()
     return sent_boletins
+
+def atualizar_dados_cache_montagem():
+    """
+    Atualiza campos cache (montador_nome, quantidade_os, periodo, valor_total) 
+    a partir do JSONB detalhes para todos os envios de montagem
+    """
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        # Buscar todos os envios
+        cur.execute("SELECT id, detalhes FROM envios_montagem WHERE detalhes IS NOT NULL")
+        envios = cur.fetchall()
+        
+        atualizados = 0
+        for envio in envios:
+            envio_id = envio['id']
+            detalhes = envio['detalhes']
+            
+            if isinstance(detalhes, str):
+                import json
+                detalhes = json.loads(detalhes)
+            
+            # Extrair dados
+            montador_nome = detalhes.get('nome_montador')
+            quantidade_os = len(detalhes.get('items', []))
+            total_geral = detalhes.get('total_geral', 0)
+            periodo_relatorio = detalhes.get('periodo_relatorio', '')
+            
+            # Extrair período no formato MM/YYYY da primeira data
+            periodo = None
+            if periodo_relatorio:
+                # Formato: "15/10/2025 - 15/10/2025"
+                primeira_data = periodo_relatorio.split(' - ')[0].strip()
+                # Converter DD/MM/YYYY para MM/YYYY
+                if '/' in primeira_data:
+                    partes = primeira_data.split('/')
+                    if len(partes) == 3:
+                        periodo = f"{partes[1]}/{partes[2]}"
+            
+            # Atualizar envio
+            cur.execute("""
+                UPDATE envios_montagem 
+                SET montador_nome = %s,
+                    quantidade_os = %s,
+                    valor_total = %s,
+                    periodo = %s
+                WHERE id = %s
+            """, (montador_nome, quantidade_os, total_geral, periodo, envio_id))
+            
+            atualizados += 1
+        
+        conn.commit()
+    conn.close()
+    
+    return atualizados
 
 def get_envios_na_semana(tipo, entidade_id, ano, semana):
     conn = get_db_connection()

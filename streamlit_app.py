@@ -904,7 +904,13 @@ elif app_mode == "Montagem (Montadores)":
                 st.sidebar.title("⚙️ Configurações de E-mail (Montador)")
                 
                 default_subject_montador = "Relatório de Pagamento de Montagem - Período: {{periodo_relatorio}}"
-                default_body_montador = "Olá, {{nome_montador}},\n\nSegue em anexo o seu relatório de pagamento de montagens referente ao período de **{{periodo_relatorio}}**.\n\nQualquer dúvida, estamos à disposição."
+                default_body_montador = """Olá, {{nome_montador}},
+
+Segue em anexo o seu relatório de pagamento de montagens referente ao período de **{{periodo_relatorio}}**.
+
+📎 **Link para upload de documentos:** {{link}}
+
+Qualquer dúvida, estamos à disposição."""
 
                 mostrar_variaveis_disponiveis()
                 st.text_input("CC (Montadores)", value=config.get("montador_cc", "projetos.qualidade@novomundo.com.br"), key="montador_cc", on_change=save_config)
@@ -943,7 +949,15 @@ elif app_mode == "Montagem (Montadores)":
                             
                             periodo_relatorio = f"{group['data_da_montagem'].min().strftime('%d/%m/%Y')} - {group['data_da_montagem'].max().strftime('%d/%m/%Y')}"
                             
-                            ctx = {
+                            # ✅ VERIFICAR SE JÁ EXISTE ENVIO ANTES DE PROCESSAR
+                            from check_montagem_exists import check_montagem_exists
+                            
+                            if check_montagem_exists(montador_info['id'], periodo_relatorio):
+                                report_summary.append({"Montador": montador_info['nome'], "Status": "❌ Já existe envio para este período"})
+                                continue
+                            
+                            # 1️⃣ Criar contexto inicial e salvar no banco (para gerar link)
+                            ctx_inicial = {
                                 "nome_montador": montador_info['nome'], 
                                 "periodo_relatorio": periodo_relatorio, 
                                 "percentual_comissao": montador_info['percentual_comissao'] * 100, 
@@ -954,20 +968,35 @@ elif app_mode == "Montagem (Montadores)":
                                 "total_geral": total_geral
                             }
                             
+                            # 2️⃣ Salvar no banco e gerar link automaticamente
+                            envio_id = db.log_sent_montagem(montador_info['id'], ctx_inicial, "temp_conversation_id")
+                            
+                            # 3️⃣ Buscar o link gerado
+                            time.sleep(1)  # Dar tempo para API processar
+                            envio_salvo = db.get_envio_montagem_by_id(envio_id)
+                            link_gerado = envio_salvo.get('link_upload', '') if envio_salvo else ''
+                            
+                            # 4️⃣ Atualizar contexto com o link
+                            ctx = ctx_inicial.copy()
+                            ctx['link'] = link_gerado
+                            
+                            # 5️⃣ Gerar PDF
                             template = Template(Path("templates/montador_template.html").read_text(encoding="utf-8"))
                             html_pdf = template.render(**ctx)
                             pdf_bytes = HTML(string=html_pdf, base_url="templates").write_pdf()
                             
+                            # 6️⃣ Preparar email com templates (agora com link disponível)
                             subj_template = Template(st.session_state.montador_subject)
                             body_template = Template(st.session_state.montador_body)
-
-                            subj, body_plain = subj_template.render(**ctx), body_template.render(**ctx)
+                            subj = subj_template.render(**ctx)
+                            body_plain = body_template.render(**ctx)
                             body_html = convert_plain_text_to_html(body_plain)
 
-                            # Obter todos os emails do montador (principal + adicionais)
+                            # 7️⃣ Obter todos os emails do montador (principal + adicionais)
                             montador_emails = db.get_montador_emails(montador_info)
                             recipients = [{"emailAddress": {"address": email}} for email in montador_emails]
 
+                            # 8️⃣ Montar payload do email
                             message_data = {
                                 "subject": subj,
                                 "body": {"contentType": "HTML", "content": body_html},
@@ -980,13 +1009,8 @@ elif app_mode == "Montagem (Montadores)":
                             
                             final_payload = { "message": message_data, "saveToSentItems": "true" }
 
+                            # 9️⃣ ENVIAR EMAIL
                             resp = requests.post("https://graph.microsoft.com/v1.0/me/sendMail", headers={"Authorization": f"Bearer {st.session_state.access_token}", "Content-Type": "application/json"}, json=final_payload)
-                            
-                            from check_montagem_exists import check_montagem_exists
-                            
-                            if check_montagem_exists(montador_info['id'], periodo_relatorio):
-                                report_summary.append({"Montador": montador_info['nome'], "Status": "❌ Já existe envio para este período"})
-                                continue
                                 
                             if resp.status_code == 202:
                                 time.sleep(2)
@@ -996,8 +1020,14 @@ elif app_mode == "Montagem (Montadores)":
                                 message_id = sent_resp['value'][0]['id']
                                 conversation_id = sent_resp['value'][0]['conversationId']
                                 
-                                db.log_sent_montagem(montador_info['id'], ctx, conversation_id)
-                                report_summary.append({"Montador": montador_info['nome'], "Status": "✅ Enviado"})
+                                # 🔟 Atualizar conversation_id no banco
+                                conn = db.get_db_connection()
+                                with conn.cursor() as cur:
+                                    cur.execute('UPDATE envios_montagem SET conversation_id = %s WHERE id = %s', (conversation_id, envio_id))
+                                conn.commit()
+                                conn.close()
+                                
+                                report_summary.append({"Montador": montador_info['nome'], "Status": f"✅ Enviado (Link: {link_gerado[:30]}...)" if link_gerado else "✅ Enviado"})
                             else:
                                 report_summary.append({"Montador": montador_info['nome'], "Status": f"❌ Erro {resp.status_code} - {resp.text}"})
                                 
@@ -1213,6 +1243,152 @@ elif app_mode == "Montagem (Montadores)":
                     cols[4].markdown(f"**{item['status']}**")
 
                     with st.expander("Ver Detalhes e Gerenciar"):
+                        # Informações do Upload (igual ao módulo de prestadores)
+                        st.markdown("### 📤 Status do Upload da Nota Fiscal")
+                        
+                        # Determinar status do upload
+                        upload_status_display = ""
+                        upload_emoji = ""
+                        import datetime as dt
+                        
+                        if item.get('link_upload'):
+                            # Link foi gerado pela API
+                            status_api = item.get('status_api', 0)
+                            validade_link = item.get('validade_link')
+                            
+                            # Verificar se link expirou
+                            link_expirado = False
+                            if validade_link:
+                                if isinstance(validade_link, str):
+                                    validade_dt = dt.datetime.strptime(validade_link, '%Y-%m-%d').date()
+                                else:
+                                    validade_dt = validade_link
+                                link_expirado = validade_dt < dt.date.today()
+                            
+                            if status_api == 1:
+                                upload_emoji = "✅"
+                                upload_status_display = "N.F. RECEBIDA VIA UPLOAD"
+                            elif link_expirado:
+                                upload_emoji = "⏰"
+                                upload_status_display = "Link de upload expirado"
+                            else:
+                                upload_emoji = "📤"
+                                upload_status_display = "Link enviado ao montador"
+                        else:
+                            upload_emoji = "📧"
+                            upload_status_display = "Aguardando N.F. (sem link)"
+                        
+                        col_upload1, col_upload2 = st.columns([1, 3])
+                        
+                        with col_upload1:
+                            st.markdown(f"## {upload_emoji}")
+                        
+                        with col_upload2:
+                            st.markdown(f"**{upload_status_display}**")
+                            
+                            if item.get('link_upload'):
+                                # Mostrar ID de controle da API
+                                if item.get('id_controle'):
+                                    st.caption(f"ID Controle API: {item['id_controle']}")
+                                
+                                # Mostrar validade do link
+                                if item.get('validade_link'):
+                                    validade = item['validade_link']
+                                    if isinstance(validade, str):
+                                        validade_dt = dt.datetime.strptime(validade, '%Y-%m-%d').date()
+                                    else:
+                                        validade_dt = validade
+                                    
+                                    dias_restantes = (validade_dt - dt.date.today()).days
+                                    if dias_restantes < 0:
+                                        st.error(f"⏰ Link expirou em {validade_dt.strftime('%d/%m/%Y')}")
+                                    elif dias_restantes == 0:
+                                        st.warning(f"⚠️ Link expira HOJE!")
+                                    elif dias_restantes <= 3:
+                                        st.warning(f"⚠️ Link expira em {dias_restantes} dia(s) - {validade_dt.strftime('%d/%m/%Y')}")
+                                    else:
+                                        st.info(f"✅ Válido até: {validade_dt.strftime('%d/%m/%Y')} ({dias_restantes} dias)")
+                                
+                                # Mostrar link com botão para copiar
+                                st.markdown("---")
+                                st.markdown("**🔗 Link de Upload da Nota Fiscal:**")
+                                st.code(item['link_upload'], language="text")
+                                if st.button("📋 Copiar Link", key=f"copy_upload_mont_{item['id']}"):
+                                    st.info("Link exibido acima - use Ctrl+C para copiar")
+                                
+                                # Mostrar mensagem da API se houver
+                                if item.get('api_message'):
+                                    st.caption(f"💬 {item['api_message']}")
+                                
+                                # Botão para reenviar link (gerar novo)
+                                if item.get('status_api', 0) == 0:
+                                    if st.button("🔄 Reenviar para API (Gerar Novo Link)", key=f"resend_api_mont_{item['id']}"):
+                                        try:
+                                            from api_upload_client import APIUploadClient
+                                            
+                                            with st.spinner("Reenviando para API..."):
+                                                # Limpar id_controle para permitir reenvio
+                                                conn = db.get_db_connection()
+                                                with conn.cursor() as cur:
+                                                    cur.execute('UPDATE envios_montagem SET id_controle = NULL WHERE id = %s', (item['id'],))
+                                                conn.commit()
+                                                conn.close()
+                                                
+                                                client = APIUploadClient()
+                                                sucesso, mensagem, dados = client.enviar_e_salvar(item['id'], tipo='montagem')
+                                                
+                                                if sucesso:
+                                                    st.success(f"✅ {mensagem}")
+                                                    if dados and dados.get('link'):
+                                                        st.info(f"🔗 Novo link: {dados['link']}")
+                                                    st.rerun()
+                                                else:
+                                                    st.error(f"❌ {mensagem}")
+                                        
+                                        except Exception as e:
+                                            st.error(f"❌ Erro: {str(e)}")
+                                
+                                # Se já recebeu, mostrar info do arquivo
+                                if item.get('nota_fiscal_path'):
+                                    nota_path = Path(item['nota_fiscal_path'])
+                                    if nota_path.exists():
+                                        st.success(f"✅ Arquivo salvo em: {item['nota_fiscal_path']}")
+                                        
+                                        with open(nota_path, "rb") as f:
+                                            st.download_button(
+                                                label="⬇️ Baixar Nota Fiscal (Upload)",
+                                                data=f,
+                                                file_name=nota_path.name,
+                                                mime="application/pdf",
+                                                key=f"download_upload_nf_mont_{item['id']}"
+                                            )
+                            else:
+                                # Link ainda não foi gerado
+                                st.warning("⚠️ Link de upload ainda não foi gerado pela API")
+                                
+                                if st.button("🚀 Enviar para API Agora", key=f"send_api_mont_{item['id']}"):
+                                    try:
+                                        from api_upload_client import APIUploadClient
+                                        
+                                        with st.spinner("Enviando para API..."):
+                                            client = APIUploadClient()
+                                            sucesso, mensagem, dados = client.enviar_e_salvar(item['id'], tipo='montagem')
+                                            
+                                            if sucesso:
+                                                st.success(f"✅ {mensagem}")
+                                                if dados and dados.get('link'):
+                                                    st.info(f"🔗 Novo link gerado: {dados['link']}")
+                                                    st.caption(f"Válido até: {dados.get('validade_link', 'N/A')}")
+                                                st.rerun()
+                                            else:
+                                                st.error(f"❌ {mensagem}")
+                                    
+                                    except Exception as e:
+                                        st.error(f"❌ Erro: {str(e)}")
+                        
+                        st.markdown("---")
+                        
+                        # Seção de edição de boletins
                         if details:
                             df_items = pd.DataFrame(details.get('items', []))
                             if 'comissao_editada' not in df_items.columns: 
@@ -1240,9 +1416,9 @@ elif app_mode == "Montagem (Montadores)":
                         else: 
                             st.warning("Não há detalhes salvos.")
                         
-                        if item['anexo_path']:
+                        if item.get('anexo_path'):
                             with open(item['anexo_path'], "rb") as file:
-                                st.download_button(label="Baixar N.F. Recebida", data=file, file_name=Path(item['anexo_path']).name)
+                                st.download_button(label="📥 Baixar Anexo do Email", data=file, file_name=Path(item['anexo_path']).name, key=f"download_anexo_mont_{item['id']}")
 
                         st.markdown("---")
                         sub_cols = st.columns(2)

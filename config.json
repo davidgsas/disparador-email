@@ -1,8 +1,8 @@
 {
     "prestador_cc": "",
-    "prestador_subject": "Novo Mundo Resolve | Nota Fiscal Eletr\u00f4nica de Presta\u00e7\u00e3o de Servi\u00e7os | Per\u00edodo: {{periodo}} | Prestador: {{nome_prestador}}",
-    "prestador_body": "Ol\u00e1, {{nome_prestador}}.\n\nEspero que esteja tendo um excelente dia.\n\nEncaminhamos em anexo a rela\u00e7\u00e3o de boletins finalizados, para que seja emitida a nota fiscal correspondente aos servi\u00e7os prestados no per\u00edodo de {{periodo}}.\n\nA nota fiscal deve conter exatamente o valor informado no relat\u00f3rio em anexo e ser emitida para o CNPJ 01.534.080/0008-02.\n\n\u26a0\ufe0f Aten\u00e7\u00e3o: Nosso processo de recebimento de notas fiscais foi atualizado.\n\nAgora, todas as notas devem ser enviadas exclusivamente por meio do link abaixo:\n\n{{link_upload}}\n\nNotas fiscais enviadas por outros meios n\u00e3o ser\u00e3o processadas. Envie somente a nota fiscal referente a este e-mail.\n\nAgradecemos pela aten\u00e7\u00e3o e colabora\u00e7\u00e3o.\n",
+    "prestador_subject": "",
+    "prestador_body": "",
     "montador_cc": "",
-    "montador_subject": "",
-    "montador_body": ""
+    "montador_subject": "Relat\u00f3rio de Pagamento de Montagem {{nome_montador}} - Per\u00edodo: {{periodo_relatorio}}",
+    "montador_body": "Ol\u00e1,  {{nome_montador}}.\n\nEspero que esteja tendo um excelente dia.\n\nEncaminhamos em anexo a rela\u00e7\u00e3o de boletins finalizados, para que seja emitida a nota fiscal correspondente aos servi\u00e7os prestados no per\u00edodo de {{periodo_relatorio}}.\n\nA nota fiscal deve conter exatamente o valor informado no relat\u00f3rio em anexo e ser emitida para o CNPJ 01.534.080/0008-02.\n\n\u26a0\ufe0f Aten\u00e7\u00e3o: Nosso processo de recebimento de notas fiscais foi atualizado.\n\nAgora, todas as notas devem ser enviadas exclusivamente por meio do link abaixo:\n\n{{link}}\n\nNotas fiscais enviadas por outros meios n\u00e3o ser\u00e3o processadas. Envie somente a nota fiscal referente a este e-mail.\n\nAgradecemos pela aten\u00e7\u00e3o e colabora\u00e7\u00e3o."
 }

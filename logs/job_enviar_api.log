@@ -1,0 +1,26 @@
+2025-10-15 14:26:07,488 - INFO - ======================================================================
+2025-10-15 14:26:07,488 - INFO - 🚀 Iniciando job de envio para API DV Processamento
+2025-10-15 14:26:07,488 - INFO - ======================================================================
+2025-10-15 14:26:10,084 - INFO - 📊 Processamento concluído:
+2025-10-15 14:26:10,085 - INFO -    📦 Total geral: 2
+2025-10-15 14:26:10,085 - INFO - 
+   📦 Lotes de Prestadores:
+2025-10-15 14:26:10,085 - INFO -       Total: 1
+2025-10-15 14:26:10,085 - INFO -       ✅ Sucesso: 0
+2025-10-15 14:26:10,085 - INFO -       ❌ Erro: 1
+2025-10-15 14:26:10,085 - INFO - 
+   🔧 Envios de Montadores:
+2025-10-15 14:26:10,085 - INFO -       Total: 1
+2025-10-15 14:26:10,085 - INFO -       ✅ Sucesso: 0
+2025-10-15 14:26:10,085 - INFO -       ❌ Erro: 1
+2025-10-15 14:26:10,085 - INFO - 
+📝 Detalhes dos lotes de prestadores:
+2025-10-15 14:26:10,086 - ERROR -    ❌ Lote #22 (david): Lote já foi enviado anteriormente (duplicado)
+2025-10-15 14:26:10,086 - INFO - 
+🔧 Detalhes dos envios de montadores:
+2025-10-15 14:26:10,086 - ERROR -    ❌ Envio #4 (DAVID DIAS): Lote já foi enviado anteriormente (duplicado)
+2025-10-15 14:26:10,086 - INFO - 
+======================================================================
+2025-10-15 14:26:10,086 - INFO - ✅ Job finalizado com sucesso
+2025-10-15 14:26:10,086 - INFO - ======================================================================
+

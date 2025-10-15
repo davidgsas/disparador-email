@@ -114,11 +114,15 @@ class TrelloIntegration:
             return None
         
         try:
+            # Determinar o nome a ser usado no título (prestador ou montador)
+            nome_entidade = prestador_nome if prestador_nome else montador_nome
+            
             # Monta o título do card com o valor
             if valor_lote and valor_lote > 0:
-                titulo = f"📦 Lote #{lote_id} - {prestador_nome} - R$ {valor_lote:,.2f}"
+                titulo = f"📦 Lote #{lote_id} - {nome_entidade} - R$ {valor_lote:,.2f}"
             else:
-                titulo = f"📦 Lote #{lote_id} - {prestador_nome}"
+                titulo = f"📦 Lote #{lote_id} - {nome_entidade}"
+            
             # Monta a descrição do card
             descricao = self._montar_descricao(
                 lote_id, 
@@ -239,10 +243,15 @@ class TrelloIntegration:
         descricao = f"""## 📋 Informações do Lote
 
 **Lote:** #{lote_id}
-**Prestador:** {prestador_nome}
-**Montador:** {montador_nome}
-**Data/Hora:** {data_hora}
 """
+        
+        # Adicionar apenas prestador OU montador, não ambos
+        if prestador_nome:
+            descricao += f"**Prestador:** {prestador_nome}\n"
+        if montador_nome:
+            descricao += f"**Montador:** {montador_nome}\n"
+        
+        descricao += f"**Data/Hora:** {data_hora}\n"
         
         if nota_fiscal:
             descricao += f"**Nota Fiscal:** {nota_fiscal}\n"

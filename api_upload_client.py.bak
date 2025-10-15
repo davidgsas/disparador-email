@@ -97,15 +97,19 @@ class APIUploadClient:
         
         # Determinar se é lote de prestador ou envio de montador
         if tipo == 'montagem':
-            # Para montadores: usar montador_nome e quantidade_os da coluna
+            # Para montadores: usar montador_nome e detalhes['quantidade_os']
             nome_empresa = lote['montador_nome']
             
             # Obter informações do montador para pegar o email
             montador = get_montador_by_name(nome_empresa)
             email_contato = montador['email'] if montador and montador.get('email') else "sem-email@novomundo.com.br"
             
-            # Quantidade de OS já está salva na coluna
-            quantidade_os = lote.get('quantidade_os', 0) or 0
+            # Quantidade de OS já está salva nos detalhes
+            detalhes = lote.get('detalhes', {})
+            if isinstance(detalhes, str):
+                import json
+                detalhes = json.loads(detalhes)
+            quantidade_os = detalhes.get('quantidade_os', 0)
             
             lote_ou_envio_id = lote['id']  # ID do envio de montagem
             
@@ -122,13 +126,6 @@ class APIUploadClient:
             quantidade_os = len(os_list)
             
             lote_ou_envio_id = lote['id']  # ID do lote de serviço
-        
-        # 🔧 OFFSET para montadores: Adicionar 876231 ao ID para evitar conflito com prestadores
-        if tipo == 'montagem':
-            lote_id_api = 876231 + lote_ou_envio_id
-            print(f"🔧 ID Montagem: {lote_ou_envio_id} → ID API: {lote_id_api}")
-        else:
-            lote_id_api = lote_ou_envio_id
         
         # Formatar data_envio para ISO 8601 (YYYY-MM-DDTHH:MM:SS)
         print(f"📅 Data envio original: '{lote['data_envio']}' (tipo: {type(lote['data_envio'])})")
@@ -191,24 +188,14 @@ class APIUploadClient:
         
         print(f"📅 Período formatado: '{periodo}'")
         
-        # Validar campos obrigatórios
-        if not nome_empresa:
-            raise ValueError(f"Nome da empresa não pode ser vazio (tipo: {tipo})")
-        if not periodo:
-            raise ValueError(f"Período não pode ser vazio (tipo: {tipo})")
-        if lote.get('valor_total') is None:
-            raise ValueError(f"Valor total não pode ser None (tipo: {tipo})")
-        if quantidade_os is None or quantidade_os == 0:
-            raise ValueError(f"Quantidade de OS deve ser maior que zero (tipo: {tipo})")
-        
         payload = {
             "nome": nome_empresa,
             "email": email_contato,
-            "periodo": periodo,  # Formato MM/AAAA
+            "periodo": periodo,  # Formato MM/AAAA garantido
             "valor_total": float(lote['valor_total']),
             "quantidade_os": quantidade_os,
             "data_envio": data_envio_iso,
-            "lote_id": lote_id_api,  # ID com offset para montadores (876231 + id)
+            "lote_id": lote_ou_envio_id,
             "tipo": tipo  # Adicionar tipo para identificação na API (opcional)
         }
         
