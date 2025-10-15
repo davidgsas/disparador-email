@@ -199,6 +199,9 @@ def processar_uploads_pendentes():
                             
                             logger.info(f"   🎯 DEBUG: Chamando criar_card_download com {len(arquivos_para_anexar)} arquivos...")
                             
+                            # Obter valor do lote
+                            valor_lote = lote.get('valor_total', 0)
+                            
                             # Criar card
                             card_result = trello.criar_card_download(
                                 lote_id=lote_id,
@@ -206,7 +209,8 @@ def processar_uploads_pendentes():
                                 montador_nome=montador_nome,
                                 arquivos_baixados=arquivos_baixados,
                                 nota_fiscal=nota_fiscal,
-                                arquivos_para_anexar=arquivos_para_anexar
+                                arquivos_para_anexar=arquivos_para_anexar,
+                                valor_lote=valor_lote
                             )
                             
                             if card_result:

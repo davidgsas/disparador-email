@@ -91,7 +91,8 @@ class TrelloIntegration:
         montador_nome: str,
         arquivos_baixados: list,
         nota_fiscal: Optional[str] = None,
-        arquivos_para_anexar: Optional[list] = None  # lista de caminhos de arquivos locais
+        arquivos_para_anexar: Optional[list] = None,  # lista de caminhos de arquivos locais
+        valor_lote: Optional[float] = None  # valor total do lote
     ) -> Optional[Dict[str, Any]]:
         """
         Cria um card no Trello quando arquivos são baixados
@@ -102,6 +103,7 @@ class TrelloIntegration:
             montador_nome: Nome do montador
             arquivos_baixados: Lista de nomes dos arquivos baixados
             nota_fiscal: Número da nota fiscal (opcional)
+            valor_lote: Valor total do lote (opcional)
             
         Returns:
             Dados do card criado ou None se falhar
@@ -112,8 +114,11 @@ class TrelloIntegration:
             return None
         
         try:
-            # Monta o título do card
-            titulo = f"📦 Lote #{lote_id} - {prestador_nome}"
+            # Monta o título do card com o valor
+            if valor_lote and valor_lote > 0:
+                titulo = f"📦 Lote #{lote_id} - {prestador_nome} - R$ {valor_lote:,.2f}"
+            else:
+                titulo = f"📦 Lote #{lote_id} - {prestador_nome}"
             # Monta a descrição do card
             descricao = self._montar_descricao(
                 lote_id, 
