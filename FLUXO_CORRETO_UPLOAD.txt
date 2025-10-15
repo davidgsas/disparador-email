@@ -1,0 +1,299 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║  🔄 FLUXO CORRETO DO SISTEMA DE UPLOAD                                ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+⚠️ CORREÇÃO IMPORTANTE:
+═══════════════════════════════════════════════════════════════════════
+
+O DISPARADOR NÃO GERA O LINK!
+
+O link é gerado e gerenciado pelo OUTRO SISTEMA.
+
+Nosso papel: Apenas CONSULTAR se o lote foi atualizado.
+
+🔄 FLUXO REAL:
+═══════════════════════════════════════════════════════════════════════
+
+1️⃣  DISPARADOR DE EMAIL (nosso sistema)
+    └─ Envia email com relatório PDF para prestador
+    └─ SEM LINK DE UPLOAD (link será enviado pelo outro sistema)
+
+2️⃣  OUTRO SISTEMA (gerencia uploads)
+    └─ Gera link único para o lote
+    └─ Envia link para o prestador (email, SMS, WhatsApp, etc)
+    └─ Prestador acessa link e faz upload da N.F.
+    └─ Armazena arquivo e atualiza status
+
+3️⃣  NOSSO SISTEMA (consulta status)
+    └─ Consulta API do outro sistema periodicamente
+    └─ Verifica: "O lote X foi atualizado?"
+    └─ Se sim: Baixa arquivo e marca como recebido
+
+📡 API DE CONSULTA:
+═══════════════════════════════════════════════════════════════════════
+
+ENDPOINT NECESSÁRIO:
+GET /api/lotes/{lote_id}/status
+
+REQUEST:
+GET https://api-externa.com/api/lotes/123/status
+Authorization: Bearer {API_KEY}
+
+RESPONSE:
+{
+  "lote_id": 123,
+  "status": "completed",  // pending | completed | expired
+  "nota_fiscal": {
+    "filename": "nota_fiscal_lote_123.pdf",
+    "download_url": "https://api-externa.com/files/abc123.pdf",
+    "uploaded_at": "2025-10-14T10:30:00Z",
+    "file_size": 245678
+  }
+}
+
+🔧 O QUE PRECISAMOS AJUSTAR:
+═══════════════════════════════════════════════════════════════════════
+
+1. REMOVER: Geração de link no nosso sistema
+2. REMOVER: upload_token, upload_url do nosso banco
+3. ADICIONAR: Consulta por lote_id na API
+4. MANTER: Download automático de arquivos
+5. MANTER: Interface de monitoramento
+
+📊 NOVA ESTRUTURA DO BANCO:
+═══════════════════════════════════════════════════════════════════════
+
+Tabela: lotes_servico
+
+Campos necessários:
+• id (já existe)
+• prestador_id (já existe)
+• status (já existe)
+• upload_status: pending | completed | expired | not_configured
+• nota_fiscal_path: caminho do arquivo baixado
+• nota_fiscal_uploaded_at: quando foi recebido
+
+Campos DESNECESSÁRIOS:
+✗ upload_token (não geramos)
+✗ upload_url (não geramos)
+
+🔄 NOVO FLUXO DE CONSULTA:
+═══════════════════════════════════════════════════════════════════════
+
+JOB AUTOMÁTICO (job_consultar_notas.py):
+
+1. Buscar todos os lotes com upload_status = 'pending'
+2. Para cada lote:
+   GET /api/lotes/{lote_id}/status
+3. Se status = 'completed':
+   a) Baixar arquivo do download_url
+   b) Salvar em uploads/nota_fiscal_lote_{id}.pdf
+   c) Atualizar upload_status = 'completed'
+   d) Atualizar nota_fiscal_path e nota_fiscal_uploaded_at
+
+CONSULTA MANUAL (interface):
+
+Usuário clica "Consultar Status":
+1. GET /api/lotes/{lote_id}/status
+2. Mostra resultado na tela
+3. Se completed, baixa automaticamente
+4. Atualiza interface
+
+📱 INTERFACE AJUSTADA:
+═══════════════════════════════════════════════════════════════════════
+
+HISTÓRICO DE ENVIOS:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  ### 📤 Status do Upload da Nota Fiscal                             │
+│                                                                       │
+│  ┌──────┬──────────────────────────────────────────────────────┐   │
+│  │  📤  │  Aguardando N.F. do prestador                        │   │
+│  │      │  Lote ID: 123                                         │   │
+│  │      │  Sistema externo gerencia o envio                    │   │
+│  │      │  [🔄 Consultar Status na API]                       │   │
+│  └──────┴──────────────────────────────────────────────────────┘   │
+│                                                                       │
+│  ℹ️ O link de upload é gerenciado pelo sistema externo.            │
+│     Consulte o status para verificar se o prestador já enviou.      │
+└─────────────────────────────────────────────────────────────────────┘
+
+Quando já recebido:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  ### 📤 Status do Upload da Nota Fiscal                             │
+│                                                                       │
+│  ┌──────┬──────────────────────────────────────────────────────┐   │
+│  │  ✅  │  N.F. RECEBIDA                                       │   │
+│  │      │  Lote ID: 123                                         │   │
+│  │      │  Recebido em: 14/10/2025 10:30                       │   │
+│  │      │  Arquivo: uploads/nota_fiscal_lote_123.pdf           │   │
+│  │      │  [⬇️ Baixar Nota Fiscal]                            │   │
+│  └──────┴──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+
+🔑 CONFIGURAÇÃO .env:
+═══════════════════════════════════════════════════════════════════════
+
+# API do outro sistema (apenas consulta)
+UPLOAD_API_URL="https://api-externa.novomundo.com.br"
+UPLOAD_API_KEY="chave-de-autenticacao"
+
+💻 CÓDIGO SIMPLIFICADO:
+═══════════════════════════════════════════════════════════════════════
+
+upload_api_client.py:
+
+class UploadAPIClient:
+    
+    def consultar_lote(self, lote_id):
+        """Consulta status de um lote na API externa"""
+        url = f"{self.base_url}/api/lotes/{lote_id}/status"
+        
+        response = requests.get(
+            url,
+            headers={"Authorization": f"Bearer {self.api_key}"},
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            return True, response.json()
+        elif response.status_code == 404:
+            return False, {"message": "Lote não encontrado no sistema externo"}
+        else:
+            return False, {"message": f"Erro {response.status_code}"}
+    
+    def download_nota_fiscal(self, download_url, save_path):
+        """Baixa a nota fiscal da URL fornecida pela API"""
+        response = requests.get(
+            download_url,
+            headers={"Authorization": f"Bearer {self.api_key}"},
+            timeout=60,
+            stream=True
+        )
+        
+        if response.status_code == 200:
+            with open(save_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            return True, save_path
+        else:
+            return False, f"Erro ao baixar arquivo: {response.status_code}"
+
+📋 ESPECIFICAÇÃO PARA O OUTRO DESENVOLVEDOR:
+═══════════════════════════════════════════════════════════════════════
+
+ENDPOINT NECESSÁRIO:
+GET /api/lotes/{lote_id}/status
+
+PARÂMETROS:
+• lote_id (path): ID do lote no nosso sistema
+
+HEADERS:
+• Authorization: Bearer {API_KEY}
+
+RESPONSE (JSON):
+
+Quando ainda não enviado:
+{
+  "lote_id": 123,
+  "status": "pending",
+  "message": "Aguardando upload do prestador"
+}
+
+Quando já enviado:
+{
+  "lote_id": 123,
+  "status": "completed",
+  "nota_fiscal": {
+    "filename": "nota_fiscal_lote_123.pdf",
+    "download_url": "https://api-externa.com/files/abc123xyz789.pdf",
+    "uploaded_at": "2025-10-14T10:30:00Z",
+    "file_size": 245678,
+    "content_type": "application/pdf"
+  }
+}
+
+Quando expirado (30 dias):
+{
+  "lote_id": 123,
+  "status": "expired",
+  "message": "Link de upload expirou"
+}
+
+Quando lote não existe:
+{
+  "error": "Lote não encontrado",
+  "lote_id": 999
+}
+
+SEGURANÇA:
+• Validar API Key no header
+• Retornar 401 se não autorizado
+• Retornar 404 se lote não existe
+• Rate limiting recomendado
+
+🎯 RESPONSABILIDADES:
+═══════════════════════════════════════════════════════════════════════
+
+NOSSO SISTEMA:
+✓ Envia relatório de serviços por email
+✓ Consulta periodicamente se N.F. foi recebida
+✓ Baixa arquivo quando disponível
+✓ Exibe status na interface
+✓ Gerencia arquivos localmente
+
+OUTRO SISTEMA:
+✓ Gera link único de upload
+✓ Envia link ao prestador (email/SMS/WhatsApp)
+✓ Recebe upload do prestador
+✓ Valida e armazena arquivo
+✓ Fornece endpoint de consulta por lote_id
+✓ Fornece URL de download do arquivo
+
+💡 VANTAGENS DESSA ABORDAGEM:
+═══════════════════════════════════════════════════════════════════════
+
+✅ Separação clara de responsabilidades
+✅ Cada sistema faz o que sabe fazer melhor
+✅ Nosso sistema não precisa gerenciar uploads
+✅ Outro sistema não precisa saber nosso fluxo de emails
+✅ Consulta simples por lote_id
+✅ Download direto quando disponível
+
+📞 COMUNICAÇÃO ENTRE SISTEMAS:
+═══════════════════════════════════════════════════════════════════════
+
+OPÇÃO 1: Pull (Consulta Periódica) - RECOMENDADO
+• Nosso job consulta a cada hora
+• GET /api/lotes/{lote_id}/status
+• Se completed, baixa arquivo
+
+OPÇÃO 2: Push (Webhook) - ALTERNATIVA
+• Outro sistema nos notifica quando upload completo
+• POST https://nosso-sistema.com/webhook/nota-recebida
+• Payload: { "lote_id": 123, "download_url": "..." }
+• Baixamos imediatamente
+
+Recomendação: Começar com Pull (mais simples)
+
+═══════════════════════════════════════════════════════════════════════
+
+✅ RESUMO DA CORREÇÃO:
+
+ANTES (ERRADO):
+❌ Nosso sistema gera link
+❌ Nosso sistema envia link no email
+❌ Consulta por token único
+
+AGORA (CORRETO):
+✅ Outro sistema gera e envia link
+✅ Nosso sistema só envia relatório
+✅ Consulta por lote_id
+
+🎯 Muito mais simples e cada sistema tem sua responsabilidade clara!
+
+═══════════════════════════════════════════════════════════════════════
+
+Data: 13 de outubro de 2025
+Versão: 2.0 (Corrigida)

@@ -1,0 +1,409 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║  📚 HISTÓRICO DE ENVIOS - NOVA FUNCIONALIDADE DE UPLOAD               ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+🎯 O QUE MUDOU:
+═══════════════════════════════════════════════════════════════════════
+
+O Histórico de Envios agora mostra detalhes completos sobre o status
+do upload de notas fiscais, permitindo acompanhar em tempo real se o
+prestador já enviou a nota fiscal através do link único.
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    🖥️  ANTES (SEM UPLOAD)                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  Lote #123  │  João Silva  │  R$ 1.250,50  │  13/10/2025  │  Pago  │
+│                                                                       │
+│  ▼ Ver O.S. do Lote e Gerenciar                                     │
+│     • Lista de O.S.                                                  │
+│     • Alterar status                                                 │
+│     • Excluir lote                                                   │
+│                                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    🖥️  AGORA (COM UPLOAD)                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  Lote #123  │  João Silva  │  R$ 1.250,50  │  13/10/2025  │  Pago  │
+│                                                                       │
+│  ▼ Ver O.S. do Lote e Gerenciar                                     │
+│                                                                       │
+│     ### 📤 Status do Upload da Nota Fiscal                          │
+│                                                                       │
+│     ┌──────────┬────────────────────────────────────────────────┐  │
+│     │    ✅    │  N.F. RECEBIDA VIA UPLOAD                       │  │
+│     │          │  Token: abc123xyz789...                         │  │
+│     │          │  🔗 Ver Link de Upload                          │  │
+│     │          │  ✅ Arquivo: uploads/nota_fiscal_lote_123.pdf  │  │
+│     │          │  [⬇️ Baixar Nota Fiscal (Upload)]              │  │
+│     └──────────┴────────────────────────────────────────────────┘  │
+│                                                                       │
+│     ─────────────────────────────────────────────────────────────   │
+│                                                                       │
+│     ### 📋 Ordens de Serviço do Lote                                │
+│     • Lista de O.S. ...                                              │
+│                                                                       │
+│     ─────────────────────────────────────────────────────────────   │
+│                                                                       │
+│     ### ⚙️ Gerenciar Lote                                           │
+│     • Alterar status                                                 │
+│     • Excluir lote                                                   │
+│                                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+📊 POSSÍVEIS STATUS DO UPLOAD:
+═══════════════════════════════════════════════════════════════════════
+
+┌──────┬─────────────────────────────────────────────────────────────┐
+│ Emoji│ Status e Descrição                                           │
+├──────┼─────────────────────────────────────────────────────────────┤
+│  📤  │ Link enviado ao prestador                                   │
+│      │ • Upload ainda não realizado                                │
+│      │ • Link ativo e válido                                       │
+│      │ • Botão: [🔄 Consultar Status do Upload]                   │
+├──────┼─────────────────────────────────────────────────────────────┤
+│  ✅  │ N.F. RECEBIDA VIA UPLOAD                                    │
+│      │ • Prestador fez upload com sucesso                          │
+│      │ • Arquivo baixado automaticamente                           │
+│      │ • Botão: [⬇️ Baixar Nota Fiscal (Upload)]                  │
+├──────┼─────────────────────────────────────────────────────────────┤
+│  ⏰  │ Link de upload expirado                                     │
+│      │ • Link expirou após 30 dias                                 │
+│      │ • Prestador não enviou a tempo                              │
+│      │ • Necessário gerar novo link ou solicitar por email         │
+├──────┼─────────────────────────────────────────────────────────────┤
+│  ❌  │ Falha no upload                                             │
+│      │ • Erro no processo de upload                                │
+│      │ • Verificar logs para detalhes                              │
+│      │ • Contatar prestador ou suporte                             │
+├──────┼─────────────────────────────────────────────────────────────┤
+│  📧  │ Aguardando N.F. (sem upload)                                │
+│      │ • Lote enviado antes do sistema de upload                   │
+│      │ • Método tradicional (email com anexo)                      │
+│      │ • Sem link de upload gerado                                 │
+└──────┴─────────────────────────────────────────────────────────────┘
+
+🎬 CENÁRIOS DE USO:
+═══════════════════════════════════════════════════════════════════════
+
+CENÁRIO 1: Lote com Link Enviado (Pendente)
+────────────────────────────────────────────────────────────────────
+
+╔════════════════════════════════════════════════════════════════════╗
+║  Lote #125  │  Maria Santos  │  R$ 890,00  │  13/10/2025  │  Aberto║
+║                                                                      ║
+║  ▼ Ver O.S. do Lote e Gerenciar                                    ║
+║                                                                      ║
+║  ### 📤 Status do Upload da Nota Fiscal                            ║
+║                                                                      ║
+║  ┌─────┬────────────────────────────────────────────────────────┐ ║
+║  │ 📤  │ Link enviado ao prestador                              │ ║
+║  │     │ Token: xyz789abc456...                                 │ ║
+║  │     │                                                         │ ║
+║  │     │ ▼ 🔗 Ver Link de Upload                               │ ║
+║  │     │   https://api-externa.com/upload/xyz789abc456          │ ║
+║  │     │   [📋 Copiar Link]                                     │ ║
+║  │     │                                                         │ ║
+║  │     │ [🔄 Consultar Status do Upload]                       │ ║
+║  │     │                                                         │ ║
+║  │     │ ℹ️ O prestador recebeu o link por email e pode fazer  │ ║
+║  │     │    upload da nota fiscal. Clique em "Consultar Status"│ ║
+║  │     │    para verificar se já foi enviado.                   │ ║
+║  └─────┴────────────────────────────────────────────────────────┘ ║
+║                                                                      ║
+╚════════════════════════════════════════════════════════════════════╝
+
+AÇÕES DISPONÍVEIS:
+• 🔗 Ver Link: Expande e mostra o link completo
+• 📋 Copiar Link: Facilita copiar para reenviar ao prestador
+• 🔄 Consultar Status: Verifica agora se prestador já enviou
+
+
+CENÁRIO 2: Consultando Status Manualmente
+────────────────────────────────────────────────────────────────────
+
+Usuário clica em [🔄 Consultar Status do Upload]
+
+╔════════════════════════════════════════════════════════════════════╗
+║  🔄 Consultando API...                                              ║
+║  ⏳ Aguarde...                                                      ║
+╚════════════════════════════════════════════════════════════════════╝
+
+         ↓↓↓ SE AINDA PENDENTE ↓↓↓
+
+╔════════════════════════════════════════════════════════════════════╗
+║  ℹ️ Status atual: pending                                          ║
+║  O prestador ainda não fez o upload.                                ║
+╚════════════════════════════════════════════════════════════════════╝
+
+         ↓↓↓ SE ARQUIVO DISPONÍVEL ↓↓↓
+
+╔════════════════════════════════════════════════════════════════════╗
+║  ✅ Nota fiscal disponível! Baixando...                            ║
+║  ✅ Arquivo salvo: uploads/nota_fiscal_lote_125.pdf                ║
+╚════════════════════════════════════════════════════════════════════╝
+
+         ↓↓↓ TELA ATUALIZA AUTOMATICAMENTE ↓↓↓
+
+
+CENÁRIO 3: N.F. Recebida com Sucesso
+────────────────────────────────────────────────────────────────────
+
+╔════════════════════════════════════════════════════════════════════╗
+║  Lote #124  │  Carlos Silva  │  R$ 1.450,00  │  12/10/2025  │ Pago ║
+║                                                                      ║
+║  ▼ Ver O.S. do Lote e Gerenciar                                    ║
+║                                                                      ║
+║  ### 📤 Status do Upload da Nota Fiscal                            ║
+║                                                                      ║
+║  ┌─────┬────────────────────────────────────────────────────────┐ ║
+║  │ ✅  │ N.F. RECEBIDA VIA UPLOAD                               │ ║
+║  │     │ Token: def456ghi789...                                 │ ║
+║  │     │                                                         │ ║
+║  │     │ ▼ 🔗 Ver Link de Upload                               │ ║
+║  │     │   https://api-externa.com/upload/def456ghi789          │ ║
+║  │     │   [📋 Copiar Link]                                     │ ║
+║  │     │                                                         │ ║
+║  │     │ ✅ Arquivo salvo em:                                   │ ║
+║  │     │    uploads/nota_fiscal_lote_124.pdf                    │ ║
+║  │     │                                                         │ ║
+║  │     │ [⬇️ Baixar Nota Fiscal (Upload)]                       │ ║
+║  └─────┴────────────────────────────────────────────────────────┘ ║
+║                                                                      ║
+╚════════════════════════════════════════════════════════════════════╝
+
+AÇÕES DISPONÍVEIS:
+• ⬇️ Baixar N.F.: Download do arquivo PDF da nota fiscal
+• 🔗 Ver Link: Link continua disponível para referência
+
+
+CENÁRIO 4: Link Expirado (30 dias)
+────────────────────────────────────────────────────────────────────
+
+╔════════════════════════════════════════════════════════════════════╗
+║  Lote #120  │  Pedro Costa  │  R$ 750,00  │  10/09/2025  │  Aberto ║
+║                                                                      ║
+║  ▼ Ver O.S. do Lote e Gerenciar                                    ║
+║                                                                      ║
+║  ### 📤 Status do Upload da Nota Fiscal                            ║
+║                                                                      ║
+║  ┌─────┬────────────────────────────────────────────────────────┐ ║
+║  │ ⏰  │ Link de upload expirado                                │ ║
+║  │     │ Token: jkl012mno345...                                 │ ║
+║  │     │                                                         │ ║
+║  │     │ ⚠️ O link expirou após 30 dias sem uso.               │ ║
+║  │     │                                                         │ ║
+║  │     │ Ações sugeridas:                                       │ ║
+║  │     │ • Solicitar nota fiscal por email tradicional          │ ║
+║  │     │ • Contatar prestador para providenciar envio           │ ║
+║  └─────┴────────────────────────────────────────────────────────┘ ║
+║                                                                      ║
+╚════════════════════════════════════════════════════════════════════╝
+
+
+CENÁRIO 5: Lote Antigo (Sem Upload)
+────────────────────────────────────────────────────────────────────
+
+╔════════════════════════════════════════════════════════════════════╗
+║  Lote #95  │  Ana Lima  │  R$ 1.200,00  │  05/08/2025  │  Pago     ║
+║                                                                      ║
+║  ▼ Ver O.S. do Lote e Gerenciar                                    ║
+║                                                                      ║
+║  ### 📤 Status do Upload da Nota Fiscal                            ║
+║                                                                      ║
+║  ┌─────┬────────────────────────────────────────────────────────┐ ║
+║  │ 📧  │ Aguardando N.F. (sem upload)                           │ ║
+║  │     │                                                         │ ║
+║  │     │ ℹ️ Lote enviado antes da implementação do sistema de  │ ║
+║  │     │    upload. Nota fiscal deve ser enviada pelo método   │ ║
+║  │     │    tradicional (email com anexo).                      │ ║
+║  └─────┴────────────────────────────────────────────────────────┘ ║
+║                                                                      ║
+║  ─────────────────────────────────────────────────────────────────  ║
+║                                                                      ║
+║  ### 📋 Ordens de Serviço do Lote                                  ║
+║  ... (lista de O.S.) ...                                            ║
+║                                                                      ║
+║  ─────────────────────────────────────────────────────────────────  ║
+║                                                                      ║
+║  ### 📎 Nota Fiscal Anexada Manualmente                            ║
+║  [⬇️ Baixar N.F. (Anexo Manual)]                                   ║
+║                                                                      ║
+╚════════════════════════════════════════════════════════════════════╝
+
+
+🔄 FLUXO COMPLETO DO UPLOAD:
+═══════════════════════════════════════════════════════════════════════
+
+1️⃣  ENVIO DO LOTE
+    • Sistema dispara email com relatório PDF
+    • Link único gerado automaticamente
+    • Status inicial: "📤 Link enviado ao prestador"
+
+2️⃣  PRESTADOR RECEBE EMAIL
+    • Email contém relatório em PDF (anexo)
+    • Email contém link para upload da N.F.
+    • Prestador clica no link
+
+3️⃣  PRESTADOR FAZ UPLOAD
+    • Abre página no sistema externo
+    • Seleciona PDF da nota fiscal
+    • Confirma envio
+    • Sistema externo valida e armazena
+
+4️⃣  CONSULTA (AUTOMÁTICA OU MANUAL)
+    
+    AUTOMÁTICA (Job - a cada hora):
+    • Job consulta todos os lotes pendentes
+    • Verifica status na API
+    • Se disponível, baixa automaticamente
+    • Atualiza banco de dados
+    
+    MANUAL (Usuário no histórico):
+    • Usuário clica "Consultar Status"
+    • Sistema verifica na API
+    • Se disponível, baixa na hora
+    • Atualiza tela automaticamente
+
+5️⃣  N.F. RECEBIDA
+    • Status muda para: "✅ N.F. RECEBIDA VIA UPLOAD"
+    • Arquivo salvo em: uploads/nota_fiscal_lote_{id}.pdf
+    • Botão de download disponível
+    • Pode alterar status do lote para "N.F. RECEBIDA"
+
+
+📋 COMPARAÇÃO: UPLOAD vs ANEXO MANUAL
+═══════════════════════════════════════════════════════════════════════
+
+┌────────────────────────────┬────────────────┬──────────────────────┐
+│ Característica             │ Upload (Novo)  │ Anexo Manual (Antigo)│
+├────────────────────────────┼────────────────┼──────────────────────┤
+│ Como funciona              │ Link único     │ Email com anexo      │
+│ Quem envia                 │ Prestador      │ Prestador            │
+│ Onde é enviado             │ Sistema ext.   │ Email direto         │
+│ Validação automática       │ ✅ Sim         │ ❌ Não               │
+│ Rastreamento               │ ✅ Completo    │ ⚠️ Limitado          │
+│ Download automático        │ ✅ Sim         │ ❌ Manual            │
+│ Status em tempo real       │ ✅ Sim         │ ❌ Não               │
+│ Expiração                  │ ✅ 30 dias     │ ❌ Não               │
+│ Histórico no sistema       │ ✅ Completo    │ ⚠️ Parcial           │
+│ Indicação visual           │ 📤/✅/⏰/❌    │ 📧                   │
+└────────────────────────────┴────────────────┴──────────────────────┘
+
+💡 VANTAGENS DA NOVA INTERFACE:
+═══════════════════════════════════════════════════════════════════════
+
+✅ VISIBILIDADE TOTAL
+   • Sabe exatamente quem enviou e quem não enviou
+   • Acompanha status em tempo real
+   • Identifica links expirados
+
+✅ AGILIDADE
+   • Consulta manual com 1 clique
+   • Download automático quando disponível
+   • Não precisa acessar email
+
+✅ ORGANIZAÇÃO
+   • Todas as N.F. em um só lugar (pasta uploads/)
+   • Nome padronizado: nota_fiscal_lote_{id}.pdf
+   • Fácil de localizar e fazer backup
+
+✅ RASTREAMENTO
+   • Histórico completo de cada lote
+   • Token único para rastreamento
+   • Link disponível para reenvio
+
+✅ AUTONOMIA DO PRESTADOR
+   • Prestador faz upload quando quiser
+   • Não precisa responder email
+   • Interface simples e direta
+
+✅ REDUÇÃO DE TRABALHO MANUAL
+   • Menos emails para monitorar
+   • Menos downloads manuais
+   • Menos organização de arquivos
+
+
+🎯 QUANDO USAR CADA FUNCIONALIDADE:
+═══════════════════════════════════════════════════════════════════════
+
+USE "Consultar Status" QUANDO:
+• Precisa verificar urgentemente se prestador enviou
+• Cliente pediu para confirmar recebimento
+• Vai fazer pagamento e precisa da N.F.
+• Nota: Job automático faz isso a cada hora!
+
+USE "Copiar Link" QUANDO:
+• Prestador perdeu o email original
+• Precisa reenviar por WhatsApp/SMS
+• Quer enviar para outra pessoa da empresa
+
+USE "Baixar N.F." QUANDO:
+• Precisa do arquivo para conferência
+• Vai enviar para contabilidade
+• Precisa anexar em outro sistema
+• Fazer backup local
+
+
+⚙️ CONFIGURAÇÕES IMPORTANTES:
+═══════════════════════════════════════════════════════════════════════
+
+Job Automático (Recomendado):
+┌──────────────────────────────────────────────────────────────────┐
+│ $ crontab -e                                                      │
+│                                                                   │
+│ # Consulta automática a cada hora:                               │
+│ 0 * * * * cd /caminho/projeto && source .venv/bin/activate &&   │
+│   python job_consultar_notas.py >> logs/consulta_notas.log      │
+└──────────────────────────────────────────────────────────────────┘
+
+Com o job ativo:
+• Sistema verifica automaticamente a cada hora
+• Baixa arquivos disponíveis
+• Atualiza status no banco
+• Você só precisa consultar manualmente se for urgente
+
+Pasta de Uploads:
+• Certifique-se que existe: uploads/
+• Permissões de escrita configuradas
+• Faça backup regular da pasta
+
+
+📊 ESTATÍSTICAS E FILTROS:
+═══════════════════════════════════════════════════════════════════════
+
+Na página "📤 Upload de Notas Fiscais":
+• Visão geral com estatísticas
+• Filtros por status
+• Métricas em tempo real
+
+No "Histórico de Envios":
+• Detalhes individuais de cada lote
+• Status do upload integrado
+• Ações diretas (consultar, baixar)
+
+
+═══════════════════════════════════════════════════════════════════════
+✅ RESUMO
+
+O Histórico de Envios agora é muito mais completo e informativo!
+
+ANTES:
+• Só mostrava lista de O.S. e status do pagamento
+• Não sabia se prestador enviou N.F.
+• Tinha que verificar email manualmente
+
+AGORA:
+• Mostra status completo do upload
+• Indica claramente se N.F. foi recebida
+• Permite consulta e download direto
+• Identifica links expirados
+• Mantém histórico completo
+
+🎉 Interface mais profissional e eficiente!
+═══════════════════════════════════════════════════════════════════════
+
+Data: 13 de outubro de 2025
+Versão: 1.0

@@ -1,0 +1,106 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║          ✅ CONFIGURADO PARA HTTP (SEM CERTIFICADO SSL)          ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+⚠️ TEMPORÁRIO - Certificado SSL ainda não está ativo no servidor
+
+═══════════════════════════════════════════════════════════════════
+
+🔧 O QUE FOI ALTERADO
+═══════════════════════════════════════════════════════════════════
+
+✅ URL mudou de HTTPS para HTTP
+   Antes: https://api.link.dev.br/dvprocessamento/
+   Agora: http://api.link.dev.br/dvprocessamento/
+
+✅ Verificação SSL desabilitada
+   verify_ssl = False
+
+✅ Avisos de SSL suprimidos
+   urllib3.disable_warnings()
+
+═══════════════════════════════════════════════════════════════════
+
+📝 CÓDIGO ATUALIZADO
+═══════════════════════════════════════════════════════════════════
+
+api_upload_client.py (linhas ~15-16):
+
+┌─────────────────────────────────────────────────────────────┐
+│ # HTTP (sem SSL por enquanto)                               │
+│ API_URL = "http://api.link.dev.br/dvprocessamento/"        │
+│ API_KEY = "DV_API_2025_CTRL_NOTAS_f8e9d2c1b4a6"            │
+└─────────────────────────────────────────────────────────────┘
+
+Requisição (linha ~108):
+
+┌─────────────────────────────────────────────────────────────┐
+│ response = requests.post(                                   │
+│     self.api_url,                                           │
+│     json=payload,                                           │
+│     headers=headers,                                        │
+│     timeout=30,                                             │
+│     verify=False  # Aceita sem certificado                 │
+│ )                                                           │
+└─────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+
+✅ ESTÁ FUNCIONANDO
+═══════════════════════════════════════════════════════════════════
+
+Agora o sistema:
+✅ Aceita HTTP (sem HTTPS)
+✅ Não verifica certificado SSL
+✅ Funciona mesmo sem certificado ativo
+✅ Pronto para conectar na API
+
+═══════════════════════════════════════════════════════════════════
+
+⏳ QUANDO MUDAR PARA HTTPS
+═══════════════════════════════════════════════════════════════════
+
+Quando o desenvolvedor externo confirmar:
+"Certificado SSL está ativo!"
+
+Aí você muda:
+
+1️⃣ Linha 15 do api_upload_client.py:
+   http:// → https://
+
+2️⃣ Linha 29 do api_upload_client.py:
+   verify_ssl=False → verify_ssl=True
+
+3️⃣ Testar envio
+
+═══════════════════════════════════════════════════════════════════
+
+🧪 TESTAR AGORA
+═══════════════════════════════════════════════════════════════════
+
+python api_upload_client.py
+
+Deve conectar sem erros de SSL!
+
+═══════════════════════════════════════════════════════════════════
+
+⚠️ SEGURANÇA
+═══════════════════════════════════════════════════════════════════
+
+HTTP = Sem criptografia
+✅ OK para desenvolvimento/testes
+⚠️ Não ideal para produção
+✅ Temporário até certificado estar ativo
+
+═══════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTAÇÃO
+═══════════════════════════════════════════════════════════════════
+
+📄 CONFIGURACAO_SSL_TEMPORARIA.md  ← Detalhes completos
+
+═══════════════════════════════════════════════════════════════════
+
+✅ PRONTO PARA CONECTAR NA API!
+
+═══════════════════════════════════════════════════════════════════

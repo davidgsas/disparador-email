@@ -33,6 +33,15 @@ def run_migrations():
         cur.execute("ALTER TABLE prestadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
         cur.execute("ALTER TABLE montadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
         
+        # Adicionar colunas para sistema de upload de notas fiscais (API DV Processamento)
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS id_controle INTEGER;")  # ID retornado pela API
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS link_upload TEXT;")  # Link de upload recebido da API
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS validade_link DATE;")  # Data de validade do link
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS status_api INTEGER DEFAULT 0;")  # 0=pendente, 1=NF recebida
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS data_envio_api TIMESTAMP;")  # Quando foi enviado para API
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS nota_fiscal_path TEXT;")  # Caminho do arquivo recebido
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS api_message TEXT;")  # Mensagem retornada pela API
+        
         # Criar índices
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_montagem ON envios_montagem ((detalhes->>'periodo_relatorio'), montador_id);''')
         
@@ -208,6 +217,331 @@ def get_lote_servico_by_conversation_id(conversation_id):
         lote = cur.fetchone()
     conn.close()
     return lote
+
+# --- Funções de Upload de Notas Fiscais (API DV Processamento) ---
+def salvar_resposta_api(lote_id, id_controle, link, validade_link, status_api, message, upload_hash=None):
+    """Salva a resposta da API após envio do lote"""
+    conn = get_db_connection()
+    now = datetime.datetime.now()
+    with conn.cursor() as cur:
+        cur.execute(
+            '''UPDATE lotes_servico 
+               SET id_controle = %s, link_upload = %s, validade_link = %s, 
+                   status_api = %s, data_envio_api = %s, api_message = %s, upload_hash = %s 
+               WHERE id = %s''',
+            (id_controle, link, validade_link, status_api, now, message, upload_hash, lote_id)
+        )
+    conn.commit()
+    conn.close()
+
+def get_lotes_para_enviar_api():
+    """Retorna lotes que ainda não foram enviados para a API"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT * FROM lotes_servico 
+               WHERE id_controle IS NULL 
+               AND status != 'N.F. RECEBIDA'
+               ORDER BY data_envio DESC"""
+        )
+        lotes = cur.fetchall()
+    conn.close()
+    return lotes
+
+def atualizar_status_api(lote_id, status_api):
+    """Atualiza o status da API (0=pendente, 1=NF recebida)"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute('UPDATE lotes_servico SET status_api = %s WHERE id = %s', (status_api, lote_id))
+        if status_api == 1:
+            cur.execute('UPDATE lotes_servico SET status = %s WHERE id = %s', ('N.F. RECEBIDA', lote_id))
+    conn.commit()
+    conn.close()
+
+def salvar_nota_fiscal(lote_id, file_path):
+    """Salva o caminho da nota fiscal recebida"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            'UPDATE lotes_servico SET nota_fiscal_path = %s, status_api = %s, status = %s WHERE id = %s',
+            (file_path, 1, 'N.F. RECEBIDA', lote_id)
+        )
+    conn.commit()
+    conn.close()
+
+def get_lotes_com_link_pendente():
+    """Retorna lotes que têm link gerado mas ainda não receberam NF"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            """SELECT * FROM lotes_servico 
+               WHERE link_upload IS NOT NULL 
+               AND status_api = 0
+               AND validade_link >= CURRENT_DATE
+               ORDER BY data_envio DESC"""
+        )
+        lotes = cur.fetchall()
+    conn.close()
+    return lotes
+
+def get_lotes_upload_pendente():
+    """Retorna lotes aguardando upload de nota fiscal (mesmo que get_lotes_com_link_pendente)"""
+    return get_lotes_com_link_pendente()
+
+def get_lote_by_id_controle(id_controle):
+    """Retorna lote pelo ID de controle da API"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('SELECT * FROM lotes_servico WHERE id_controle = %s', (id_controle,))
+        lote = cur.fetchone()
+    conn.close()
+    return lote
+
+def verificar_lote_duplicado(lote_id, periodo):
+    """Verifica se já existe envio para API deste lote e período"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            'SELECT COUNT(*) FROM lotes_servico WHERE id = %s AND periodo = %s AND id_controle IS NOT NULL',
+            (lote_id, periodo)
+        )
+        count = cur.fetchone()[0]
+    conn.close()
+    return count > 0
+
+def salvar_arquivos_nf(lote_id, arquivos_dados, estatisticas=None):
+    """Salva dados dos arquivos recebidos da nota fiscal"""
+    conn = get_db_connection()
+    now = datetime.datetime.now()
+    
+    # Preparar dados completos
+    dados_completos = {
+        'arquivos': arquivos_dados,
+        'estatisticas': estatisticas or {},
+        'data_consulta': now.isoformat()
+    }
+    
+    with conn.cursor() as cur:
+        cur.execute(
+            '''UPDATE lotes_servico 
+               SET arquivos_nf = %s, 
+                   data_ultima_consulta = %s,
+                   status_arquivo = 1
+               WHERE id = %s''',
+            (json.dumps(dados_completos), now, lote_id)
+        )
+    conn.commit()
+    conn.close()
+
+def get_arquivos_nf(lote_id):
+    """Retorna dados dos arquivos de uma nota fiscal"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            'SELECT arquivos_nf, data_ultima_consulta, status_arquivo FROM lotes_servico WHERE id = %s',
+            (lote_id,)
+        )
+        result = cur.fetchone()
+    conn.close()
+    return result
+
+def atualizar_status_arquivo(lote_id, status):
+    """Atualiza status do arquivo (0=Aguardando, 1=Recebido, 2=Baixado)"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            'UPDATE lotes_servico SET status_arquivo = %s WHERE id = %s',
+            (status, lote_id)
+        )
+    conn.commit()
+    conn.close()
+
+def get_lotes_com_arquivos():
+    """Retorna lotes que já receberam arquivos"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            '''SELECT * FROM lotes_servico 
+               WHERE status_arquivo >= 1
+               ORDER BY data_ultima_consulta DESC'''
+        )
+        lotes = cur.fetchall()
+    conn.close()
+    return lotes
+
+# --- Funções de Notificações ---
+def criar_notificacao(tipo, titulo, mensagem, lote_id=None, icone='🔔', prioridade=0):
+    """Cria uma nova notificação"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            '''INSERT INTO notificacoes (tipo, titulo, mensagem, lote_id, icone, prioridade)
+               VALUES (%s, %s, %s, %s, %s, %s)
+               RETURNING id''',
+            (tipo, titulo, mensagem, lote_id, icone, prioridade)
+        )
+        notif_id = cur.fetchone()[0]
+    conn.commit()
+    conn.close()
+    return notif_id
+
+def get_notificacoes_nao_lidas():
+    """Retorna todas as notificações não lidas"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            '''SELECT n.*, l.prestador_nome 
+               FROM notificacoes n
+               LEFT JOIN lotes_servico l ON n.lote_id = l.id
+               WHERE n.lida = FALSE
+               ORDER BY n.prioridade DESC, n.data_criacao DESC'''
+        )
+        notifs = cur.fetchall()
+    conn.close()
+    return notifs
+
+def get_todas_notificacoes(limite=50):
+    """Retorna todas as notificações (com limite)"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute(
+            '''SELECT n.*, l.prestador_nome 
+               FROM notificacoes n
+               LEFT JOIN lotes_servico l ON n.lote_id = l.id
+               ORDER BY n.data_criacao DESC
+               LIMIT %s''',
+            (limite,)
+        )
+        notifs = cur.fetchall()
+    conn.close()
+    return notifs
+
+def marcar_notificacao_lida(notif_id):
+    """Marca uma notificação como lida"""
+    conn = get_db_connection()
+    now = datetime.datetime.now()
+    with conn.cursor() as cur:
+        cur.execute(
+            'UPDATE notificacoes SET lida = TRUE, data_leitura = %s WHERE id = %s',
+            (now, notif_id)
+        )
+    conn.commit()
+    conn.close()
+
+def marcar_todas_notificacoes_lidas():
+    """Marca todas as notificações como lidas"""
+    conn = get_db_connection()
+    now = datetime.datetime.now()
+    with conn.cursor() as cur:
+        cur.execute(
+            'UPDATE notificacoes SET lida = TRUE, data_leitura = %s WHERE lida = FALSE',
+            (now,)
+        )
+    conn.commit()
+    conn.close()
+
+def contar_notificacoes_nao_lidas():
+    """Conta quantas notificações não lidas existem"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute('SELECT COUNT(*) FROM notificacoes WHERE lida = FALSE')
+        count = cur.fetchone()[0]
+    conn.close()
+    return count
+
+def deletar_notificacao(notif_id):
+    """Deleta uma notificação"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute('DELETE FROM notificacoes WHERE id = %s', (notif_id,))
+    conn.commit()
+    conn.close()
+
+# --- Funções de Jobs Automáticos ---
+def get_jobs_config():
+    """Retorna configuração de todos os jobs"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('SELECT * FROM jobs_config ORDER BY nome')
+        jobs = cur.fetchall()
+    conn.close()
+    return jobs
+
+def get_job_config(nome):
+    """Retorna configuração de um job específico"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('SELECT * FROM jobs_config WHERE nome = %s', (nome,))
+        job = cur.fetchone()
+    conn.close()
+    return job
+
+def atualizar_job_config(nome, ativo=None, intervalo_minutos=None):
+    """Atualiza configuração de um job"""
+    conn = get_db_connection()
+    now = datetime.datetime.now()
+    
+    updates = ['data_atualizacao = %s']
+    params = [now]
+    
+    if ativo is not None:
+        updates.append('ativo = %s')
+        params.append(ativo)
+    
+    if intervalo_minutos is not None:
+        updates.append('intervalo_minutos = %s')
+        params.append(intervalo_minutos)
+    
+    params.append(nome)
+    
+    with conn.cursor() as cur:
+        cur.execute(
+            f'UPDATE jobs_config SET {", ".join(updates)} WHERE nome = %s',
+            params
+        )
+    conn.commit()
+    conn.close()
+
+def registrar_execucao_job(nome, sucesso=True, mensagem=''):
+    """Registra execução de um job"""
+    conn = get_db_connection()
+    now = datetime.datetime.now()
+    
+    with conn.cursor() as cur:
+        if sucesso:
+            cur.execute(
+                '''UPDATE jobs_config 
+                   SET ultima_execucao = %s,
+                       total_execucoes = total_execucoes + 1,
+                       ultima_mensagem = %s,
+                       data_atualizacao = %s
+                   WHERE nome = %s''',
+                (now, mensagem, now, nome)
+            )
+        else:
+            cur.execute(
+                '''UPDATE jobs_config 
+                   SET ultima_execucao = %s,
+                       total_execucoes = total_execucoes + 1,
+                       total_erros = total_erros + 1,
+                       ultima_mensagem = %s,
+                       data_atualizacao = %s
+                   WHERE nome = %s''',
+                (now, mensagem, now, nome)
+            )
+    conn.commit()
+    conn.close()
+
+def atualizar_proxima_execucao_job(nome, proxima_execucao):
+    """Atualiza próxima execução de um job"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            'UPDATE jobs_config SET proxima_execucao = %s WHERE nome = %s',
+            (proxima_execucao, nome)
+        )
+    conn.commit()
+    conn.close()
 
 # --- Funções de Montadores ---
 def add_montador(nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais=None):

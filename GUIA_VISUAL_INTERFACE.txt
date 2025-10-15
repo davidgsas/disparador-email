@@ -1,0 +1,323 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║  📤 INTERFACE DE UPLOAD DE NOTAS FISCAIS - GUIA VISUAL                ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+🎯 COMO ACESSAR:
+═══════════════════════════════════════════════════════════════════════
+1. Abra o Streamlit (streamlit run streamlit_app.py)
+2. Faça login com Office 365
+3. No menu lateral, clique em: "📤 Upload de Notas Fiscais"
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    🖥️  TELA PRINCIPAL                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  TAB 1: 📊 Status dos Uploads                                │   │
+│  ├─────────────────────────────────────────────────────────────┤   │
+│  │                                                               │   │
+│  │  ┌──────────┬──────────┬──────────┬──────────┐              │   │
+│  │  │  Total   │  ⏳ Pend  │  ✅ OK   │  ⏰ Exp  │              │   │
+│  │  │    15    │    8     │    5     │    2     │              │   │
+│  │  └──────────┴──────────┴──────────┴──────────┘              │   │
+│  │                                                               │   │
+│  │  Filtrar por: [Todos ▼]   Ordenar: [Mais Recentes ▼]       │   │
+│  │                                                               │   │
+│  │  ┌────────────────────────────────────────────────────────┐ │   │
+│  │  │ Lote #123                                               │ │   │
+│  │  │ João Silva Instalações      | 10/2025 | 13/10/2025 | ⏳│ │   │
+│  │  │                                                          │ │   │
+│  │  │ ▼ Ver Detalhes                                          │ │   │
+│  │  │   📊 Info: Lote #123, R$ 1.250,50                      │ │   │
+│  │  │   📤 Status: Aguardando Upload                          │ │   │
+│  │  │   🔗 Link: https://api.com/upload/abc123xyz789         │ │   │
+│  │  │                                                          │ │   │
+│  │  │   [🔄 Consultar Status] [⬇️ Baixar N.F.] [🔗 Reenviar]│ │   │
+│  │  └──────────────────────────────────────────────────────┘ │   │
+│  │                                                               │   │
+│  └───────────────────────────────────────────────────────────┘   │
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  TAB 2: 📋 Histórico Completo                               │   │
+│  ├─────────────────────────────────────────────────────────────┤   │
+│  │                                                               │   │
+│  │  Lote  | Prestador         | Período | Status    | N.F.     │   │
+│  │  ─────┼──────────────────┼─────────┼──────────┼─────────   │   │
+│  │  #123  | João Silva        | 10/2025 | ⏳ Pend.  | ❌ Não    │   │
+│  │  #122  | Maria Santos      | 10/2025 | ✅ OK     | ✅ Sim    │   │
+│  │  #121  | Carlos Oliveira   | 09/2025 | ✅ OK     | ✅ Sim    │   │
+│  │                                                               │   │
+│  │  [📊 Exportar para Excel]                                   │   │
+│  │                                                               │   │
+│  └───────────────────────────────────────────────────────────┘   │
+│                                                                       │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │  TAB 3: ⚙️ Configurações da API                             │   │
+│  ├─────────────────────────────────────────────────────────────┤   │
+│  │                                                               │   │
+│  │  ✅ API Configurada!                                         │   │
+│  │                                                               │   │
+│  │  🔗 URL: https://api-externa.novomundo.com.br               │   │
+│  │  🔑 Key: abc1**********************xyz9                     │   │
+│  │                                                               │   │
+│  │  [🚀 Testar Conexão]                                        │   │
+│  │                                                               │   │
+│  │  🤖 Consulta Automática                                      │   │
+│  │  Configurar cron: 0 * * * * python job_consultar_notas.py  │   │
+│  │                                                               │   │
+│  │  📚 Documentação:                                            │   │
+│  │  • API_UPLOAD_NOTAS_ESPECIFICACAO.md      [📖 Ver]         │   │
+│  │  • IMPLEMENTACAO_UPLOAD_NOTAS.md          [📖 Ver]         │   │
+│  │                                                               │   │
+│  └───────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────┘
+
+🔄 FLUXO DE USO:
+═══════════════════════════════════════════════════════════════════════
+
+CENÁRIO 1: Verificar se prestador enviou a nota fiscal
+───────────────────────────────────────────────────────
+1. Acesse "📤 Upload de Notas Fiscais"
+2. Encontre o lote na lista
+3. Expanda "Ver Detalhes"
+4. Clique em [🔄 Consultar Status Agora]
+5. Aguarde... Sistema verifica na API
+6. Se disponível:
+   → Status muda para ✅
+   → Arquivo baixado automaticamente
+   → Botão [⬇️ Baixar N.F.] fica ativo
+
+CENÁRIO 2: Reenviar link de upload ao prestador
+────────────────────────────────────────────────
+1. Localize o lote
+2. Expanda "Ver Detalhes"
+3. Clique em [📋 Copiar Link]
+4. Link aparece na tela
+5. Copie (Ctrl+C) e envie ao prestador via:
+   • WhatsApp
+   • Email
+   • SMS
+
+CENÁRIO 3: Gerar relatório Excel de uploads
+────────────────────────────────────────────
+1. Vá para TAB "Histórico Completo"
+2. Visualize todos os uploads na tabela
+3. Clique em [📊 Exportar para Excel]
+4. Arquivo baixado: historico_uploads_YYYYMMDD.xlsx
+
+CENÁRIO 4: Configurar pela primeira vez
+────────────────────────────────────────
+1. Acesse TAB "Configurações da API"
+2. Se ver ⚠️ amarelo:
+   
+   a) Edite arquivo .env:
+      $ nano .env
+      
+   b) Adicione:
+      UPLOAD_API_URL="https://api-externa.com"
+      UPLOAD_API_KEY="sua-chave-aqui"
+      
+   c) Salve e reinicie Streamlit:
+      $ streamlit run streamlit_app.py
+
+3. Volte à interface
+4. Clique [🚀 Testar Conexão]
+5. Se ✅ verde: Pronto para usar!
+
+📊 ESTATÍSTICAS EXIBIDAS:
+═══════════════════════════════════════════════════════════════════════
+
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│   TOTAL     │  PENDENTES  │  RECEBIDOS  │  EXPIRADOS  │
+├─────────────┼─────────────┼─────────────┼─────────────┤
+│     15      │   8 (53%)   │   5 (33%)   │   2 (13%)   │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+
+🔍 FILTROS DISPONÍVEIS:
+───────────────────────
+• Status: Todos | Pendente | Completo | Expirado | Falha
+• Ordenação: Mais Recentes | Mais Antigos | Por Prestador
+
+🎯 CÓDIGOS DE STATUS:
+═══════════════════════════════════════════════════════════════════════
+
+⏳ PENDENTE (pending)
+   → Prestador ainda não enviou a nota fiscal
+   → Link ativo, aguardando upload
+   → Ações: Consultar status, Reenviar link
+
+✅ COMPLETO (completed)
+   → Nota fiscal recebida com sucesso!
+   → Arquivo baixado e salvo
+   → Ações: Baixar arquivo, Ver detalhes
+
+⏰ EXPIRADO (expired)
+   → Link expirou (30 dias)
+   → Prestador não enviou a tempo
+   → Ações: Gerar novo link (manual)
+
+❌ FALHA (failed)
+   → Erro no processo de upload
+   → Verificar logs para detalhes
+   → Ações: Reenviar, Contatar suporte
+
+🔧 AÇÕES DISPONÍVEIS:
+═══════════════════════════════════════════════════════════════════════
+
+[🔄 Consultar Status Agora]
+   • Verifica na API externa se arquivo foi enviado
+   • Atualiza status no banco de dados
+   • Se disponível, baixa arquivo automaticamente
+   • Mostra resultado instantâneo
+
+[⬇️ Baixar N.F.]
+   • Disponível apenas se arquivo já foi recebido
+   • Baixa PDF da nota fiscal
+   • Arquivo salvo em: uploads/nota_fiscal_lote_{id}.pdf
+
+[🔗 Reenviar Link]
+   • Mostra o link único de upload
+   • Permite copiar para compartilhar
+   • Útil se prestador perdeu o email
+
+[📋 Copiar Link]
+   • Exibe link em caixa de código
+   • Fácil de copiar (Ctrl+C)
+   • Link formato: https://api.com/upload/{token}
+
+[🚀 Testar Conexão]
+   • Verifica se API está acessível
+   • Testa autenticação (API Key)
+   • Retorna sucesso ou erro
+
+[📊 Exportar para Excel]
+   • Gera planilha com histórico completo
+   • Colunas: Lote, Prestador, Período, Status, Valor
+   • Nome: historico_uploads_YYYYMMDD_HHMMSS.xlsx
+
+💡 DICAS DE USO:
+═══════════════════════════════════════════════════════════════════════
+
+Performance:
+✓ Use filtros para encontrar lotes rapidamente
+✓ Ordene por "Mais Recentes" para ver últimos envios
+✓ Consulta manual só quando necessário (job faz automaticamente)
+
+Segurança:
+✓ API Key sempre mascarada na interface
+✓ Links únicos por lote (token exclusivo)
+✓ Expiração automática após 30 dias
+
+Organização:
+✓ Exporte relatórios mensalmente
+✓ Arquive notas fiscais antigas
+✓ Mantenha backup da pasta uploads/
+
+Troubleshooting:
+✓ Status não atualiza? → Verifique conexão API
+✓ Arquivo não baixa? → Verifique permissões uploads/
+✓ Link não funciona? → Verifique se não expirou
+
+🤖 JOB AUTOMÁTICO:
+═══════════════════════════════════════════════════════════════════════
+
+O que faz:
+• Executa a cada hora (configurável)
+• Consulta todos os lotes pendentes
+• Verifica status na API
+• Baixa arquivos disponíveis automaticamente
+• Atualiza banco de dados
+• Gera log de execução
+
+Como configurar:
+┌──────────────────────────────────────────────────────────────┐
+│ $ crontab -e                                                  │
+│                                                               │
+│ # Adicionar esta linha (executa a cada hora):                │
+│ 0 * * * * cd /caminho/projeto && source .venv/bin/activate &&│
+│   python job_consultar_notas.py >> logs/consulta_notas.log   │
+└──────────────────────────────────────────────────────────────┘
+
+Verificar se está ativo:
+┌──────────────────────────────────────────────────────────────┐
+│ $ crontab -l                                                  │
+└──────────────────────────────────────────────────────────────┘
+
+Ver logs:
+┌──────────────────────────────────────────────────────────────┐
+│ $ tail -f logs/consulta_notas.log                            │
+└──────────────────────────────────────────────────────────────┘
+
+📱 LAYOUT RESPONSIVO:
+═══════════════════════════════════════════════════════════════════════
+
+Desktop (Tela Grande):
+┌─────────────────────────────────────────────────────────────┐
+│  Lote #123  │  João Silva  │  10/2025  │  13/10  │  ⏳     │
+└─────────────────────────────────────────────────────────────┘
+     ↓↓↓↓↓ Expande ↓↓↓↓↓
+┌─────────────────────────────────────────────────────────────┐
+│  Info          │  Upload Status                             │
+│  Lote: #123    │  Status: Aguardando                        │
+│  R$ 1.250,50   │  Token: abc123...                          │
+│                │  Link: https://...                          │
+└─────────────────────────────────────────────────────────────┘
+
+Mobile/Tablet (Tela Pequena):
+┌────────────────────────────┐
+│  Lote #123                 │
+│  João Silva                │
+│  ⏳ Aguardando Upload       │
+│  ▼ Ver Detalhes            │
+└────────────────────────────┘
+
+🎨 CORES E INDICADORES:
+═══════════════════════════════════════════════════════════════════════
+
+Status        | Cor     | Emoji | Prioridade
+─────────────┼─────────┼───────┼───────────
+Pendente      | Amarelo | ⏳     | ALTA
+Completo      | Verde   | ✅     | BAIXA
+Expirado      | Laranja | ⏰     | MÉDIA
+Falha         | Vermelho| ❌     | CRÍTICA
+
+Métricas:
+• Verde: Tudo funcionando bem
+• Amarelo: Atenção necessária
+• Vermelho: Ação urgente requerida
+
+📚 ARQUIVOS RELACIONADOS:
+═══════════════════════════════════════════════════════════════════════
+
+Interface:
+📄 streamlit_app.py              (código da interface)
+📄 INTERFACE_UPLOAD_NOTAS.md     (este documento)
+
+Backend:
+📄 upload_api_client.py          (cliente da API)
+📄 database.py                   (funções de banco)
+📄 job_consultar_notas.py        (job automático)
+
+Documentação:
+📄 API_UPLOAD_NOTAS_ESPECIFICACAO.md
+📄 IMPLEMENTACAO_UPLOAD_NOTAS.md
+📄 RESUMO_UPLOAD_NOTAS.txt
+
+Configuração:
+📄 .env                          (variáveis de ambiente)
+📄 .env.example                  (template)
+
+Teste:
+📄 teste_upload_api.py           (script de teste)
+
+═══════════════════════════════════════════════════════════════════════
+📞 SUPORTE
+
+Dúvidas? Consulte:
+1. IMPLEMENTACAO_UPLOAD_NOTAS.md (guia completo)
+2. Logs do job: logs/consulta_notas.log
+3. Teste a API: python teste_upload_api.py
+
+Desenvolvido em: 13 de outubro de 2025
+Versão: 1.0
+═══════════════════════════════════════════════════════════════════════

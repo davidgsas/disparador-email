@@ -1,0 +1,380 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║  ⚙️ INTERFACE DE CONFIGURAÇÃO DA API - GUIA COMPLETO                  ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+🎯 NOVA FUNCIONALIDADE:
+═══════════════════════════════════════════════════════════════════════
+
+Agora você pode configurar a URL e a API Key do sistema externo diretamente
+pela interface do Streamlit, sem precisar editar o arquivo .env manualmente!
+
+📍 ONDE ENCONTRAR:
+═══════════════════════════════════════════════════════════════════════
+
+Menu Lateral > 📤 Upload de Notas Fiscais > Tab "⚙️ Configurações"
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                    🖥️  TELA DE CONFIGURAÇÃO                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│  ⚙️ Configurações da API de Upload                                  │
+│                                                                       │
+│  🔗 Integração com Sistema Externo                                  │
+│  Configure aqui a URL da API e a chave de autenticação fornecidas  │
+│  pelo desenvolvedor do sistema externo.                              │
+│                                                                       │
+│  ─────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│  ⚠️ API de Upload não configurada!  ← Status                       │
+│                                                                       │
+│  📝 Configurar Credenciais da API                                    │
+│                                                                       │
+│  ┌───────────────────────────────────────────────────────────────┐ │
+│  │ Preencha as informações fornecidas pelo desenvolvedor:         │ │
+│  │                                                                 │ │
+│  │ 🔗 URL da API                          ☐ Mostrar API Key      │ │
+│  │ ┌─────────────────────────────┐                               │ │
+│  │ │ https://api-externa.com     │                               │ │
+│  │ └─────────────────────────────┘                               │ │
+│  │                                                                 │ │
+│  │ 🔑 API Key (Chave de Autenticação)                            │ │
+│  │ ┌─────────────────────────────┐                               │ │
+│  │ │ ●●●●●●●●●●●●●●●●●●●●●●●●   │ (tipo password)              │ │
+│  │ └─────────────────────────────┘                               │ │
+│  │                                                                 │ │
+│  │ ───────────────────────────────────────────────────────────   │ │
+│  │                                                                 │ │
+│  │ [💾 Salvar Configurações] [🗑️ Limpar Configurações]          │ │
+│  └───────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│  ─────────────────────────────────────────────────────────────────  │
+│                                                                       │
+│  📊 Configuração Atual                                               │
+│                                                                       │
+│  🔗 URL da API              🔑 API Key                              │
+│  Não configurada            Não configurada                          │
+│                                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+🎬 COMO USAR:
+═══════════════════════════════════════════════════════════════════════
+
+PASSO 1: Receber Credenciais
+─────────────────────────────
+1. Entre em contato com o desenvolvedor do sistema externo
+2. Ele fornecerá:
+   • URL da API: https://api-externa.novomundo.com.br
+   • API Key: nmrj_2K8dP9mN3qR7sT1vW5xY4zA6bC0eF2gH8jK3mL9nP1qR5sT7vW0xY4zA6
+
+PASSO 2: Acessar Interface
+───────────────────────────
+1. Abra o Streamlit
+2. No menu lateral, clique em "📤 Upload de Notas Fiscais"
+3. Clique na tab "⚙️ Configurações"
+
+PASSO 3: Preencher Formulário
+──────────────────────────────
+1. Cole a URL no campo "🔗 URL da API"
+   Exemplo: https://api-externa.novomundo.com.br
+
+2. Cole a API Key no campo "🔑 API Key"
+   Exemplo: nmrj_2K8dP9mN3qR7sT1vW5xY4zA6bC0eF2gH8jK3mL9nP1qR5sT7vW0xY4zA6
+
+3. Se quiser ver a API Key enquanto digita:
+   ☑ Marque "Mostrar API Key"
+
+4. Clique em [💾 Salvar Configurações]
+
+PASSO 4: Confirmação
+─────────────────────
+✅ Configurações salvas com sucesso!
+🔄 Recarregando variáveis de ambiente...
+
+→ Página recarrega automaticamente
+→ Status muda para: ✅ API Configurada!
+
+📊 EXEMPLOS DE USO:
+═══════════════════════════════════════════════════════════════════════
+
+EXEMPLO 1: Primeira Configuração
+─────────────────────────────────
+
+ANTES:
+┌─────────────────────────────────────────────────────────────────┐
+│ ⚠️ API de Upload não configurada!                              │
+│                                                                  │
+│ 🔗 URL da API: [____________________________________________]   │
+│ 🔑 API Key:    [●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●●]   │
+│                                                                  │
+│ [💾 Salvar Configurações]                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+PREENCHENDO:
+┌─────────────────────────────────────────────────────────────────┐
+│ 🔗 URL da API:                                                  │
+│ [https://api-externa.novomundo.com.br_________________]        │
+│                                                                  │
+│ 🔑 API Key:    ☑ Mostrar API Key                              │
+│ [nmrj_2K8dP9mN3qR7sT1vW5xY4zA6bC0eF2gH8jK3mL9nP1qR5sT7v]     │
+│                                                                  │
+│ [💾 Salvar Configurações]  ← CLIQUE                           │
+└─────────────────────────────────────────────────────────────────┘
+
+DEPOIS:
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ API Configurada!                                             │
+│                                                                  │
+│ 📊 Configuração Atual                                           │
+│                                                                  │
+│ 🔗 URL da API                    🔑 API Key                    │
+│ api-externa.novomundo.com.br     nmrj**********************v   │
+└─────────────────────────────────────────────────────────────────┘
+
+─────────────────────────────────────────────────────────────────
+
+EXEMPLO 2: Atualizar Configuração
+──────────────────────────────────
+
+Se a URL ou API Key mudar:
+
+1. Acesse novamente a interface
+2. Os campos já vêm preenchidos com valores atuais
+3. Modifique o que precisa
+4. Clique em [💾 Salvar Configurações]
+5. Configuração atualizada!
+
+─────────────────────────────────────────────────────────────────
+
+EXEMPLO 3: Ver API Key Completa
+────────────────────────────────
+
+Por padrão, a API Key é mascarada por segurança:
+nmrj**********************v
+
+Para ver completa:
+1. Marque ☑ "Mostrar API Key"
+2. Campo muda de password para texto
+3. Vê a chave completa: nmrj_2K8dP9mN3qR7sT1vW5xY4zA6...
+
+─────────────────────────────────────────────────────────────────
+
+EXEMPLO 4: Remover Configuração
+────────────────────────────────
+
+Para limpar completamente:
+1. Clique em [🗑️ Limpar Configurações]
+2. Confirmação: ✅ Configurações removidas!
+3. Status volta para: ⚠️ API de Upload não configurada!
+
+🔐 SEGURANÇA:
+═══════════════════════════════════════════════════════════════════════
+
+✅ API Key mascarada por padrão
+   • Mostra apenas: nmrj**********************v
+   • Primeiros 4 e últimos 4 caracteres
+   • Proteção contra olhares curiosos
+
+✅ Campo tipo password
+   • Digite sem que apareça na tela
+   • Só mostra ●●●●●●●●●●●
+   • Marque checkbox para ver
+
+✅ Salvo em .env
+   • Arquivo local, não vai para Git (.gitignore)
+   • Não fica em banco de dados
+   • Fácil de fazer backup
+
+✅ Recarregamento automático
+   • Não precisa reiniciar aplicação
+   • load_dotenv(override=True)
+   • Valores atualizados imediatamente
+
+💾 ONDE É SALVO:
+═══════════════════════════════════════════════════════════════════════
+
+Arquivo: .env (na raiz do projeto)
+
+Formato:
+┌──────────────────────────────────────────────────────────────────┐
+│ UPLOAD_API_URL="https://api-externa.novomundo.com.br"           │
+│ UPLOAD_API_KEY="nmrj_2K8dP9mN3qR7sT1vW5xY4zA6bC0eF2gH8jK3mL"   │
+└──────────────────────────────────────────────────────────────────┘
+
+Outras variáveis no .env são preservadas:
+• CLIENT_ID
+• TENANT_ID
+• DB_HOST
+• DB_USER
+• etc.
+
+🧪 TESTAR CONEXÃO:
+═══════════════════════════════════════════════════════════════════════
+
+Após configurar, role a página para baixo:
+
+┌─────────────────────────────────────────────────────────────────┐
+│ 🔍 Testar Conexão com a API                                     │
+│                                                                  │
+│ [🚀 Testar Conexão]  ← CLIQUE                                  │
+└─────────────────────────────────────────────────────────────────┘
+
+Testando...
+┌─────────────────────────────────────────────────────────────────┐
+│ 🔄 Testando conexão...                                          │
+└─────────────────────────────────────────────────────────────────┘
+
+Se sucesso:
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ Conexão com a API está funcionando!                         │
+└─────────────────────────────────────────────────────────────────┘
+
+Se erro:
+┌─────────────────────────────────────────────────────────────────┐
+│ ❌ Não foi possível conectar à API.                            │
+│    Verifique a URL e a chave.                                   │
+└─────────────────────────────────────────────────────────────────┘
+
+⚙️ FUNCIONALIDADES DO FORMULÁRIO:
+═══════════════════════════════════════════════════════════════════════
+
+✓ Campos preenchidos com valores atuais
+✓ Placeholder com exemplos
+✓ Help text explicativo
+✓ Validação (não permite campos vazios)
+✓ Mascaramento de API Key
+✓ Opção para mostrar/ocultar API Key
+✓ Botão de salvar (verde, destaque)
+✓ Botão de limpar (cinza, secundário)
+✓ Feedback visual (success/error)
+✓ Recarregamento automático após salvar
+✓ Preserva outras variáveis do .env
+
+📋 VALIDAÇÕES:
+═══════════════════════════════════════════════════════════════════════
+
+Ao clicar em "Salvar":
+
+SE campos vazios:
+┌─────────────────────────────────────────────────────────────────┐
+│ ❌ Por favor, preencha todos os campos!                        │
+└─────────────────────────────────────────────────────────────────┘
+
+SE tudo OK:
+┌─────────────────────────────────────────────────────────────────┐
+│ ✅ Configurações salvas com sucesso!                           │
+│ 🔄 Recarregando variáveis de ambiente...                       │
+└─────────────────────────────────────────────────────────────────┘
+→ Página recarrega em 1 segundo
+
+🔄 FLUXO COMPLETO:
+═══════════════════════════════════════════════════════════════════════
+
+1. RECEBER CREDENCIAIS (do outro desenvolvedor)
+   ↓
+2. ACESSAR INTERFACE (📤 Upload > ⚙️ Configurações)
+   ↓
+3. PREENCHER FORMULÁRIO
+   • URL da API
+   • API Key
+   ↓
+4. SALVAR
+   ↓
+5. CONFIRMAÇÃO
+   • Salvo em .env
+   • Recarregamento automático
+   ↓
+6. TESTAR CONEXÃO
+   ↓
+7. PRONTO PARA USAR! ✅
+
+💡 DICAS:
+═══════════════════════════════════════════════════════════════════════
+
+✓ Cole diretamente do email que recebeu as credenciais
+✓ Não adicione espaços no início ou fim (sistema remove automaticamente)
+✓ URL não precisa ter "/" no final (sistema remove se tiver)
+✓ Use "Mostrar API Key" só quando necessário
+✓ Teste a conexão após configurar
+✓ Se mudar as credenciais, só preencher novamente e salvar
+
+⚠️ TROUBLESHOOTING:
+═══════════════════════════════════════════════════════════════════════
+
+PROBLEMA: Salvei mas ainda diz "não configurada"
+SOLUÇÃO: Aguarde 1 segundo, página deve recarregar automaticamente
+
+PROBLEMA: API Key aparece incompleta
+SOLUÇÃO: Normal! É mascarada por segurança. Marque "Mostrar API Key" se precisar ver
+
+PROBLEMA: Teste de conexão falha
+SOLUÇÃO: 
+1. Verifique URL (deve ser HTTPS)
+2. Verifique API Key (copie novamente)
+3. Confirme com desenvolvedor externo se está ativa
+
+PROBLEMA: Quero editar .env manualmente
+SOLUÇÃO: Pode! Mas use a interface, é mais fácil e seguro
+
+PROBLEMA: Perdi a API Key
+SOLUÇÃO: Entre em contato com desenvolvedor do sistema externo
+
+📊 STATUS VISUAL:
+═══════════════════════════════════════════════════════════════════════
+
+⚠️ API de Upload não configurada!
+→ Laranja/Amarelo
+→ Precisa configurar
+
+✅ API Configurada!
+→ Verde
+→ Tudo OK, pronto para usar
+
+❌ Erro ao salvar
+→ Vermelho
+→ Verifique os dados
+
+🎉 VANTAGENS:
+═══════════════════════════════════════════════════════════════════════
+
+ANTES (Edição manual do .env):
+❌ Precisa acessar terminal
+❌ Precisa saber editar arquivos
+❌ Risco de erro de sintaxe
+❌ Risco de apagar outras variáveis
+❌ Precisa reiniciar aplicação
+
+AGORA (Interface):
+✅ Tudo pela interface web
+✅ Formulário guiado
+✅ Validação automática
+✅ Preserva outras variáveis
+✅ Recarrega automaticamente
+✅ Feedback visual claro
+✅ Mascaramento de senhas
+✅ Teste de conexão integrado
+
+═══════════════════════════════════════════════════════════════════════
+
+✅ RESUMO:
+
+Localização: 📤 Upload de Notas Fiscais > ⚙️ Configurações
+
+Campos:
+• 🔗 URL da API
+• 🔑 API Key
+
+Ações:
+• 💾 Salvar
+• 🗑️ Limpar
+• 🚀 Testar Conexão
+
+Resultado:
+• Salvo em .env
+• Recarregamento automático
+• Status visual claro
+• Pronto para usar!
+
+═══════════════════════════════════════════════════════════════════════
+
+Data: 13 de outubro de 2025
+Versão: 1.0

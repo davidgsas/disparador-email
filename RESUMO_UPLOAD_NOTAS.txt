@@ -1,0 +1,248 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║  ✅ SISTEMA DE UPLOAD DE NOTAS FISCAIS - IMPLEMENTAÇÃO COMPLETA       ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+📋 ARQUIVOS CRIADOS:
+═══════════════════════════════════════════════════════════════════════
+
+1. ⭐ API_UPLOAD_NOTAS_ESPECIFICACAO.md
+   └─ Especificação completa para o desenvolvedor externo
+   └─ Endpoints, estrutura de dados, exemplos
+   └─ Interface web, segurança, políticas
+
+2. 🔌 upload_api_client.py
+   └─ Cliente Python para integração
+   └─ Funções: criar_link, consultar_status, download
+   └─ Pronto para uso no sistema
+
+3. 💾 Modificações em database.py
+   └─ 4 novas colunas em lotes_servico
+   └─ 5 novas funções para gerenciar uploads
+   └─ Migration automática
+
+4. ⚙️ .env.example
+   └─ Template de configuração
+   └─ Variáveis: UPLOAD_API_URL, UPLOAD_API_KEY
+
+5. 🧪 teste_upload_api.py
+   └─ Script de teste completo
+   └─ Demonstra todo o fluxo
+   └─ Mostra JSON que será enviado
+
+6. 🤖 job_consultar_notas.py
+   └─ Job para consulta automática
+   └─ Executa via cron a cada hora
+   └─ Baixa arquivos automaticamente
+
+7. 📚 IMPLEMENTACAO_UPLOAD_NOTAS.md
+   └─ Guia completo de implementação
+   └─ Integração no código existente
+   └─ Troubleshooting e monitoramento
+
+╔════════════════════════════════════════════════════════════════════════╗
+║  🎯 FLUXO DO SISTEMA                                                   ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+1️⃣  DISPARO DO LOTE
+    └─ Sistema cria lote com OS
+    └─ Chama API externa para criar link único
+    └─ Salva token e URL no banco
+
+2️⃣  ENVIO DO EMAIL
+    └─ Email inclui relatório PDF (anexo)
+    └─ Email inclui link para upload
+    └─ Link é único e expira em 30 dias
+
+3️⃣  PRESTADOR FAZ UPLOAD
+    └─ Clica no link recebido
+    └─ Abre página no sistema externo
+    └─ Seleciona PDF da nota fiscal
+    └─ Sistema externo valida e armazena
+
+4️⃣  CONSULTA AUTOMÁTICA
+    └─ Job roda a cada hora (cron)
+    └─ Consulta status na API externa
+    └─ Se arquivo disponível, baixa automaticamente
+    └─ Salva em uploads/ e atualiza banco
+
+5️⃣  ARQUIVO RECEBIDO
+    └─ Status do lote: "N.F. RECEBIDA"
+    └─ Arquivo disponível no histórico
+    └─ Pode ser baixado pela interface
+
+╔════════════════════════════════════════════════════════════════════════╗
+║  📤 JSON PARA O DESENVOLVEDOR EXTERNO                                  ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+ENDPOINT: POST https://api-externa.com/api/upload/create
+
+{
+  "lote_id": 12345,
+  "prestador": {
+    "id": 10,
+    "nome": "João Silva Instalações LTDA",
+    "email": "joao.silva@empresa.com.br"
+  },
+  "lote_info": {
+    "periodo": "10/2025",
+    "valor_total": 1250.50,
+    "quantidade_os": 5,
+    "data_envio": "2025-10-13T14:30:00"
+  },
+  "metadata": {
+    "sistema": "disparador-email",
+    "versao": "1.0",
+    "empresa": "Novo Mundo"
+  }
+}
+
+RESPOSTA ESPERADA:
+
+{
+  "success": true,
+  "data": {
+    "token": "abc123xyz789unique",
+    "upload_url": "https://api-externa.com/upload/abc123xyz789unique",
+    "expires_at": "2025-11-13T14:30:00",
+    "lote_id": 12345
+  },
+  "message": "Link de upload criado com sucesso"
+}
+
+╔════════════════════════════════════════════════════════════════════════╗
+║  🔧 CONFIGURAÇÃO NECESSÁRIA                                            ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+1. ATUALIZAR .env:
+   UPLOAD_API_URL="https://api-externa.novomundo.com.br"
+   UPLOAD_API_KEY="chave-fornecida-pelo-outro-dev"
+
+2. EXECUTAR MIGRATIONS:
+   $ python -c "import database as db"
+
+3. TESTAR CONEXÃO:
+   $ python teste_upload_api.py
+
+4. CONFIGURAR CRON (consulta automática a cada hora):
+   $ crontab -e
+   0 * * * * cd /caminho/projeto && source .venv/bin/activate && python job_consultar_notas.py >> logs/consulta_notas.log 2>&1
+
+╔════════════════════════════════════════════════════════════════════════╗
+║  📋 CHECKLIST PARA O DESENVOLVEDOR EXTERNO                             ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+ENDPOINTS:
+  [ ] POST /api/upload/create - Criar link de upload
+  [ ] GET /api/upload/status/{token} - Consultar status
+  [ ] GET /api/upload/download/{token} - Download do arquivo
+
+INTERFACE WEB:
+  [ ] Página /upload/{token}
+  [ ] Exibe dados do lote (prestador, período, valor)
+  [ ] Formulário de upload (aceita apenas PDF, max 10MB)
+  [ ] Validação de token (válido/expirado)
+  [ ] Mensagem de sucesso após upload
+
+SEGURANÇA:
+  [ ] Validação de API Key (Bearer Token)
+  [ ] Validação de tipo de arquivo (apenas PDF)
+  [ ] Validação de tamanho (máximo 10MB)
+  [ ] Rate limiting (10 req/min)
+  [ ] Expiração de links (30 dias)
+
+ARMAZENAMENTO:
+  [ ] Banco de dados para metadados
+  [ ] Storage para arquivos PDF
+  [ ] Hash SHA256 dos arquivos
+  [ ] Logs de auditoria
+
+TESTES:
+  [ ] Criar link com dados válidos
+  [ ] Criar link com dados inválidos
+  [ ] Upload de PDF válido
+  [ ] Upload de arquivo não-PDF (rejeitar)
+  [ ] Upload maior que 10MB (rejeitar)
+  [ ] Consultar status (pending/completed/expired)
+  [ ] Download de arquivo
+  [ ] Token inválido (retornar 404)
+  [ ] API Key inválida (retornar 401)
+
+╔════════════════════════════════════════════════════════════════════════╗
+║  🚀 PRÓXIMOS PASSOS                                                    ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+PARA VOCÊ (Sistema Disparador):
+  1. ✅ Código criado e pronto
+  2. ⏳ Aguardar implementação da API externa
+  3. ⏳ Configurar .env com URL e API Key
+  4. ⏳ Integrar no fluxo de envio de emails
+  5. ⏳ Configurar cron para consulta automática
+  6. ⏳ Testar fluxo completo
+
+PARA O OUTRO DESENVOLVEDOR:
+  1. ⏳ Ler API_UPLOAD_NOTAS_ESPECIFICACAO.md
+  2. ⏳ Implementar 3 endpoints
+  3. ⏳ Criar interface web de upload
+  4. ⏳ Implementar validações de segurança
+  5. ⏳ Configurar storage de arquivos
+  6. ⏳ Fornecer URL da API e API Key
+  7. ⏳ Testar com dados do teste_upload_api.py
+
+╔════════════════════════════════════════════════════════════════════════╗
+║  📞 INFORMAÇÕES PARA PASSAR AO OUTRO DESENVOLVEDOR                     ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+📄 DOCUMENTO PRINCIPAL:
+   API_UPLOAD_NOTAS_ESPECIFICACAO.md
+   └─ Contém TUDO que ele precisa saber
+
+📊 EXEMPLO DE JSON:
+   Execute: python teste_upload_api.py
+   └─ Mostra o JSON exato que será enviado
+
+🔗 ENDPOINTS NECESSÁRIOS:
+   1. POST /api/upload/create
+   2. GET /api/upload/status/{token}
+   3. GET /api/upload/download/{token}
+
+🌐 INTERFACE WEB:
+   /upload/{token}
+   └─ Página onde o prestador faz upload
+
+🔐 AUTENTICAÇÃO:
+   Header: Authorization: Bearer {API_KEY}
+   └─ Ele deve gerar uma API Key para você
+
+📋 POLÍTICAS:
+   • Arquivos: Apenas PDF, máximo 10MB
+   • Expiração: 30 dias
+   • Storage: Sistema de arquivos ou cloud (S3, GCS, etc)
+
+╔════════════════════════════════════════════════════════════════════════╗
+║  ✅ RESUMO                                                             ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+✅ Sistema completo implementado no lado do Disparador
+✅ Especificação detalhada para o desenvolvedor externo
+✅ Banco de dados preparado (migrations automáticas)
+✅ Cliente API pronto para uso
+✅ Job de consulta automática criado
+✅ Documentação completa de integração
+✅ Scripts de teste disponíveis
+
+📦 ENTREGÁVEIS PARA O OUTRO DEV:
+   1. API_UPLOAD_NOTAS_ESPECIFICACAO.md (PRINCIPAL)
+   2. Exemplo de JSON (rodar teste_upload_api.py)
+   3. Requisitos técnicos e políticas (no documento)
+
+⏰ TEMPO ESTIMADO DE IMPLEMENTAÇÃO (para ele):
+   • Backend (API): 2-3 dias
+   • Frontend (página upload): 1 dia
+   • Testes e ajustes: 1 dia
+   • TOTAL: ~5 dias úteis
+
+═══════════════════════════════════════════════════════════════════════
+
+🎉 SISTEMA PRONTO PARA SER INTEGRADO ASSIM QUE A API ESTIVER NO AR!
+
+═══════════════════════════════════════════════════════════════════════

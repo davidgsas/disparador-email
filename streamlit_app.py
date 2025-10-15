@@ -16,6 +16,9 @@ from weasyprint import HTML
 
 import database as db
 from templates.variaveis import mostrar_variaveis_disponiveis
+from notificacoes_widget import mostrar_badge_notificacoes, mostrar_modal_notificacoes
+from painel_jobs import mostrar_painel_jobs
+from notificacoes_toast import processar_notificacoes_toast, badge_contador_notificacoes, marcar_todas_como_lidas
 
 # --- Novas Funções de Configuração ---
 CONFIG_FILE = Path("config.json")
@@ -131,8 +134,32 @@ if "access_token" not in st.session_state:
 # --- APLICAÇÃO PRINCIPAL (SÓ EXECUTA SE LOGADO) ---
 config = load_config()
 
+# 🔔 PROCESSAR NOTIFICAÇÕES TOAST (exibe automaticamente)
+processar_notificacoes_toast()
+
 st.sidebar.title("MENU")
-app_mode = st.sidebar.selectbox("Selecione a Página", ["Dashboard de Pendências", "Serviços (Prestadores)", "Montagem (Montadores)", "🗄️ Backups do Banco"])
+
+# Mostrar contador de notificações no sidebar
+count_notif = badge_contador_notificacoes()
+if count_notif > 0:
+    col_notif1, col_notif2 = st.sidebar.columns([2, 1])
+    with col_notif1:
+        st.markdown(f"### 🔔 {count_notif}")
+    with col_notif2:
+        if st.button("✓", help="Marcar todas como lidas", key="clear_all_notif"):
+            qtd = marcar_todas_como_lidas()
+            st.toast(f"✅ {qtd} notificação(ões) marcadas como lidas", icon="✅")
+            st.rerun()
+
+app_mode = st.sidebar.selectbox("Selecione a Página", [
+    "Dashboard de Pendências", 
+    "Serviços (Prestadores)", 
+    "Montagem (Montadores)", 
+    "📤 Upload de Notas Fiscais", 
+    "⚙️ Jobs Automáticos", 
+    "🔌 Integrações",
+    "🗄️ Backups do Banco"
+])
 st.sidebar.info(f"**Conectado como:** \n{st.session_state.user}")
 
 if app_mode == "Dashboard de Pendências":
@@ -276,7 +303,18 @@ elif app_mode == "Serviços (Prestadores)":
                 st.sidebar.title("⚙️ Configurações de Envio (Serviços)")
                 
                 default_subject = "Novo Mundo Resolve | Nota Fiscal | Período: {{periodo}} | Prestador: {{nome_prestador}}"
-                default_body = "Segue a relação de boletins para emissão da nota fiscal de serviços entre **{{periodo}}**.\n\nObrigado."
+                default_body = """Segue a relação de boletins para emissão da nota fiscal de serviços entre **{{periodo}}**.
+
+{% if link_upload %}
+📎 Para anexar a Nota Fiscal, acesse o link abaixo:
+{{link_upload}}
+
+⚠️ Este link é válido por 30 dias.
+{% else %}
+📧 O link para anexar a Nota Fiscal será enviado em breve.
+{% endif %}
+
+Obrigado."""
 
                 mostrar_variaveis_disponiveis()
                 st.text_input("CC", value=config.get("prestador_cc", "projetos.qualidade@novomundo.com.br"), key="prestador_cc", on_change=save_config)
@@ -323,13 +361,24 @@ elif app_mode == "Serviços (Prestadores)":
                             
                             lote_id = db.criar_lote_servico(prestador_info['id'], nome_prestador, periodo, total_geral, items_to_log)
                             
+                            # Enviar para API DV Processamento para gerar link de upload
+                            link_upload = None
+                            try:
+                                from api_upload_client import enviar_lote_para_api
+                                sucesso, mensagem, dados = enviar_lote_para_api(lote_id)
+                                if sucesso and dados:
+                                    link_upload = dados.get('link')
+                            except Exception as e:
+                                st.warning(f"⚠️ Não foi possível gerar link de upload: {str(e)}")
+                            
                             ctx = {
                                 "nome_prestador": nome_prestador, 
                                 "periodo": periodo, 
                                 "items": items_fmt, 
                                 "total_geral": total_geral, 
                                 "saudacao": saudacao, 
-                                "lote_id": lote_id
+                                "lote_id": lote_id,
+                                "link_upload": link_upload  # Disponível para usar no template
                             }
                             
                             subj_template = Template(st.session_state.prestador_subject)
@@ -495,6 +544,38 @@ elif app_mode == "Serviços (Prestadores)":
                 if status_filter != "Todos" and lote['status'] != status_filter:
                     continue
                 
+                # Determinar status do upload (API DV Processamento)
+                upload_status_display = ""
+                upload_emoji = ""
+                import datetime as dt
+                
+                if lote.get('link_upload'):
+                    # Link foi gerado pela API
+                    status_api = lote.get('status_api', 0)
+                    validade_link = lote.get('validade_link')
+                    
+                    # Verificar se link expirou
+                    link_expirado = False
+                    if validade_link:
+                        if isinstance(validade_link, str):
+                            validade_dt = dt.datetime.strptime(validade_link, '%Y-%m-%d').date()
+                        else:
+                            validade_dt = validade_link
+                        link_expirado = validade_dt < dt.date.today()
+                    
+                    if status_api == 1:
+                        upload_emoji = "✅"
+                        upload_status_display = "N.F. RECEBIDA VIA UPLOAD"
+                    elif link_expirado:
+                        upload_emoji = "⏰"
+                        upload_status_display = "Link de upload expirado"
+                    else:
+                        upload_emoji = "📤"
+                        upload_status_display = "Link enviado ao prestador"
+                else:
+                    upload_emoji = "📧"
+                    upload_status_display = "Aguardando N.F. (sem link)"
+                
                 with st.container():
                     st.markdown("---")
                     cols = st.columns([1, 2, 1, 1, 1])
@@ -505,6 +586,181 @@ elif app_mode == "Serviços (Prestadores)":
                     cols[4].markdown(f"**{lote['status']}**")
 
                     with st.expander("Ver O.S. do Lote e Gerenciar"):
+                        # Informações do Upload
+                        st.markdown("### 📤 Status do Upload da Nota Fiscal")
+                        
+                        col_upload1, col_upload2 = st.columns([1, 3])
+                        
+                        with col_upload1:
+                            st.markdown(f"## {upload_emoji}")
+                        
+                        with col_upload2:
+                            st.markdown(f"**{upload_status_display}**")
+                            
+                            if lote.get('link_upload'):
+                                # Mostrar ID de controle da API
+                                if lote.get('id_controle'):
+                                    st.caption(f"ID Controle API: {lote['id_controle']}")
+                                
+                                # Mostrar validade do link
+                                if lote.get('validade_link'):
+                                    validade = lote['validade_link']
+                                    if isinstance(validade, str):
+                                        validade_dt = dt.datetime.strptime(validade, '%Y-%m-%d').date()
+                                    else:
+                                        validade_dt = validade
+                                    
+                                    dias_restantes = (validade_dt - dt.date.today()).days
+                                    if dias_restantes < 0:
+                                        st.error(f"⏰ Link expirou em {validade_dt.strftime('%d/%m/%Y')}")
+                                    elif dias_restantes == 0:
+                                        st.warning(f"⚠️ Link expira HOJE!")
+                                    elif dias_restantes <= 3:
+                                        st.warning(f"⚠️ Link expira em {dias_restantes} dia(s) - {validade_dt.strftime('%d/%m/%Y')}")
+                                    else:
+                                        st.info(f"✅ Válido até: {validade_dt.strftime('%d/%m/%Y')} ({dias_restantes} dias)")
+                                
+                                # Mostrar link com botão para copiar
+                                st.markdown("---")
+                                st.markdown("**🔗 Link de Upload da Nota Fiscal:**")
+                                st.code(lote['link_upload'], language="text")
+                                if st.button("📋 Copiar Link", key=f"copy_upload_{lote['id']}"):
+                                    st.info("Link exibido acima - use Ctrl+C para copiar")
+                                
+                                # Mostrar mensagem da API se houver
+                                if lote.get('api_message'):
+                                    st.caption(f"💬 {lote['api_message']}")
+                                
+                                # Botão para reenviar link (gerar novo)
+                                if lote.get('status_api', 0) == 0:
+                                    if st.button("🔄 Reenviar para API (Gerar Novo Link)", key=f"resend_api_{lote['id']}"):
+                                        try:
+                                            from api_upload_client import enviar_lote_para_api
+                                            
+                                            with st.spinner("Reenviando para API..."):
+                                                # Limpar id_controle para permitir reenvio
+                                                conn = db.get_db_connection()
+                                                with conn.cursor() as cur:
+                                                    cur.execute('UPDATE lotes_servico SET id_controle = NULL WHERE id = %s', (lote['id'],))
+                                                conn.commit()
+                                                conn.close()
+                                                
+                                                sucesso, mensagem, dados = enviar_lote_para_api(lote['id'])
+                                                
+                                                if sucesso:
+                                                    st.success(f"✅ {mensagem}")
+                                                    if dados and dados.get('link'):
+                                                        st.info(f"🔗 Novo link: {dados['link']}")
+                                                    st.rerun()
+                                                else:
+                                                    st.error(f"❌ {mensagem}")
+                                        
+                                        except Exception as e:
+                                            st.error(f"❌ Erro: {str(e)}")
+                                
+                                # Se já recebeu, mostrar info do arquivo
+                                if lote.get('nota_fiscal_path'):
+                                    nota_path = Path(lote['nota_fiscal_path'])
+                                    if nota_path.exists():
+                                        st.success(f"✅ Arquivo salvo em: {lote['nota_fiscal_path']}")
+                                        
+                                        with open(nota_path, "rb") as f:
+                                            st.download_button(
+                                                label="⬇️ Baixar Nota Fiscal (Upload)",
+                                                data=f,
+                                                file_name=nota_path.name,
+                                                mime="application/pdf",
+                                                key=f"download_upload_nf_{lote['id']}"
+                                            )
+                            else:
+                                # Link ainda não foi gerado
+                                st.warning("⚠️ Link de upload ainda não foi gerado pela API")
+                                
+                                if st.button("🚀 Enviar para API Agora", key=f"send_api_{lote['id']}"):
+                                    try:
+                                        from api_upload_client import enviar_lote_para_api
+                                        
+                                        with st.spinner("Enviando para API..."):
+                                            sucesso, mensagem, dados = enviar_lote_para_api(lote['id'])
+                                            
+                                            if sucesso:
+                                                st.success(f"✅ {mensagem}")
+                                                if dados and dados.get('link'):
+                                                    st.info(f"🔗 Link: {dados['link']}")
+                                                st.rerun()
+                                            else:
+                                                st.error(f"❌ {mensagem}")
+                                    
+                                    except Exception as e:
+                                        st.error(f"❌ Erro: {str(e)}")
+                        
+                        # Seção de Arquivos Recebidos
+                        if lote.get('status_arquivo', 0) >= 1 and lote.get('arquivos_nf'):
+                            st.markdown("---")
+                            st.markdown("### 📁 Arquivos da Nota Fiscal Recebidos")
+                            
+                            try:
+                                import json
+                                arquivos_data = lote['arquivos_nf']
+                                
+                                # Se for string JSON, converter
+                                if isinstance(arquivos_data, str):
+                                    arquivos_data = json.loads(arquivos_data)
+                                
+                                arquivos = arquivos_data.get('arquivos', [])
+                                stats = arquivos_data.get('estatisticas', {})
+                                data_consulta = arquivos_data.get('data_consulta', '')
+                                
+                                if arquivos:
+                                    # Estatísticas
+                                    col_stat1, col_stat2, col_stat3 = st.columns(3)
+                                    with col_stat1:
+                                        st.metric("📦 Total de Arquivos", stats.get('total_arquivos', len(arquivos)))
+                                    with col_stat2:
+                                        st.metric("💾 Tamanho Total", stats.get('total_tamanho_formatado', '-'))
+                                    with col_stat3:
+                                        if stats.get('ultimo_upload'):
+                                            st.metric("📅 Último Upload", stats['ultimo_upload'].split()[0])
+                                    
+                                    # Lista de arquivos
+                                    for i, arq in enumerate(arquivos, 1):
+                                        with st.container():
+                                            col_arq1, col_arq2 = st.columns([3, 1])
+                                            
+                                            with col_arq1:
+                                                st.markdown(f"**{i}. {arq.get('nome_original', 'Arquivo')}**")
+                                                st.caption(f"📊 {arq.get('tamanho_formatado', '-')} • {arq.get('tipo_arquivo', '-')} • Upload: {arq.get('data_upload', '-')}")
+                                            
+                                            with col_arq2:
+                                                # Verificar se arquivo existe localmente
+                                                import os
+                                                caminho_local = os.path.join('uploads', f"lote_{lote['id']}", arq.get('nome_original', ''))
+                                                
+                                                if os.path.exists(caminho_local):
+                                                    with open(caminho_local, 'rb') as f:
+                                                        st.download_button(
+                                                            label="⬇️ Download",
+                                                            data=f,
+                                                            file_name=arq.get('nome_original', 'arquivo'),
+                                                            mime=arq.get('tipo_arquivo', 'application/octet-stream'),
+                                                            key=f"download_nf_{lote['id']}_{i}"
+                                                        )
+                                                else:
+                                                    st.caption("🌐 [Download Online](" + arq.get('link_download', '#') + ")")
+                                    
+                                    if data_consulta:
+                                        st.caption(f"🕐 Última verificação: {data_consulta}")
+                                
+                                else:
+                                    st.info("⏳ Aguardando envio de arquivos pelo prestador")
+                            
+                            except Exception as e:
+                                st.error(f"❌ Erro ao exibir arquivos: {str(e)}")
+                        
+                        st.markdown("---")
+                        
+                        # Lista de O.S.
+                        st.markdown("### 📋 Ordens de Serviço do Lote")
                         os_do_lote = db.get_os_by_lote_id(lote['id'])
                         if os_do_lote:
                             df_os = pd.DataFrame([item['detalhes'] for item in os_do_lote])
@@ -512,11 +768,22 @@ elif app_mode == "Serviços (Prestadores)":
                         else:
                             st.warning("Não há O.S. detalhadas para este lote.")
                         
-                        if lote['anexo_path']:
+                        # N.F. anexada manualmente (método antigo)
+                        if lote['anexo_path'] and not lote.get('nota_fiscal_path'):
+                            st.markdown("---")
+                            st.markdown("### 📎 Nota Fiscal Anexada Manualmente")
                             with open(lote['anexo_path'], "rb") as file:
-                                st.download_button(label="Baixar N.F. Recebida", data=file, file_name=Path(lote['anexo_path']).name)
+                                st.download_button(
+                                    label="⬇️ Baixar N.F. (Anexo Manual)", 
+                                    data=file, 
+                                    file_name=Path(lote['anexo_path']).name,
+                                    key=f"download_manual_nf_{lote['id']}"
+                                )
                         
                         st.markdown("---")
+                        
+                        # Gerenciamento do Lote
+                        st.markdown("### ⚙️ Gerenciar Lote")
                         sub_cols = st.columns(2)
                         
                         with sub_cols[0]:
@@ -1000,6 +1267,522 @@ elif app_mode == "Montagem (Montadores)":
                                 db.delete_envio_montagem(item['id'])
                                 st.success("Pagamento excluído!")
                                 st.rerun()
+
+elif app_mode == "📤 Upload de Notas Fiscais":
+    st.title("📤 Sistema de Upload de Notas Fiscais")
+    
+    st.markdown("""
+    ### 🎯 Como Funciona o Sistema de Upload
+    
+    1. **Disparo de Lote**: Quando um lote de serviços é enviado por email, um link único é gerado automaticamente
+    2. **Prestador Acessa**: O prestador recebe o link no email e pode fazer upload da nota fiscal
+    3. **Consulta Automática**: O sistema verifica periodicamente se o arquivo foi enviado
+    4. **Download Automático**: Quando disponível, o arquivo é baixado e vinculado ao lote
+    """)
+    
+    st.divider()
+    
+    # Tabs para organizar
+    tab1, tab2, tab3 = st.tabs(["📊 Status dos Uploads", "📋 Histórico Completo", "⚙️ Configurações da API"])
+    
+    with tab1:
+        st.header("📊 Status Atual dos Uploads")
+        
+        # Filtros
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            status_filter = st.selectbox(
+                "Filtrar por Status:",
+                ["Todos", "pending", "completed", "expired", "failed"]
+            )
+        
+        with col2:
+            ordenar_por = st.selectbox(
+                "Ordenar por:",
+                ["Mais Recentes", "Mais Antigos", "Prestador"]
+            )
+        
+        # Buscar lotes com upload
+        lotes_com_upload = []
+        for lote in db.get_all_lotes_servico():
+            if lote.get('upload_token'):
+                if status_filter == "Todos" or lote.get('upload_status') == status_filter:
+                    lotes_com_upload.append(lote)
+        
+        # Ordenar
+        if ordenar_por == "Mais Recentes":
+            lotes_com_upload.sort(key=lambda x: x.get('data_envio', datetime.datetime.min), reverse=True)
+        elif ordenar_por == "Mais Antigos":
+            lotes_com_upload.sort(key=lambda x: x.get('data_envio', datetime.datetime.min))
+        else:  # Prestador
+            lotes_com_upload.sort(key=lambda x: x.get('prestador_nome', ''))
+        
+        if not lotes_com_upload:
+            st.info("ℹ️ Nenhum lote com sistema de upload encontrado.")
+            st.markdown("""
+            **💡 Dica**: O sistema de upload é ativado automaticamente quando você:
+            1. Dispara um lote de serviços com a API configurada
+            2. O link único é gerado e enviado no email ao prestador
+            """)
+        else:
+            # Estatísticas rápidas
+            st.subheader("📈 Estatísticas")
+            
+            total_lotes = len(lotes_com_upload)
+            pendentes = sum(1 for l in lotes_com_upload if l.get('upload_status') == 'pending')
+            completos = sum(1 for l in lotes_com_upload if l.get('upload_status') == 'completed')
+            expirados = sum(1 for l in lotes_com_upload if l.get('upload_status') == 'expired')
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Total de Lotes", total_lotes)
+            
+            with col2:
+                st.metric("⏳ Pendentes", pendentes, delta=f"{(pendentes/total_lotes*100):.0f}%" if total_lotes > 0 else "0%")
+            
+            with col3:
+                st.metric("✅ Recebidos", completos, delta=f"{(completos/total_lotes*100):.0f}%" if total_lotes > 0 else "0%")
+            
+            with col4:
+                st.metric("⏰ Expirados", expirados)
+            
+            st.divider()
+            
+            # Lista de lotes
+            st.subheader(f"📋 Lotes com Upload ({len(lotes_com_upload)})")
+            
+            for lote in lotes_com_upload:
+                # Determinar cor do status
+                status = lote.get('upload_status', 'pending')
+                status_emoji = {
+                    'pending': '⏳',
+                    'completed': '✅',
+                    'expired': '⏰',
+                    'failed': '❌'
+                }.get(status, '❓')
+                
+                status_label = {
+                    'pending': 'Aguardando Upload',
+                    'completed': 'Nota Fiscal Recebida',
+                    'expired': 'Link Expirado',
+                    'failed': 'Falha no Upload'
+                }.get(status, 'Desconhecido')
+                
+                with st.container():
+                    st.markdown("---")
+                    
+                    # Linha principal
+                    cols = st.columns([1, 2, 2, 2, 1])
+                    
+                    cols[0].markdown(f"### Lote #{lote['id']}")
+                    cols[1].markdown(f"**{lote['prestador_nome']}**")
+                    cols[2].text(f"Período: {lote.get('periodo', 'N/A')}")
+                    cols[3].text(f"Enviado: {lote['data_envio'].strftime('%d/%m/%Y %H:%M')}")
+                    cols[4].markdown(f"### {status_emoji}")
+                    
+                    # Detalhes do upload
+                    with st.expander(f"{status_emoji} {status_label} - Ver Detalhes"):
+                        col_info1, col_info2 = st.columns(2)
+                        
+                        with col_info1:
+                            st.markdown("**📊 Informações do Lote**")
+                            st.text(f"ID do Lote: {lote['id']}")
+                            st.text(f"Prestador: {lote['prestador_nome']}")
+                            st.text(f"Valor Total: R$ {lote['valor_total']:.2f}")
+                            st.text(f"Data Envio: {lote['data_envio'].strftime('%d/%m/%Y %H:%M:%S')}")
+                        
+                        with col_info2:
+                            st.markdown("**📤 Informações do Upload**")
+                            st.text(f"Status: {status_label}")
+                            st.text(f"Token: {lote.get('upload_token', 'N/A')[:20]}...")
+                            
+                            if lote.get('upload_url'):
+                                st.markdown(f"**Link de Upload:**")
+                                st.code(lote['upload_url'], language="text")
+                                
+                                # Botão para copiar link
+                                if st.button("📋 Copiar Link", key=f"copy_link_{lote['id']}"):
+                                    st.code(lote['upload_url'])
+                                    st.success("✅ Link copiado! (Ctrl+C para copiar da caixa acima)")
+                        
+                        st.divider()
+                        
+                        # Ações disponíveis
+                        st.markdown("**🔧 Ações**")
+                        
+                        col_action1, col_action2, col_action3 = st.columns(3)
+                        
+                        with col_action1:
+                            if status == 'pending':
+                                if st.button("🔄 Consultar Status Agora", key=f"check_{lote['id']}", use_container_width=True):
+                                    try:
+                                        from upload_api_client import upload_api
+                                        
+                                        with st.spinner("Consultando API..."):
+                                            success, result = upload_api.consultar_status(lote['upload_token'])
+                                            
+                                            if success:
+                                                novo_status = result.get('status')
+                                                st.info(f"Status da API: {novo_status}")
+                                                
+                                                # Atualizar no banco
+                                                db.atualizar_status_upload(lote['id'], novo_status)
+                                                
+                                                if novo_status == 'completed':
+                                                    st.success("✅ Nota fiscal disponível! Baixando arquivo...")
+                                                    
+                                                    # Fazer download
+                                                    save_path = Path("uploads") / f"nota_fiscal_lote_{lote['id']}.pdf"
+                                                    save_path.parent.mkdir(exist_ok=True)
+                                                    
+                                                    download_success, file_path = upload_api.download_arquivo(
+                                                        lote['upload_token'],
+                                                        str(save_path)
+                                                    )
+                                                    
+                                                    if download_success:
+                                                        db.salvar_nota_fiscal(lote['id'], file_path)
+                                                        st.success(f"✅ Arquivo salvo em: {file_path}")
+                                                        st.rerun()
+                                                    else:
+                                                        st.error(f"❌ Erro ao baixar arquivo: {file_path}")
+                                                else:
+                                                    st.rerun()
+                                            else:
+                                                st.error(f"❌ Erro na consulta: {result.get('message', 'Erro desconhecido')}")
+                                    
+                                    except ImportError:
+                                        st.error("❌ Cliente de API não disponível. Verifique se upload_api_client.py existe.")
+                                    except Exception as e:
+                                        st.error(f"❌ Erro: {str(e)}")
+                        
+                        with col_action2:
+                            if lote.get('nota_fiscal_path'):
+                                nota_path = Path(lote['nota_fiscal_path'])
+                                if nota_path.exists():
+                                    with open(nota_path, "rb") as f:
+                                        st.download_button(
+                                            label="⬇️ Baixar N.F.",
+                                            data=f,
+                                            file_name=nota_path.name,
+                                            mime="application/pdf",
+                                            key=f"download_nf_{lote['id']}",
+                                            use_container_width=True
+                                        )
+                                else:
+                                    st.warning("Arquivo não encontrado")
+                        
+                        with col_action3:
+                            if st.button("🔗 Reenviar Link", key=f"resend_{lote['id']}", use_container_width=True):
+                                st.info("💡 Funcionalidade em desenvolvimento. Por enquanto, copie o link acima e envie manualmente.")
+    
+    with tab2:
+        st.header("📋 Histórico Completo de Uploads")
+        
+        # Buscar todos os lotes
+        todos_lotes = db.get_all_lotes_servico()
+        
+        # Filtrar lotes com upload
+        lotes_historico = [l for l in todos_lotes if l.get('upload_token')]
+        
+        if not lotes_historico:
+            st.info("Nenhum histórico de upload disponível.")
+        else:
+            # Criar dataframe para histórico
+            historico_data = []
+            
+            for lote in lotes_historico:
+                status = lote.get('upload_status', 'pending')
+                status_label = {
+                    'pending': '⏳ Pendente',
+                    'completed': '✅ Recebido',
+                    'expired': '⏰ Expirado',
+                    'failed': '❌ Falha'
+                }.get(status, '❓ Desconhecido')
+                
+                historico_data.append({
+                    "Lote": f"#{lote['id']}",
+                    "Prestador": lote['prestador_nome'],
+                    "Período": lote.get('periodo', 'N/A'),
+                    "Data Envio": lote['data_envio'].strftime('%d/%m/%Y'),
+                    "Status Upload": status_label,
+                    "Nota Fiscal": "✅ Sim" if lote.get('nota_fiscal_path') else "❌ Não",
+                    "Valor": f"R$ {lote['valor_total']:.2f}"
+                })
+            
+            df_historico = pd.DataFrame(historico_data)
+            
+            # Mostrar dataframe
+            st.dataframe(
+                df_historico,
+                use_container_width=True,
+                hide_index=True
+            )
+            
+            # Exportar para Excel
+            st.divider()
+            
+            if st.button("📊 Exportar para Excel"):
+                import io
+                
+                output = io.BytesIO()
+                with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                    df_historico.to_excel(writer, index=False, sheet_name='Histórico Uploads')
+                
+                output.seek(0)
+                
+                st.download_button(
+                    label="⬇️ Download Relatório Excel",
+                    data=output,
+                    file_name=f"historico_uploads_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+    
+    with tab3:
+        st.header("⚙️ Configurações da API de Upload")
+        
+        st.markdown("""
+        ### 🔗 Integração com Sistema Externo
+        
+        Configure aqui a URL da API e a chave de autenticação fornecidas pelo desenvolvedor
+        do sistema externo que gerencia os uploads das notas fiscais.
+        """)
+        
+        st.divider()
+        
+        # Verificar se a API está configurada
+        load_dotenv()
+        api_url_atual = os.getenv("UPLOAD_API_URL", "")
+        api_key_atual = os.getenv("UPLOAD_API_KEY", "")
+        
+        # Status da configuração
+        if not api_url_atual or not api_key_atual:
+            st.warning("⚠️ API de Upload não configurada!")
+        else:
+            st.success("✅ API Configurada!")
+        
+        st.subheader("📝 Configurar Credenciais da API")
+        
+        with st.form("config_api_form"):
+            st.markdown("**Preencha as informações fornecidas pelo desenvolvedor do sistema externo:**")
+            
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                api_url_input = st.text_input(
+                    "🔗 URL da API",
+                    value=api_url_atual,
+                    placeholder="https://api-externa.novomundo.com.br",
+                    help="URL base da API do sistema externo (sem barra no final)"
+                )
+            
+            with col2:
+                mostrar_api_key = st.checkbox("Mostrar API Key", value=False)
+            
+            if mostrar_api_key:
+                api_key_input = st.text_input(
+                    "🔑 API Key (Chave de Autenticação)",
+                    value=api_key_atual,
+                    placeholder="nmrj_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                    help="Chave de autenticação fornecida pelo sistema externo"
+                )
+            else:
+                # Mascarar a chave atual
+                if api_key_atual and len(api_key_atual) > 8:
+                    masked_key = f"{api_key_atual[:4]}{'*' * (len(api_key_atual) - 8)}{api_key_atual[-4:]}"
+                else:
+                    masked_key = "*" * len(api_key_atual) if api_key_atual else ""
+                
+                api_key_input = st.text_input(
+                    "🔑 API Key (Chave de Autenticação)",
+                    value=api_key_atual,
+                    placeholder="nmrj_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                    help="Chave de autenticação fornecida pelo sistema externo",
+                    type="password"
+                )
+            
+            st.markdown("---")
+            
+            col_btn1, col_btn2, col_btn3 = st.columns([2, 2, 1])
+            
+            with col_btn1:
+                submit_button = st.form_submit_button("� Salvar Configurações", type="primary", use_container_width=True)
+            
+            with col_btn2:
+                clear_button = st.form_submit_button("🗑️ Limpar Configurações", use_container_width=True)
+            
+            with col_btn3:
+                st.markdown("")  # Espaço
+        
+        # Processar formulário
+        if submit_button:
+            if not api_url_input or not api_key_input:
+                st.error("❌ Por favor, preencha todos os campos!")
+            else:
+                # Salvar no arquivo .env
+                env_path = Path(".env")
+                
+                # Ler .env existente ou criar novo
+                env_vars = {}
+                if env_path.exists():
+                    with open(env_path, "r") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith("#") and "=" in line:
+                                key, value = line.split("=", 1)
+                                env_vars[key] = value.strip('"').strip("'")
+                
+                # Atualizar variáveis
+                env_vars["UPLOAD_API_URL"] = api_url_input.rstrip("/")
+                env_vars["UPLOAD_API_KEY"] = api_key_input
+                
+                # Escrever de volta
+                with open(env_path, "w") as f:
+                    for key, value in env_vars.items():
+                        f.write(f'{key}="{value}"\n')
+                
+                st.success("✅ Configurações salvas com sucesso!")
+                st.info("🔄 Recarregando variáveis de ambiente...")
+                
+                # Recarregar .env
+                load_dotenv(override=True)
+                
+                time.sleep(1)
+                st.rerun()
+        
+        if clear_button:
+            # Remover do .env
+            env_path = Path(".env")
+            
+            if env_path.exists():
+                env_vars = {}
+                with open(env_path, "r") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            key, value = line.split("=", 1)
+                            if key not in ["UPLOAD_API_URL", "UPLOAD_API_KEY"]:
+                                env_vars[key] = value.strip('"').strip("'")
+                
+                with open(env_path, "w") as f:
+                    for key, value in env_vars.items():
+                        f.write(f'{key}="{value}"\n')
+            
+            st.success("✅ Configurações removidas!")
+            time.sleep(1)
+            st.rerun()
+        
+        st.divider()
+        
+        # Exibir configuração atual (somente leitura)
+        if api_url_atual or api_key_atual:
+            st.subheader("📊 Configuração Atual")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**🔗 URL da API**")
+                if api_url_atual:
+                    st.code(api_url_atual, language="text")
+                else:
+                    st.text("Não configurada")
+            
+            with col2:
+                st.markdown("**🔑 API Key**")
+                if api_key_atual:
+                    # Mascarar a chave
+                    if len(api_key_atual) > 8:
+                        masked_key = f"{api_key_atual[:4]}{'*' * (len(api_key_atual) - 8)}{api_key_atual[-4:]}"
+                    else:
+                        masked_key = "*" * len(api_key_atual)
+                    st.code(masked_key, language="text")
+                else:
+                    st.text("Não configurada")
+            
+            st.divider()
+            
+            # Testar conexão
+            st.subheader("🔍 Testar Conexão com a API")
+            
+            if st.button("🚀 Testar Conexão", type="primary"):
+                try:
+                    from upload_api_client import upload_api
+                    
+                    with st.spinner("Testando conexão..."):
+                        if upload_api.verificar_conexao():
+                            st.success("✅ Conexão com a API está funcionando!")
+                        else:
+                            st.error("❌ Não foi possível conectar à API. Verifique a URL e a chave.")
+                
+                except ImportError:
+                    st.error("❌ Cliente de API não encontrado. Verifique se upload_api_client.py existe.")
+                except Exception as e:
+                    st.error(f"❌ Erro ao testar conexão: {str(e)}")
+            
+            st.divider()
+            
+            # Job de consulta automática
+            st.subheader("🤖 Consulta Automática")
+            
+            st.markdown("""
+            **Job de Consulta Automática de Notas Fiscais**
+            
+            O sistema possui um job (`job_consultar_notas.py`) que verifica automaticamente
+            se os prestadores fizeram o upload das notas fiscais.
+            
+            **Para ativar a consulta automática:**
+            
+            ```bash
+            # Configurar cron para executar a cada hora
+            crontab -e
+            
+            # Adicionar esta linha:
+            0 * * * * cd /caminho/projeto && source .venv/bin/activate && python job_consultar_notas.py >> logs/consulta_notas.log 2>&1
+            ```
+            
+            **Ou executar manualmente:**
+            ```bash
+            python job_consultar_notas.py
+            ```
+            """)
+            
+            if st.button("▶️ Executar Consulta Manual Agora"):
+                st.info("💡 Execute o comando no terminal: `python job_consultar_notas.py`")
+            
+            st.divider()
+            
+            # Documentação
+            st.subheader("📚 Documentação")
+            
+            docs_disponiveis = {
+                "API_UPLOAD_NOTAS_ESPECIFICACAO.md": "Especificação completa da API para o desenvolvedor externo",
+                "IMPLEMENTACAO_UPLOAD_NOTAS.md": "Guia de implementação e integração",
+                "teste_upload_api.py": "Script de teste da API",
+                "job_consultar_notas.py": "Job automático de consulta"
+            }
+            
+            st.markdown("**Arquivos de Documentação:**")
+            
+            for arquivo, descricao in docs_disponiveis.items():
+                arquivo_path = Path(arquivo)
+                if arquivo_path.exists():
+                    col_doc1, col_doc2 = st.columns([3, 1])
+                    col_doc1.text(f"📄 {arquivo}")
+                    col_doc1.caption(descricao)
+                    
+                    with col_doc2:
+                        if st.button("📖 Ver", key=f"doc_{arquivo}"):
+                            with open(arquivo_path, "r", encoding="utf-8") as f:
+                                st.code(f.read(), language="markdown" if arquivo.endswith(".md") else "python")
+
+elif app_mode == "⚙️ Jobs Automáticos":
+    mostrar_painel_jobs()
+
+elif app_mode == "🔌 Integrações":
+    from painel_integracoes import mostrar_painel_integracoes
+    mostrar_painel_integracoes()
 
 elif app_mode == "🗄️ Backups do Banco":
     st.title("🗄️ Sistema de Backup do Banco de Dados")

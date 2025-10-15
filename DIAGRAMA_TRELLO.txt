@@ -1,0 +1,286 @@
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    INTEGRAÇÃO TRELLO - FLUXO COMPLETO                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  FASE 1: CONFIGURAÇÃO INICIAL (Uma vez)                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    👤 Usuário
+      │
+      ├─► 1. Acessa https://trello.com/power-ups/admin
+      │     └─► Obtém API Key
+      │     └─► Gera Token
+      │
+      ├─► 2. Abre Streamlit → "🔌 Integrações"
+      │     └─► Cola API Key e Token
+      │     └─► Clica "🔍 Listar Boards"
+      │     └─► Copia Board ID
+      │     └─► Clica "📋 Listar Listas"
+      │     └─► Copia List ID
+      │     └─► Ativa integração
+      │     └─► Clica "💾 Salvar"
+      │
+      └─► 3. Testa com "✨ Criar Card Teste"
+            └─► ✅ Card criado! Configuração OK
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  FASE 2: FLUXO AUTOMÁTICO (Acontece sozinho)                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    📧 Prestador recebe email
+      │
+      │   "Olá João Silva,
+      │    Seu link para upload: https://api.link.dev.br/..."
+      │
+      ├─► 1. Abre o link
+      │     └─► Anexa arquivos:
+      │           • nota_fiscal_12345.pdf
+      │           • danfe_12345.xml
+      │           • recibo.pdf
+      │
+      └─► 2. Clica "Enviar"
+
+
+    ⏰ Scheduler executa (a cada hora)
+      │
+      ├─► job_consultar_notas.py
+      │     │
+      │     ├─► Consulta API da Link
+      │     │     └─► "Tem arquivos no lote #123?"
+      │     │
+      │     ├─► ✅ Encontrou 3 arquivos!
+      │     │
+      │     ├─► Baixa cada arquivo
+      │     │     └─► uploads/lote_123/nota_fiscal_12345.pdf
+      │     │     └─► uploads/lote_123/danfe_12345.xml
+      │     │     └─► uploads/lote_123/recibo.pdf
+      │     │
+      │     ├─► Atualiza banco (status_arquivo = 2)
+      │     │
+      │     ├─► Cria notificação
+      │     │     └─► "📥 Nota Fiscal Recebida - Lote #123"
+      │     │
+      │     └─► 🎯 INTEGRAÇÃO TRELLO
+      │           │
+      │           ├─► TrelloIntegration()
+      │           │     └─► is_configured() → ✅ True
+      │           │
+      │           ├─► criar_card_download(
+      │           │     lote_id=123,
+      │           │     prestador="João Silva",
+      │           │     montador="Maria Santos",
+      │           │     arquivos=[...],
+      │           │     nota_fiscal="NF-12345"
+      │           │   )
+      │           │
+      │           ├─► POST /cards
+      │           │     {
+      │           │       "name": "📦 Lote #123 - João Silva",
+      │           │       "desc": "## Informações...",
+      │           │       "idList": "abc123"
+      │           │     }
+      │           │     └─► ✅ Card criado! ID: xyz789
+      │           │
+      │           ├─► POST /checklists
+      │           │     {
+      │           │       "name": "Arquivos para Processar",
+      │           │       "idCard": "xyz789"
+      │           │     }
+      │           │     └─► Adiciona 3 itens
+      │           │
+      │           ├─► POST /cards/xyz789/idLabels
+      │           │     └─► Adiciona label verde
+      │           │
+      │           └─► INSERT INTO trello_cards
+      │                 (lote_id, card_id, card_url)
+      │                 └─► Salvo no banco!
+
+
+    📋 Trello
+      │
+      └─► Card criado na lista configurada!
+            │
+            ┌─────────────────────────────────────────────┐
+            │ 📦 Lote #123 - João Silva                   │
+            ├─────────────────────────────────────────────┤
+            │ ## 📋 Informações do Lote                   │
+            │                                             │
+            │ **Lote:** #123                              │
+            │ **Prestador:** João Silva Serviços          │
+            │ **Montador:** Maria Santos                  │
+            │ **Data/Hora:** 14/10/2025 às 14:30          │
+            │ **Nota Fiscal:** NF-12345                   │
+            │                                             │
+            │ ## 📎 Arquivos Baixados (3)                 │
+            │                                             │
+            │ 1. `nota_fiscal_12345.pdf`                  │
+            │ 2. `danfe_12345.xml`                        │
+            │ 3. `recibo.pdf`                             │
+            │                                             │
+            │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
+            │                                             │
+            │ ✅ Arquivos para Processar                  │
+            │    ☐ nota_fiscal_12345.pdf                  │
+            │    ☐ danfe_12345.xml                        │
+            │    ☐ recibo.pdf                             │
+            │                                             │
+            │ 🏷️ Label: 🟢 Verde                          │
+            └─────────────────────────────────────────────┘
+
+
+    👤 Usuário (equipe)
+      │
+      ├─► Recebe notificação no Trello
+      │     └─► "Novo card: 📦 Lote #123"
+      │
+      ├─► Abre o card
+      │     └─► Vê todas as informações
+      │     └─► Marca itens da checklist
+      │     └─► Adiciona comentários
+      │     └─► Move para próxima lista
+      │
+      └─► No Streamlit → "🔌 Integrações"
+            └─► Vê histórico de cards criados
+            └─► Clica "🔗 Abrir" para ir direto ao card
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  FASE 3: PREVENÇÃO DE DUPLICATAS                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ⏰ Job executa novamente (próxima hora)
+      │
+      ├─► Consulta lote #123
+      │     └─► status_arquivo = 2 (já baixado)
+      │     └─► ⏭️  Pula processamento
+      │           "Arquivos já foram baixados anteriormente"
+      │
+      └─► ✅ Nenhum card duplicado criado!
+
+
+    Se tentar criar manualmente:
+      │
+      ├─► INSERT INTO trello_cards (lote_id=123, ...)
+      │
+      └─► ❌ ERRO: UNIQUE constraint violation
+            └─► Banco garante: 1 card por lote
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  COMPONENTES DO SISTEMA                                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    📁 integracoes/
+      ├── __init__.py
+      └── trello_integration.py ─────┐
+                                     │
+    📁 Raiz                          │
+      ├── painel_integracoes.py ────┼─► Interface Streamlit
+      ├── job_consultar_notas.py ───┼─► Usa TrelloIntegration
+      ├── streamlit_app.py ─────────┼─► Menu de integrações
+      ├── setup_integracoes.py ─────┼─► Cria tabelas
+      └── testar_trello.py ─────────┘   Script de teste
+
+
+    🗄️ Banco PostgreSQL
+      ├── integracoes_config ─────► Credenciais e config
+      │     ├── trello_api_key
+      │     ├── trello_token
+      │     ├── trello_board_id
+      │     ├── trello_list_id
+      │     └── trello_ativo
+      │
+      └── trello_cards ───────────► Histórico de cards
+            ├── lote_id (UNIQUE)
+            ├── card_id
+            ├── card_url
+            └── data_criacao
+
+
+    🌐 API do Trello
+      ├── GET /members/me/boards ─────► Listar boards
+      ├── GET /boards/{id}/lists ─────► Listar listas
+      ├── GET /boards/{id}/labels ────► Obter labels
+      ├── POST /cards ─────────────────► Criar card
+      ├── POST /checklists ────────────► Criar checklist
+      └── POST /cards/{id}/idLabels ──► Adicionar label
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  TRATAMENTO DE ERROS                                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ❌ Erro na API do Trello
+      │
+      ├─► Log: "⚠️ Erro ao criar card Trello: {erro}"
+      │
+      └─► ✅ Fluxo principal continua
+            └─► Arquivos foram baixados
+            └─► Notificação foi criada
+            └─► Apenas card não foi criado
+
+
+    ❌ Integração não configurada
+      │
+      ├─► Log: "ℹ️ Integração Trello não configurada"
+      │
+      └─► ✅ Fluxo principal continua
+            └─► Sistema funciona normalmente
+
+
+    ❌ Credenciais inválidas
+      │
+      ├─► Ao testar no painel:
+      │     └─► "❌ Não foi possível listar boards"
+      │
+      └─► Usuário regera credenciais no Trello
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  MÉTRICAS E MONITORAMENTO                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    📊 No Streamlit
+      │
+      └─► "🔌 Integrações" → "📊 Histórico"
+            ├─► Total de cards criados
+            ├─► Últimos 20 cards
+            ├─► Data/hora de cada criação
+            └─► Link direto para cada card
+
+
+    📝 Nos Logs (scheduler.log)
+      │
+      ├─► "📋 Criando card no Trello..."
+      ├─► "✅ Card Trello criado: https://trello.com/c/xyz789"
+      └─► "⚠️ Erro ao criar card Trello: {erro}"
+
+
+    🗄️ No Banco
+      │
+      └─► SELECT COUNT(*) FROM trello_cards
+            └─► Total de cards já criados
+      
+      └─► SELECT * FROM trello_cards 
+          WHERE DATE(data_criacao) = CURRENT_DATE
+            └─► Cards criados hoje
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  ✅ RESULTADO FINAL                                                          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+    • Sistema 100% automático
+    • Zero intervenção manual
+    • Rastreamento completo no Trello
+    • Prevenção de duplicatas garantida
+    • Tratamento de erros resiliente
+    • Interface amigável para configuração
+    • Histórico completo de cards
+    • Pronto para produção! 🚀
+
+```
