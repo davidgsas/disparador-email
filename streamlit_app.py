@@ -88,7 +88,7 @@ def verificar_pendencias(entidades, tipo):
             
     return pendentes
 
-st.set_page_config(page_title="Disparador Novo Mundo", layout="wide")
+st.set_page_config(page_title="Braço Direito", layout="wide", page_icon="🤝")
 TOKEN_CACHE_PATH = Path("token_cache.json")
 cache = SerializableTokenCache()
 if TOKEN_CACHE_PATH.exists():
