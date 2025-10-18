@@ -30,9 +30,16 @@ def mostrar_painel_jobs():
                 os.kill(pid, 0)
                 servico_rodando = True
             except OSError:
+                # Processo não existe mais, remover arquivo PID
                 servico_rodando = False
-                pid_file.unlink()
-        except:
+                try:
+                    pid_file.unlink()
+                except:
+                    pass
+        except Exception as e:
+            # Erro ao ler arquivo PID
+            servico_rodando = False
+            st.warning(f"⚠️ Erro ao verificar status: {e}")
             servico_rodando = False
     
     # Status do serviço
