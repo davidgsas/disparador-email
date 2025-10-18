@@ -48,34 +48,49 @@ def mostrar_painel_jobs():
         if servico_rodando:
             if st.button("🛑 Parar Serviço", use_container_width=True):
                 try:
-                    subprocess.run(['.venv/bin/python', 'scheduler_service.py', 'stop'])
-                    st.success("Serviço parado!")
+                    subprocess.run(['venv/bin/python', 'run_scheduler.py', 'stop'])
+                    st.success("✅ Serviço parado!")
+                    import time
+                    time.sleep(1)
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Erro: {e}")
+                    st.error(f"❌ Erro: {e}")
         else:
             if st.button("▶️ Iniciar Serviço", use_container_width=True):
                 try:
+                    # Configurar variáveis de ambiente antes de iniciar
+                    import os
+                    env = os.environ.copy()
+                    env['DYLD_LIBRARY_PATH'] = '/opt/homebrew/lib:' + env.get('DYLD_LIBRARY_PATH', '')
+                    env['PKG_CONFIG_PATH'] = '/opt/homebrew/lib/pkgconfig:' + env.get('PKG_CONFIG_PATH', '')
+                    
+                    # Usar o wrapper que configura as variáveis corretas
                     subprocess.Popen(
-                        ['.venv/bin/python', 'scheduler_service.py'],
+                        ['venv/bin/python', 'run_scheduler.py'],
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
-                        start_new_session=True
+                        start_new_session=True,
+                        env=env,
+                        cwd=Path(__file__).parent
                     )
-                    st.success("Serviço iniciado!")
+                    st.success("✅ Serviço iniciado! Aguarde alguns segundos...")
+                    import time
+                    time.sleep(2)  # Dar tempo para o serviço iniciar
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Erro: {e}")
+                    st.error(f"❌ Erro ao iniciar: {e}")
+                    import traceback
+                    st.code(traceback.format_exc())
     
     with col3:
         if servico_rodando:
             if st.button("🔄 Recarregar", use_container_width=True, help="Recarrega configurações sem parar"):
                 try:
-                    subprocess.run(['.venv/bin/python', 'scheduler_service.py', 'reload'])
-                    st.success("Configurações recarregadas!")
+                    subprocess.run(['venv/bin/python', 'run_scheduler.py', 'reload'])
+                    st.success("✅ Configurações recarregadas!")
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Erro: {e}")
+                    st.error(f"❌ Erro: {e}")
     
     st.markdown("---")
     

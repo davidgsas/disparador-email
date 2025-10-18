@@ -12,7 +12,7 @@ import requests
 from dotenv import load_dotenv
 from msal import PublicClientApplication, SerializableTokenCache
 from jinja2 import Template
-from weasyprint import HTML
+# weasyprint importado apenas quando necessário (lazy import)
 
 import database as db
 from templates.variaveis import mostrar_variaveis_disponiveis
@@ -408,6 +408,11 @@ Obrigado."""
                             subj, body_plain = subj_template.render(**ctx), body_template.render(**ctx)
                             body_html = convert_plain_text_to_html(body_plain)
                             html_pdf = invoice_tpl.render(**ctx)
+                            
+                            # Lazy import do weasyprint (só quando necessário para gerar PDF)
+                            import os
+                            os.environ['DYLD_LIBRARY_PATH'] = '/opt/homebrew/lib:' + os.environ.get('DYLD_LIBRARY_PATH', '')
+                            from weasyprint import HTML
                             pdf_bytes = HTML(string=html_pdf, base_url="templates").write_pdf()
 
                             # Obter todos os emails do prestador (principal + adicionais)
@@ -1029,6 +1034,11 @@ Qualquer dúvida, estamos à disposição."""
                             # 5️⃣ Gerar PDF
                             template = Template(Path("templates/montador_template.html").read_text(encoding="utf-8"))
                             html_pdf = template.render(**ctx)
+                            
+                            # Lazy import do weasyprint (só quando necessário para gerar PDF)
+                            import os
+                            os.environ['DYLD_LIBRARY_PATH'] = '/opt/homebrew/lib:' + os.environ.get('DYLD_LIBRARY_PATH', '')
+                            from weasyprint import HTML
                             pdf_bytes = HTML(string=html_pdf, base_url="templates").write_pdf()
                             
                             # 6️⃣ Preparar email com templates (agora com link disponível)
