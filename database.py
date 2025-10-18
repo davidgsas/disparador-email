@@ -350,6 +350,15 @@ def get_lote_by_id_controle(id_controle):
     conn.close()
     return lote
 
+def get_lote_by_id(lote_id):
+    """Retorna lote pelo ID local"""
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        cur.execute('SELECT * FROM lotes_servico WHERE id = %s', (lote_id,))
+        lote = cur.fetchone()
+    conn.close()
+    return lote
+
 def verificar_lote_duplicado(lote_id, periodo):
     """Verifica se já existe envio para API deste lote e período"""
     conn = get_db_connection()

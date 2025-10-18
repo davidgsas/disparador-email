@@ -361,15 +361,36 @@ Obrigado."""
                             
                             lote_id = db.criar_lote_servico(prestador_info['id'], nome_prestador, periodo, total_geral, items_to_log)
                             
-                            # Enviar para API DV Processamento para gerar link de upload
-                            link_upload = None
+                            # 🔗 Gerar link de upload ANTES de enviar o email
+                            link_upload = ''
                             try:
                                 from api_upload_client import enviar_lote_para_api
+                                
+                                # Aguardar até 15 segundos pelo link
+                                max_tentativas = 15
+                                tentativa = 0
+                                
                                 sucesso, mensagem, dados = enviar_lote_para_api(lote_id)
+                                
                                 if sucesso and dados:
-                                    link_upload = dados.get('link')
+                                    link_upload = dados.get('link', '')
+                                    
+                                    # Se não veio no retorno imediato, fazer polling
+                                    if not link_upload:
+                                        while tentativa < max_tentativas and not link_upload:
+                                            time.sleep(1)
+                                            tentativa += 1
+                                            lote_salvo = db.get_lote_by_id(lote_id)
+                                            if lote_salvo and lote_salvo.get('link_upload'):
+                                                link_upload = lote_salvo['link_upload']
+                                                print(f"   ✅ Link prestador obtido em {tentativa}s: {link_upload[:50]}...")
+                                                break
+                                
+                                if not link_upload:
+                                    print(f"   ⚠️  Link do prestador não gerado após {max_tentativas}s")
+                                    
                             except Exception as e:
-                                st.warning(f"⚠️ Não foi possível gerar link de upload: {str(e)}")
+                                print(f"⚠️ Erro ao gerar link: {str(e)}")
                             
                             ctx = {
                                 "nome_prestador": nome_prestador, 
@@ -378,7 +399,7 @@ Obrigado."""
                                 "total_geral": total_geral, 
                                 "saudacao": saudacao, 
                                 "lote_id": lote_id,
-                                "link_upload": link_upload  # Disponível para usar no template
+                                "link": link_upload if link_upload else "⚠️ Link em processamento - consulte o histórico"  # ✅ Usar 'link' não 'link_upload'
                             }
                             
                             subj_template = Template(st.session_state.prestador_subject)
@@ -921,8 +942,15 @@ Qualquer dúvida, estamos à disposição."""
                     report_summary = []
                     cc_list_montador = [e.strip() for e in st.session_state.montador_cc.split(",") if e.strip()]
                     
+                    # Criar placeholder para feedback em tempo real
+                    progress_placeholder = st.empty()
+                    status_placeholder = st.empty()
+                    
                     with st.spinner("Processando e enviando..."):
-                        for montador_id_str, group in df_final.groupby('identificador_do_montador'):
+                        for idx, (montador_id_str, group) in enumerate(df_final.groupby('identificador_do_montador'), 1):
+                            total_montadores = len(df_final['identificador_do_montador'].unique())
+                            progress_placeholder.progress(idx / total_montadores, f"Processando montador {idx}/{total_montadores}...")
+                            
                             montador_info = db.get_montador_by_identificador(montador_id_str)
                             if not montador_info:
                                 report_summary.append({"Montador ID": montador_id_str, "Status": "❌ Não cadastrado"})
@@ -969,16 +997,34 @@ Qualquer dúvida, estamos à disposição."""
                             }
                             
                             # 2️⃣ Salvar no banco e gerar link automaticamente
+                            status_placeholder.info(f"⏳ Gerando link para {montador_info['nome']}...")
                             envio_id = db.log_sent_montagem(montador_info['id'], ctx_inicial, "temp_conversation_id")
                             
-                            # 3️⃣ Buscar o link gerado
-                            time.sleep(1)  # Dar tempo para API processar
-                            envio_salvo = db.get_envio_montagem_by_id(envio_id)
-                            link_gerado = envio_salvo.get('link_upload', '') if envio_salvo else ''
+                            # 3️⃣ AGUARDAR o link ser gerado pela API (polling com timeout)
+                            link_gerado = ''
+                            max_tentativas = 15  # 15 tentativas = até 15 segundos
+                            tentativa = 0
+                            
+                            status_placeholder.info(f"⏳ Aguardando API gerar o link para {montador_info['nome']}...")
+                            while tentativa < max_tentativas and not link_gerado:
+                                time.sleep(1)
+                                tentativa += 1
+                                envio_salvo = db.get_envio_montagem_by_id(envio_id)
+                                if envio_salvo and envio_salvo.get('link_upload'):
+                                    link_gerado = envio_salvo['link_upload']
+                                    status_placeholder.success(f"✅ Link obtido em {tentativa}s: {link_gerado[:40]}...")
+                                    time.sleep(0.5)  # Pausa para mostrar mensagem
+                                    break
+                                else:
+                                    status_placeholder.warning(f"⏳ Aguardando link... ({tentativa}/{max_tentativas}s)")
+                            
+                            if not link_gerado:
+                                status_placeholder.error(f"⚠️ AVISO: Link não foi gerado após {max_tentativas}s. Email será enviado sem link.")
+                                time.sleep(1)
                             
                             # 4️⃣ Atualizar contexto com o link
                             ctx = ctx_inicial.copy()
-                            ctx['link'] = link_gerado
+                            ctx['link'] = link_gerado if link_gerado else "⚠️ Link em processamento - consulte o histórico em alguns instantes"
                             
                             # 5️⃣ Gerar PDF
                             template = Template(Path("templates/montador_template.html").read_text(encoding="utf-8"))
@@ -1010,6 +1056,7 @@ Qualquer dúvida, estamos à disposição."""
                             final_payload = { "message": message_data, "saveToSentItems": "true" }
 
                             # 9️⃣ ENVIAR EMAIL
+                            status_placeholder.info(f"📧 Enviando email para {montador_info['nome']}...")
                             resp = requests.post("https://graph.microsoft.com/v1.0/me/sendMail", headers={"Authorization": f"Bearer {st.session_state.access_token}", "Content-Type": "application/json"}, json=final_payload)
                                 
                             if resp.status_code == 202:
@@ -1027,9 +1074,21 @@ Qualquer dúvida, estamos à disposição."""
                                 conn.commit()
                                 conn.close()
                                 
-                                report_summary.append({"Montador": montador_info['nome'], "Status": f"✅ Enviado (Link: {link_gerado[:30]}...)" if link_gerado else "✅ Enviado"})
+                                status_msg = f"✅ Enviado"
+                                if link_gerado:
+                                    status_msg += f" com link ({link_gerado[:30]}...)"
+                                else:
+                                    status_msg += " ⚠️ SEM LINK (consulte histórico)"
+                                    
+                                report_summary.append({"Montador": montador_info['nome'], "Status": status_msg})
+                                status_placeholder.success(f"✅ Email enviado para {montador_info['nome']}")
                             else:
                                 report_summary.append({"Montador": montador_info['nome'], "Status": f"❌ Erro {resp.status_code} - {resp.text}"})
+                                status_placeholder.error(f"❌ Erro ao enviar para {montador_info['nome']}")
+                        
+                        # Limpar placeholders ao final
+                        progress_placeholder.empty()
+                        status_placeholder.empty()
                                 
                     st.subheader("📋 Relatório de Envio")
                     st.table(pd.DataFrame(report_summary))
