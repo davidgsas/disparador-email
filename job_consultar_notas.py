@@ -161,6 +161,12 @@ def processar_uploads_pendentes():
                 db.update_lote_servico_status(lote_id, 'N.F RECEBIDA')
                 logger.info(f"   ✅ Status do lote atualizado: N.F RECEBIDA")
                 
+                # **NOVO: Calcular e registrar data de vencimento do pagamento**
+                from datetime import datetime as dt
+                data_recebimento = dt.now()
+                db.atualizar_vencimento_lote(lote_id, data_recebimento)
+                logger.info(f"   📅 Data de vencimento do pagamento calculada")
+                
                 # Criar notificação APENAS se não existir
                 if not ja_tem_notificacao:
                     total_arqs = len(arquivos)
@@ -351,6 +357,12 @@ def processar_uploads_pendentes():
                 # Atualizar status do envio para "N.F RECEBIDA"
                 db.update_montagem_status(envio_id, 'N.F RECEBIDA')
                 logger.info(f"   ✅ Status do envio atualizado: N.F RECEBIDA")
+                
+                # **NOVO: Calcular e registrar data de vencimento do pagamento**
+                from datetime import datetime as dt
+                data_recebimento = dt.now()
+                db.atualizar_vencimento_montagem(envio_id, data_recebimento)
+                logger.info(f"   📅 Data de vencimento do pagamento calculada")
                 
                 # Criar notificação
                 total_arqs = len(arquivos)

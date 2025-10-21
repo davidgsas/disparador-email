@@ -33,6 +33,21 @@ def run_migrations():
         cur.execute("ALTER TABLE prestadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
         cur.execute("ALTER TABLE montadores ADD COLUMN IF NOT EXISTS emails_adicionais TEXT;")
         
+        # **NOVO: Campos para controle de vencimento de pagamentos**
+        cur.execute("ALTER TABLE prestadores ADD COLUMN IF NOT EXISTS tempo_vencimento_dias INTEGER DEFAULT 10;")  # Prazo em dias úteis para pagamento
+        cur.execute("ALTER TABLE montadores ADD COLUMN IF NOT EXISTS tempo_vencimento_dias INTEGER DEFAULT 10;")  # Prazo em dias úteis para pagamento
+        
+        # Campos de controle de vencimento nas tabelas de lotes/envios
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS data_recebimento_nf TIMESTAMP;")  # Quando a NF foi recebida
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS data_vencimento_pagamento DATE;")  # Data de vencimento calculada
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS pago BOOLEAN DEFAULT FALSE;")  # Se já foi pago
+        cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS data_pagamento TIMESTAMP;")  # Quando foi marcado como pago
+        
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS data_recebimento_nf TIMESTAMP;")  # Quando a NF foi recebida
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS data_vencimento_pagamento DATE;")  # Data de vencimento calculada
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS pago BOOLEAN DEFAULT FALSE;")  # Se já foi pago
+        cur.execute("ALTER TABLE envios_montagem ADD COLUMN IF NOT EXISTS data_pagamento TIMESTAMP;")  # Quando foi marcado como pago
+        
         # Adicionar colunas para sistema de upload de notas fiscais (API DV Processamento)
         cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS id_controle INTEGER;")  # ID retornado pela API
         cur.execute("ALTER TABLE lotes_servico ADD COLUMN IF NOT EXISTS link_upload TEXT;")  # Link de upload recebido da API
@@ -91,21 +106,24 @@ def run_migrations():
     conn.close()
 
 # --- Funções de Prestadores ---
-def add_prestador(nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais=None):
+def add_prestador(nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais=None, tempo_vencimento_dias=10):
     conn = get_db_connection()
     try:
         with conn.cursor() as cur: 
-            cur.execute('INSERT INTO prestadores (nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais) VALUES (%s, %s, %s, %s, %s, %s)', 
-                       (nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais))
+            cur.execute('INSERT INTO prestadores (nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais, tempo_vencimento_dias) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
+                       (nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais, tempo_vencimento_dias))
         conn.commit()
         return True, "Prestador adicionado!"
     except psycopg2.IntegrityError: return False, f"Erro: Fornecedor ID ou Nome já existe."
     finally: conn.close()
 
-def update_prestador(prestador_id, regra_envio, dias_envio, emails_adicionais=None):
+def update_prestador(prestador_id, regra_envio, dias_envio, emails_adicionais=None, tempo_vencimento_dias=None):
     conn = get_db_connection()
     with conn.cursor() as cur:
-        if emails_adicionais is not None:
+        if tempo_vencimento_dias is not None:
+            cur.execute('UPDATE prestadores SET regra_envio = %s, dias_envio = %s, emails_adicionais = %s, tempo_vencimento_dias = %s WHERE id = %s', 
+                       (regra_envio, dias_envio, emails_adicionais, tempo_vencimento_dias, prestador_id))
+        elif emails_adicionais is not None:
             cur.execute('UPDATE prestadores SET regra_envio = %s, dias_envio = %s, emails_adicionais = %s WHERE id = %s', 
                        (regra_envio, dias_envio, emails_adicionais, prestador_id))
         else:
@@ -606,32 +624,36 @@ def atualizar_proxima_execucao_job(nome, proxima_execucao):
     conn.close()
 
 # --- Funções de Montadores ---
-def add_montador(nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais=None):
+def add_montador(nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais=None, tempo_vencimento_dias=10):
     conn = get_db_connection()
     try:
         with conn.cursor() as cur: 
-            cur.execute('INSERT INTO montadores (nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)', 
-                       (nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais))
+            cur.execute('INSERT INTO montadores (nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais, tempo_vencimento_dias) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', 
+                       (nome, identificador, email, percentual_comissao, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais, tempo_vencimento_dias))
         conn.commit()
         return True, "Montador adicionado!"
     except psycopg2.IntegrityError: return False, f"Erro: Identificador ou Fornecedor ID já existem."
     finally: conn.close()
 
-def update_montador(montador_id, email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id=None, emails_adicionais=None):
+def update_montador(montador_id, email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id=None, emails_adicionais=None, tempo_vencimento_dias=None):
     conn = get_db_connection()
     with conn.cursor() as cur:
-        if fornecedor_id is not None and emails_adicionais is not None:
-            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s, fornecedor_id = %s, emails_adicionais = %s WHERE id = %s', 
-                       (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id, emails_adicionais, montador_id))
-        elif fornecedor_id is not None:
-            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s, fornecedor_id = %s WHERE id = %s', 
-                       (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, fornecedor_id, montador_id))
-        elif emails_adicionais is not None:
-            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s, emails_adicionais = %s WHERE id = %s', 
-                       (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, emails_adicionais, montador_id))
-        else:
-            cur.execute('UPDATE montadores SET email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s WHERE id = %s', 
-                       (email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio, montador_id))
+        # Construir query dinamicamente baseado nos parâmetros fornecidos
+        campos = "email = %s, percentual_comissao = %s, auxilio_semanal = %s, ativo = %s, regra_envio = %s, dias_envio = %s"
+        valores = [email, percentual_comissao, auxilio_semanal, ativo, regra_envio, dias_envio]
+        
+        if fornecedor_id is not None:
+            campos += ", fornecedor_id = %s"
+            valores.append(fornecedor_id)
+        if emails_adicionais is not None:
+            campos += ", emails_adicionais = %s"
+            valores.append(emails_adicionais)
+        if tempo_vencimento_dias is not None:
+            campos += ", tempo_vencimento_dias = %s"
+            valores.append(tempo_vencimento_dias)
+        
+        valores.append(montador_id)
+        cur.execute(f'UPDATE montadores SET {campos} WHERE id = %s', tuple(valores))
     conn.commit()
     conn.close()
 
@@ -1083,6 +1105,290 @@ def get_os_blacklist(prestador_id=None):
                 ORDER BY o.data_adicao DESC
             ''')
         return cur.fetchall()
+
+
+# --- Funções de Controle de Vencimento de Pagamentos ---
+
+def calcular_dias_uteis(data_inicial, dias_uteis):
+    """
+    Calcula a data após X dias úteis (não conta sábados e domingos)
+    
+    Args:
+        data_inicial: Data inicial (datetime.date ou datetime.datetime)
+        dias_uteis: Número de dias úteis a adicionar
+    
+    Returns:
+        datetime.date: Data final após adicionar os dias úteis
+    """
+    from datetime import timedelta
+    
+    # Converter para date se for datetime
+    if isinstance(data_inicial, datetime.datetime):
+        data_inicial = data_inicial.date()
+    
+    data_atual = data_inicial
+    dias_adicionados = 0
+    
+    while dias_adicionados < dias_uteis:
+        data_atual += timedelta(days=1)
+        # Verificar se não é final de semana (Monday=0, Sunday=6)
+        if data_atual.weekday() < 5:  # Segunda a sexta
+            dias_adicionados += 1
+    
+    return data_atual
+
+
+def calcular_data_vencimento(data_recebimento, dias_uteis):
+    """
+    Calcula a data de vencimento baseada na data de recebimento da NF
+    
+    Args:
+        data_recebimento: Data que a NF foi recebida
+        dias_uteis: Prazo em dias úteis configurado
+    
+    Returns:
+        datetime.date: Data de vencimento do pagamento
+    """
+    return calcular_dias_uteis(data_recebimento, dias_uteis)
+
+
+def atualizar_vencimento_lote(lote_id, data_recebimento_nf):
+    """
+    Atualiza a data de recebimento da NF e calcula o vencimento para um lote de serviço
+    
+    Args:
+        lote_id: ID do lote
+        data_recebimento_nf: Data que a NF foi recebida
+    """
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        # Buscar o prestador do lote para pegar o tempo de vencimento
+        cur.execute('''
+            SELECT l.*, p.tempo_vencimento_dias 
+            FROM lotes_servico l
+            JOIN prestadores p ON l.prestador_id = p.id
+            WHERE l.id = %s
+        ''', (lote_id,))
+        lote = cur.fetchone()
+        
+        if lote:
+            tempo_vencimento = lote['tempo_vencimento_dias'] or 10
+            data_vencimento = calcular_data_vencimento(data_recebimento_nf, tempo_vencimento)
+            
+            cur.execute('''
+                UPDATE lotes_servico 
+                SET data_recebimento_nf = %s, data_vencimento_pagamento = %s
+                WHERE id = %s
+            ''', (data_recebimento_nf, data_vencimento, lote_id))
+    
+    conn.commit()
+    conn.close()
+
+
+def atualizar_vencimento_montagem(envio_id, data_recebimento_nf):
+    """
+    Atualiza a data de recebimento da NF e calcula o vencimento para um envio de montagem
+    
+    Args:
+        envio_id: ID do envio
+        data_recebimento_nf: Data que a NF foi recebida
+    """
+    conn = get_db_connection()
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        # Buscar o montador do envio para pegar o tempo de vencimento
+        cur.execute('''
+            SELECT e.*, m.tempo_vencimento_dias 
+            FROM envios_montagem e
+            JOIN montadores m ON e.montador_id = m.id
+            WHERE e.id = %s
+        ''', (envio_id,))
+        envio = cur.fetchone()
+        
+        if envio:
+            tempo_vencimento = envio['tempo_vencimento_dias'] or 10
+            data_vencimento = calcular_data_vencimento(data_recebimento_nf, tempo_vencimento)
+            
+            cur.execute('''
+                UPDATE envios_montagem 
+                SET data_recebimento_nf = %s, data_vencimento_pagamento = %s
+                WHERE id = %s
+            ''', (data_recebimento_nf, data_vencimento, envio_id))
+    
+    conn.commit()
+    conn.close()
+
+
+def marcar_lote_como_pago(lote_id):
+    """Marca um lote de serviço como pago"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute('''
+            UPDATE lotes_servico 
+            SET pago = TRUE, data_pagamento = CURRENT_TIMESTAMP
+            WHERE id = %s
+        ''', (lote_id,))
+    conn.commit()
+    conn.close()
+
+
+def marcar_montagem_como_paga(envio_id):
+    """Marca um envio de montagem como pago"""
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        cur.execute('''
+            UPDATE envios_montagem 
+            SET pago = TRUE, data_pagamento = CURRENT_TIMESTAMP
+            WHERE id = %s
+        ''', (envio_id,))
+    conn.commit()
+    conn.close()
+
+
+def get_pagamentos_vencidos():
+    """
+    Retorna todos os pagamentos vencidos (lotes e montagens) que ainda não foram pagos
+    
+    Returns:
+        dict com duas listas: 'servicos' e 'montagens'
+    """
+    conn = get_db_connection()
+    resultado = {'servicos': [], 'montagens': []}
+    
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        # Buscar lotes de serviço vencidos
+        cur.execute('''
+            SELECT 
+                l.*,
+                p.nome as prestador_nome,
+                p.tempo_vencimento_dias,
+                CURRENT_DATE - l.data_vencimento_pagamento as dias_vencidos
+            FROM lotes_servico l
+            JOIN prestadores p ON l.prestador_id = p.id
+            WHERE l.pago = FALSE
+              AND l.data_vencimento_pagamento IS NOT NULL
+              AND l.data_vencimento_pagamento < CURRENT_DATE
+            ORDER BY l.data_vencimento_pagamento ASC
+        ''')
+        resultado['servicos'] = cur.fetchall()
+        
+        # Buscar envios de montagem vencidos
+        cur.execute('''
+            SELECT 
+                e.*,
+                m.nome as montador_nome,
+                m.tempo_vencimento_dias,
+                CURRENT_DATE - e.data_vencimento_pagamento as dias_vencidos
+            FROM envios_montagem e
+            JOIN montadores m ON e.montador_id = m.id
+            WHERE e.pago = FALSE
+              AND e.data_vencimento_pagamento IS NOT NULL
+              AND e.data_vencimento_pagamento < CURRENT_DATE
+            ORDER BY e.data_vencimento_pagamento ASC
+        ''')
+        resultado['montagens'] = cur.fetchall()
+    
+    conn.close()
+    return resultado
+
+
+def get_pagamentos_proximos_vencimento(dias=3):
+    """
+    Retorna pagamentos que vencem nos próximos X dias
+    
+    Args:
+        dias: Número de dias para considerar como "próximo"
+    
+    Returns:
+        dict com duas listas: 'servicos' e 'montagens'
+    """
+    conn = get_db_connection()
+    resultado = {'servicos': [], 'montagens': []}
+    
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        # Buscar lotes de serviço próximos do vencimento
+        cur.execute('''
+            SELECT 
+                l.*,
+                p.nome as prestador_nome,
+                p.tempo_vencimento_dias,
+                l.data_vencimento_pagamento - CURRENT_DATE as dias_restantes
+            FROM lotes_servico l
+            JOIN prestadores p ON l.prestador_id = p.id
+            WHERE l.pago = FALSE
+              AND l.data_vencimento_pagamento IS NOT NULL
+              AND l.data_vencimento_pagamento BETWEEN CURRENT_DATE AND CURRENT_DATE + %s
+            ORDER BY l.data_vencimento_pagamento ASC
+        ''', (dias,))
+        resultado['servicos'] = cur.fetchall()
+        
+        # Buscar envios de montagem próximos do vencimento
+        cur.execute('''
+            SELECT 
+                e.*,
+                m.nome as montador_nome,
+                m.tempo_vencimento_dias,
+                e.data_vencimento_pagamento - CURRENT_DATE as dias_restantes
+            FROM envios_montagem e
+            JOIN montadores m ON e.montador_id = m.id
+            WHERE e.pago = FALSE
+              AND e.data_vencimento_pagamento IS NOT NULL
+              AND e.data_vencimento_pagamento BETWEEN CURRENT_DATE AND CURRENT_DATE + %s
+            ORDER BY e.data_vencimento_pagamento ASC
+        ''', (dias,))
+        resultado['montagens'] = cur.fetchall()
+    
+    conn.close()
+    return resultado
+
+
+def get_todos_pagamentos_pendentes():
+    """
+    Retorna TODOS os pagamentos pendentes (vencidos, hoje, amanhã, futuros)
+    organizados com informação de dias até/desde o vencimento
+    
+    Returns:
+        dict com duas listas: 'servicos' e 'montagens'
+        Cada item tem 'dias_para_vencimento' (negativo se vencido, 0 se hoje, positivo se futuro)
+    """
+    conn = get_db_connection()
+    resultado = {'servicos': [], 'montagens': []}
+    
+    with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cur:
+        # Buscar todos os lotes de serviço não pagos com vencimento definido
+        cur.execute('''
+            SELECT 
+                l.*,
+                p.nome as prestador_nome,
+                p.fornecedor_id as prestador_fornecedor_id,
+                p.tempo_vencimento_dias,
+                l.data_vencimento_pagamento - CURRENT_DATE as dias_para_vencimento
+            FROM lotes_servico l
+            JOIN prestadores p ON l.prestador_id = p.id
+            WHERE l.pago = FALSE
+              AND l.data_vencimento_pagamento IS NOT NULL
+            ORDER BY l.data_vencimento_pagamento ASC
+        ''')
+        resultado['servicos'] = cur.fetchall()
+        
+        # Buscar todos os envios de montagem não pagos com vencimento definido
+        cur.execute('''
+            SELECT 
+                e.*,
+                m.nome as montador_nome,
+                m.fornecedor_id as montador_fornecedor_id,
+                m.tempo_vencimento_dias,
+                e.data_vencimento_pagamento - CURRENT_DATE as dias_para_vencimento
+            FROM envios_montagem e
+            JOIN montadores m ON e.montador_id = m.id
+            WHERE e.pago = FALSE
+              AND e.data_vencimento_pagamento IS NOT NULL
+            ORDER BY e.data_vencimento_pagamento ASC
+        ''')
+        resultado['montagens'] = cur.fetchall()
+    
+    conn.close()
+    return resultado
+
 
 def check_os_blacklist(os_numbers):
     """Verifica quais OS estão na blacklist"""

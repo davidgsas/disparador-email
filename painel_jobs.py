@@ -55,13 +55,34 @@ def mostrar_painel_jobs():
         if servico_rodando:
             if st.button("🛑 Parar Serviço", use_container_width=True):
                 try:
-                    subprocess.run(['venv/bin/python', 'run_scheduler.py', 'stop'])
-                    st.success("✅ Serviço parado!")
+                    # Enviar sinal SIGTERM para o processo
+                    import os
+                    import signal
+                    os.kill(pid, signal.SIGTERM)
+                    
+                    # Aguardar um pouco e verificar
                     import time
+                    time.sleep(2)
+                    
+                    # Verificar se parou
+                    try:
+                        os.kill(pid, 0)
+                        st.warning("⚠️ Processo ainda rodando, tentando forçar...")
+                        os.kill(pid, signal.SIGKILL)
+                    except OSError:
+                        pass  # Processo já parou
+                    
+                    # Remover arquivo PID
+                    if pid_file.exists():
+                        pid_file.unlink()
+                    
+                    st.success("✅ Serviço parado!")
                     time.sleep(1)
                     st.rerun()
                 except Exception as e:
                     st.error(f"❌ Erro: {e}")
+                    import traceback
+                    st.code(traceback.format_exc())
         else:
             if st.button("▶️ Iniciar Serviço", use_container_width=True):
                 try:
@@ -93,8 +114,13 @@ def mostrar_painel_jobs():
         if servico_rodando:
             if st.button("🔄 Recarregar", use_container_width=True, help="Recarrega configurações sem parar"):
                 try:
-                    subprocess.run(['venv/bin/python', 'run_scheduler.py', 'reload'])
+                    # Enviar sinal SIGHUP para recarregar
+                    import os
+                    import signal
+                    os.kill(pid, signal.SIGHUP)
                     st.success("✅ Configurações recarregadas!")
+                    import time
+                    time.sleep(1)
                     st.rerun()
                 except Exception as e:
                     st.error(f"❌ Erro: {e}")

@@ -19,6 +19,7 @@ from templates.variaveis import mostrar_variaveis_disponiveis
 from notificacoes_widget import mostrar_badge_notificacoes, mostrar_modal_notificacoes
 from painel_jobs import mostrar_painel_jobs
 from notificacoes_toast import processar_notificacoes_toast, badge_contador_notificacoes, marcar_todas_como_lidas
+from pagina_pagamentos_vencidos import pagina_pagamentos_vencidos
 
 # --- Novas Funções de Configuração ---
 CONFIG_FILE = Path("config.json")
@@ -155,6 +156,7 @@ app_mode = st.sidebar.selectbox("Selecione a Página", [
     "Dashboard de Pendências", 
     "Serviços (Prestadores)", 
     "Montagem (Montadores)", 
+    "💸 Pagamentos Vencidos",
     "📤 Upload de Notas Fiscais", 
     "⚙️ Jobs Automáticos", 
     "🔌 Integrações",
@@ -504,7 +506,14 @@ Obrigado."""
             emails_adicionais = st.text_input("E-mails Adicionais (separados por vírgula)", 
                                             help="Digite os emails adicionais separados por vírgula. Ex: email2@empresa.com, email3@empresa.com")
             fornecedor_id = st.text_input("Número do Fornecedor")
-            regra_envio = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], key="p_regra")
+            
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                regra_envio = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], key="p_regra")
+            with col2:
+                tempo_vencimento_dias = st.selectbox("Prazo Pagamento", options=[3, 10], index=1, 
+                                                    help="Prazo em dias úteis para pagamento após recebimento da NF")
+            
             dias_envio = ""
             
             if regra_envio == "Semanal":
@@ -514,7 +523,9 @@ Obrigado."""
             
             if st.form_submit_button("Adicionar"):
                 if all([nome, email, fornecedor_id]):
-                    success, message = db.add_prestador(nome, email, fornecedor_id, regra_envio, dias_envio, emails_adicionais.strip() if emails_adicionais.strip() else None)
+                    success, message = db.add_prestador(nome, email, fornecedor_id, regra_envio, dias_envio, 
+                                                       emails_adicionais.strip() if emails_adicionais.strip() else None,
+                                                       tempo_vencimento_dias)
                     st.toast(message)
                 else:
                     st.warning("Todos os campos obrigatórios devem ser preenchidos (Nome, E-mail Principal e Número do Fornecedor).")
@@ -530,6 +541,10 @@ Obrigado."""
                     emails_extras = [email.strip() for email in p['emails_adicionais'].split(',') if email.strip()]
                     st.info(f"**E-mails Adicionais:** {', '.join(emails_extras)}")
                 
+                # Mostrar prazo de pagamento atual
+                prazo_atual = p.get('tempo_vencimento_dias', 10)
+                st.info(f"**⏰ Prazo de Pagamento:** {prazo_atual} dias úteis")
+                
                 with st.form(key=f"form_p_{p['id']}"):
                     st.text_input("Número do Fornecedor", value=p['fornecedor_id'], disabled=True)
                     
@@ -542,7 +557,17 @@ Obrigado."""
                     regra_atual = p.get('regra_envio') or "Nenhuma"
                     dias_atuais = p.get('dias_envio') or ""
                     
-                    regra_edit = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], index=["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"].index(regra_atual), key=f"p_regra_edit_{p['id']}")
+                    col1, col2 = st.columns([2, 1])
+                    with col1:
+                        regra_edit = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], 
+                                                 index=["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"].index(regra_atual), 
+                                                 key=f"p_regra_edit_{p['id']}")
+                    with col2:
+                        tempo_vencimento_edit = st.selectbox("Prazo Pagamento", options=[3, 10], 
+                                                            index=0 if prazo_atual == 3 else 1,
+                                                            help="Prazo em dias úteis para pagamento",
+                                                            key=f"p_tempo_venc_{p['id']}")
+                    
                     dias_edit = ""
                     
                     if regra_edit == "Semanal":
@@ -553,7 +578,9 @@ Obrigado."""
                         dias_edit = st.text_input("Dias do Mês", value=dias_atuais, key=f"p_dia_mes_edit_{p['id']}")
 
                     if st.form_submit_button("Salvar Alterações"):
-                        db.update_prestador(p['id'], regra_edit, dias_edit, emails_adicionais_edit.strip() if emails_adicionais_edit.strip() else None)
+                        db.update_prestador(p['id'], regra_edit, dias_edit, 
+                                          emails_adicionais_edit.strip() if emails_adicionais_edit.strip() else None,
+                                          tempo_vencimento_edit)
                         st.success("Dados do prestador atualizados!")
                         st.rerun()
 
@@ -841,6 +868,10 @@ Obrigado."""
         if st.button("Salvar Template"):
             template_path.write_text(new_html_content, encoding="utf-8")
             st.success("Template salvo!")
+
+elif app_mode == "💸 Pagamentos Vencidos":
+    # Página de pagamentos vencidos
+    pagina_pagamentos_vencidos()
 
 elif app_mode == "Montagem (Montadores)":
     st.sidebar.divider()
@@ -1160,10 +1191,20 @@ Qualquer dúvida, estamos à disposição."""
             email = st.text_input("E-mail Principal")
             emails_adicionais = st.text_input("E-mails Adicionais (separados por vírgula)", 
                                             help="Digite os emails adicionais separados por vírgula. Ex: email2@empresa.com, email3@empresa.com")
-            percentual_comissao = st.number_input("Comissão (%)", 0.0, 100.0, 5.0, 0.1, "%.2f")
-            auxilio_semanal = st.number_input("Auxílio Semanal (R$)", 0.0, value=100.0, step=10.0, format="%.2f")
             
-            regra_envio = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], key="m_regra")
+            col1, col2 = st.columns(2)
+            with col1:
+                percentual_comissao = st.number_input("Comissão (%)", 0.0, 100.0, 5.0, 0.1, "%.2f")
+            with col2:
+                auxilio_semanal = st.number_input("Auxílio Semanal (R$)", 0.0, value=100.0, step=10.0, format="%.2f")
+            
+            col3, col4 = st.columns([2, 1])
+            with col3:
+                regra_envio = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], key="m_regra")
+            with col4:
+                tempo_vencimento_dias = st.selectbox("Prazo Pagamento", options=[3, 10], index=1,
+                                                    help="Prazo em dias úteis para pagamento após recebimento da NF")
+            
             dias_envio = ""
             
             if regra_envio == "Semanal":
@@ -1173,7 +1214,10 @@ Qualquer dúvida, estamos à disposição."""
 
             if st.form_submit_button("Adicionar"):
                 if all([nome, identificador, email, fornecedor_id]):
-                    success, message = db.add_montador(nome, identificador, email, percentual_comissao / 100.0, auxilio_semanal, fornecedor_id, regra_envio, dias_envio, emails_adicionais.strip() if emails_adicionais.strip() else None)
+                    success, message = db.add_montador(nome, identificador, email, percentual_comissao / 100.0, auxilio_semanal, 
+                                                      fornecedor_id, regra_envio, dias_envio, 
+                                                      emails_adicionais.strip() if emails_adicionais.strip() else None,
+                                                      tempo_vencimento_dias)
                     st.toast(message)
                 else:
                     st.warning("Todos os campos obrigatórios devem ser preenchidos (Nome, Identificador, E-mail Principal e Número do Fornecedor).")
@@ -1192,6 +1236,10 @@ Qualquer dúvida, estamos à disposição."""
                     emails_extras = [email.strip() for email in m['emails_adicionais'].split(',') if email.strip()]
                     st.info(f"**E-mails Adicionais:** {', '.join(emails_extras)}")
                 
+                # Mostrar prazo de pagamento atual
+                prazo_atual = m.get('tempo_vencimento_dias', 10)
+                st.info(f"**⏰ Prazo de Pagamento:** {prazo_atual} dias úteis")
+                
                 with st.form(key=f"form_montador_{m['id']}"):
                     # Permitir edição do número do fornecedor
                     fornecedor_id = st.text_input("Número do Fornecedor", value=m['fornecedor_id'], key=f"fornecedor_{m['id']}")
@@ -1203,14 +1251,28 @@ Qualquer dúvida, estamos à disposição."""
                                                          key=f"m_emails_edit_{m['id']}",
                                                          help="Digite os emails adicionais separados por vírgula")
                     
-                    comissao = st.number_input("Comissão (%)", value=m['percentual_comissao'] * 100, key=f"com_{m['id']}")
-                    auxilio = st.number_input("Auxílio Semanal (R$)", value=m['auxilio_semanal'], key=f"aux_{m['id']}")
-                    ativo = st.toggle("Ativo", value=m['ativo'], key=f"ativo_{m['id']}")
+                    col1, col2, col3 = st.columns([2, 2, 1])
+                    with col1:
+                        comissao = st.number_input("Comissão (%)", value=m['percentual_comissao'] * 100, key=f"com_{m['id']}")
+                    with col2:
+                        auxilio = st.number_input("Auxílio Semanal (R$)", value=m['auxilio_semanal'], key=f"aux_{m['id']}")
+                    with col3:
+                        ativo = st.toggle("Ativo", value=m['ativo'], key=f"ativo_{m['id']}")
                     
                     regra_atual = m.get('regra_envio') or "Nenhuma"
                     dias_atuais = m.get('dias_envio') or ""
                     
-                    regra_edit = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], index=["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"].index(regra_atual), key=f"m_regra_edit_{m['id']}")
+                    col4, col5 = st.columns([2, 1])
+                    with col4:
+                        regra_edit = st.selectbox("Regra de Envio", ["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"], 
+                                                 index=["Nenhuma", "Semanal", "Mensal (Dia Fixo)", "Quinzenal"].index(regra_atual), 
+                                                 key=f"m_regra_edit_{m['id']}")
+                    with col5:
+                        tempo_vencimento_edit = st.selectbox("Prazo Pagamento", options=[3, 10],
+                                                            index=0 if prazo_atual == 3 else 1,
+                                                            help="Prazo em dias úteis para pagamento",
+                                                            key=f"m_tempo_venc_{m['id']}")
+                    
                     dias_edit = ""
                     
                     if regra_edit == "Semanal":
@@ -1221,7 +1283,10 @@ Qualquer dúvida, estamos à disposição."""
                         dias_edit = st.text_input("Dias do Mês", value=dias_atuais, key=f"m_dia_mes_edit_{m['id']}")
 
                     if st.form_submit_button("Salvar Alterações"):
-                        db.update_montador(m['id'], email, comissao / 100.0, auxilio, ativo, regra_edit, dias_edit, fornecedor_id, emails_adicionais_edit.strip() if emails_adicionais_edit.strip() else None)
+                        db.update_montador(m['id'], email, comissao / 100.0, auxilio, ativo, regra_edit, dias_edit, 
+                                         fornecedor_id, 
+                                         emails_adicionais_edit.strip() if emails_adicionais_edit.strip() else None,
+                                         tempo_vencimento_edit)
                         st.success(f"Dados de {m['nome']} atualizados!")
                         st.rerun()
                 

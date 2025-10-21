@@ -14,5 +14,5 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Importar e executar o scheduler
 if __name__ == '__main__':
+    # Executar o scheduler_service - ele já processa argumentos automaticamente via sys.argv
     import scheduler_service
-    # O scheduler_service.py já tem a lógica de verificação de argumentos no final

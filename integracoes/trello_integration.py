@@ -131,22 +131,57 @@ class TrelloIntegration:
                 arquivos_baixados, 
                 nota_fiscal
             )
-            # Cria o card via API
+            # Cria o card via API com timeout aumentado e retry
             url = f"{self.base_url}/cards"
+            
+            # Usar query params apenas para auth, dados no body JSON
             params = {
                 'key': self.api_key,
-                'token': self.token,
+                'token': self.token
+            }
+            
+            # Dados do card no body (reduz tamanho da URL)
+            data = {
                 'idList': self.list_id,
                 'name': titulo,
                 'desc': descricao,
-                'pos': 'top'  # Coloca no topo da lista
+                'pos': 'top'
             }
-            response = requests.post(url, params=params)
-            response.raise_for_status()
-            card_data = response.json()
-            card_id = card_data['id']
-            card_url = card_data['shortUrl']
-            print(f"✅ Card Trello criado: {card_url}")
+            
+            # Tentar até 3 vezes com timeout progressivo
+            max_tentativas = 3
+            timeouts = [30, 60, 90]  # Timeouts progressivos
+            
+            for tentativa in range(max_tentativas):
+                try:
+                    print(f"🔄 Tentativa {tentativa + 1}/{max_tentativas} - Criando card no Trello...")
+                    response = requests.post(
+                        url, 
+                        params=params, 
+                        json=data,  # Envia no body como JSON
+                        timeout=timeouts[tentativa]
+                    )
+                    response.raise_for_status()
+                    card_data = response.json()
+                    card_id = card_data['id']
+                    card_url = card_data['shortUrl']
+                    print(f"✅ Card Trello criado: {card_url}")
+                    break  # Sucesso, sai do loop
+                    
+                except requests.exceptions.Timeout:
+                    if tentativa < max_tentativas - 1:
+                        print(f"⏱️  Timeout - Tentando novamente com timeout de {timeouts[tentativa + 1]}s...")
+                        continue
+                    else:
+                        print(f"❌ Timeout após {max_tentativas} tentativas")
+                        return None
+                        
+                except requests.exceptions.RequestException as e:
+                    if tentativa < max_tentativas - 1:
+                        print(f"⚠️  Erro: {e} - Tentando novamente...")
+                        continue
+                    else:
+                        raise  # Re-lança a exceção na última tentativa
             # Adiciona label (se configurado)
             self._adicionar_label(card_id, 'green')
             # Cria checklist automática
@@ -202,31 +237,59 @@ class TrelloIntegration:
             'token': self.token
         }
 
-        try:
-            print(f"   🌐 Fazendo upload para: {url}")
-            with open(caminho_arquivo, 'rb') as f:
-                files = {'file': (os.path.basename(caminho_arquivo), f)}
-                response = requests.post(url, params=params, files=files)
+        # Tentar até 2 vezes para anexar arquivo
+        max_tentativas = 2
+        
+        for tentativa in range(max_tentativas):
+            try:
+                print(f"   🌐 Upload tentativa {tentativa + 1}/{max_tentativas}: {url}")
+                with open(caminho_arquivo, 'rb') as f:
+                    files = {'file': (os.path.basename(caminho_arquivo), f)}
+                    response = requests.post(
+                        url, 
+                        params=params, 
+                        files=files,
+                        timeout=120  # 2 minutos para upload de arquivo
+                    )
 
-                print(f"   📡 Resposta HTTP: {response.status_code}")
+                    print(f"   📡 Resposta HTTP: {response.status_code}")
+                    
+                    if response.status_code == 200:
+                        msg = f"📎 Anexo enviado com sucesso: {os.path.basename(caminho_arquivo)}"
+                        print(f"   ✅ {msg}")
+                        logger.info(msg)
+                        return True
+                    else:
+                        msg = f"❌ Falha ao anexar {caminho_arquivo}: {response.status_code} - {response.text[:200]}"
+                        print(f"   {msg}")
+                        logger.error(msg)
+                        if tentativa < max_tentativas - 1:
+                            print(f"   🔄 Tentando novamente...")
+                            continue
+                        return False
+                        
+            except requests.exceptions.Timeout:
+                msg = f"⏱️  Timeout ao anexar {caminho_arquivo}"
+                print(f"   {msg}")
+                logger.error(msg)
+                if tentativa < max_tentativas - 1:
+                    print(f"   🔄 Tentando novamente...")
+                    continue
+                return False
                 
-                if response.status_code == 200:
-                    msg = f"📎 Anexo enviado com sucesso: {os.path.basename(caminho_arquivo)}"
-                    print(f"   ✅ {msg}")
-                    logger.info(msg)
-                    return True
+            except Exception as e:
+                msg = f"❌ Exceção ao anexar {caminho_arquivo}: {e}"
+                print(f"   {msg}")
+                logger.error(msg)
+                if tentativa < max_tentativas - 1:
+                    print(f"   🔄 Tentando novamente...")
+                    continue
                 else:
-                    msg = f"❌ Falha ao anexar {caminho_arquivo}: {response.status_code} - {response.text[:200]}"
-                    print(f"   {msg}")
-                    logger.error(msg)
+                    import traceback
+                    traceback.print_exc()
                     return False
-        except Exception as e:
-            msg = f"❌ Exceção ao anexar {caminho_arquivo}: {e}"
-            print(f"   {msg}")
-            logger.error(msg)
-            import traceback
-            traceback.print_exc()
-            return False
+        
+        return False
     
     def _montar_descricao(
         self, 
@@ -278,7 +341,7 @@ class TrelloIntegration:
                 'token': self.token
             }
             
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=30)
             response.raise_for_status()
             
             labels = response.json()
@@ -295,9 +358,12 @@ class TrelloIntegration:
                 url = f"{self.base_url}/cards/{card_id}/idLabels"
                 params['value'] = label_id
                 
-                response = requests.post(url, params=params)
+                response = requests.post(url, params=params, timeout=30)
                 response.raise_for_status()
+                print(f"   🏷️  Label '{cor}' adicionada")
                 
+        except requests.exceptions.Timeout:
+            print(f"⚠️  Timeout ao adicionar label")
         except Exception as e:
             print(f"⚠️  Não foi possível adicionar label: {e}")
     
@@ -313,7 +379,7 @@ class TrelloIntegration:
                 'name': 'Arquivos para Processar'
             }
             
-            response = requests.post(url, params=params)
+            response = requests.post(url, params=params, timeout=30)
             response.raise_for_status()
             
             checklist_data = response.json()
@@ -328,8 +394,12 @@ class TrelloIntegration:
                     'name': arquivo
                 }
                 
-                requests.post(url, params=params)
+                requests.post(url, params=params, timeout=30)
             
+            print(f"   ✅ Checklist criada com {len(arquivos)} itens")
+            
+        except requests.exceptions.Timeout:
+            print(f"⚠️  Timeout ao criar checklist")
         except Exception as e:
             print(f"⚠️  Não foi possível criar checklist: {e}")
     
