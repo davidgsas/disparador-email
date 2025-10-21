@@ -100669,3 +100669,89 @@ TypeError: can't subtract offset-naive and offset-aware datetimes
 2025-10-21 00:18:46,995 - [INFO] - JobConsultaNotas -    📅 Período: 23/08/2025 – 04/09/2025
 2025-10-21 00:18:46,996 - [INFO] - JobConsultaNotas -    🔑 Hash: 4e9f783708d8614792da...
 2025-10-21 00:18:46,996 - [INFO] - JobConsultaNotas -    🔍 Consultando arquivos...
+2025-10-21 00:28:46,608 - __main__ - INFO - ============================================================
+2025-10-21 00:28:46,614 - __main__ - INFO - INICIANDO run_scheduler.py - 2025-10-21 00:28:46.614516
+2025-10-21 00:28:46,614 - __main__ - INFO - Python: 3.9.6 (default, Aug  8 2025, 19:06:38) 
+[Clang 17.0.0 (clang-1700.3.19.1)]
+2025-10-21 00:28:46,614 - __main__ - INFO - CWD: /Users/david/Documents/GitHub/disparador-email
+2025-10-21 00:28:46,614 - __main__ - INFO - Args: ['run_scheduler.py']
+2025-10-21 00:28:46,614 - __main__ - INFO - Variáveis de ambiente configuradas
+2025-10-21 00:28:46,614 - __main__ - INFO - Importando scheduler_service...
+2025-10-21 00:28:46,716 - __main__ - INFO - scheduler_service importado com sucesso
+2025-10-21 00:31:05,174 - __main__ - INFO - ============================================================
+2025-10-21 00:31:05,175 - __main__ - INFO - INICIANDO run_scheduler.py - 2025-10-21 00:31:05.175314
+2025-10-21 00:31:05,175 - __main__ - INFO - Python: 3.9.6 (default, Aug  8 2025, 19:06:38) 
+[Clang 17.0.0 (clang-1700.3.19.1)]
+2025-10-21 00:31:05,175 - __main__ - INFO - CWD: /Users/david/Documents/GitHub/disparador-email
+2025-10-21 00:31:05,175 - __main__ - INFO - Args: ['run_scheduler.py']
+2025-10-21 00:31:05,175 - __main__ - INFO - Variáveis de ambiente configuradas
+2025-10-21 00:31:05,175 - __main__ - INFO - Importando scheduler_service...
+2025-10-21 00:31:05,247 - __main__ - INFO - scheduler_service importado com sucesso
+2025-10-21 00:31:05,247 - __main__ - INFO - Executando scheduler_service.main()...
+2025-10-21 00:31:05,247 - SchedulerService - INFO - ======================================================================
+2025-10-21 00:31:05,247 - SchedulerService - INFO - 🚀 SERVIÇO DE JOBS AUTOMÁTICOS - VERSÃO MELHORADA
+2025-10-21 00:31:05,247 - SchedulerService - INFO - ======================================================================
+2025-10-21 00:31:05,248 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-21 00:31:05,257 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-21 00:31:05,262 - SchedulerService - INFO - ✅ Job 'backup_banco': a cada 600min, próxima às 10:31
+2025-10-21 00:31:05,262 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-21 00:31:05,267 - SchedulerService - INFO - ✅ Job 'consultar_notas': a cada 60min, próxima às 01:31
+2025-10-21 00:31:05,267 - apscheduler.scheduler - INFO - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2025-10-21 00:31:05,273 - SchedulerService - INFO - ✅ Job 'enviar_api': a cada 100min, próxima às 02:11
+2025-10-21 00:31:05,273 - SchedulerService - INFO - ✅ 3 jobs configurados
+2025-10-21 00:31:05,273 - apscheduler.scheduler - INFO - Added job "backup_banco" to job store "default"
+2025-10-21 00:31:05,273 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-21 00:31:05,273 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-21 00:31:05,273 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-21 00:31:05,273 - SchedulerService - INFO - ✅ Scheduler iniciado
+2025-10-21 00:31:05,273 - SchedulerService - INFO - 🏥 Health check iniciado
+2025-10-21 00:31:05,274 - SchedulerService - INFO - ✅ Health check iniciado
+2025-10-21 00:31:05,274 - SchedulerService - INFO - ======================================================================
+2025-10-21 00:31:05,274 - SchedulerService - INFO - 📊 Jobs Configurados:
+2025-10-21 00:31:05,274 - SchedulerService - INFO -    🔹 consultar_notas: próxima execução em 2025-10-21 01:31:05.262288-03:00
+2025-10-21 00:31:05,274 - SchedulerService - INFO -    🔹 enviar_api: próxima execução em 2025-10-21 02:11:05.267387-03:00
+2025-10-21 00:31:05,274 - SchedulerService - INFO -    🔹 backup_banco: próxima execução em 2025-10-21 10:31:05.257148-03:00
+2025-10-21 00:31:05,274 - SchedulerService - INFO - ======================================================================
+2025-10-21 00:31:05,274 - SchedulerService - INFO - 
+💡 Comandos:
+2025-10-21 00:31:05,274 - SchedulerService - INFO -    - Parar: Ctrl+C ou kill <PID>
+2025-10-21 00:31:05,274 - SchedulerService - INFO -    - Recarregar: kill -HUP <PID>
+2025-10-21 00:31:05,274 - SchedulerService - INFO -    - Logs: tail -f scheduler.log
+2025-10-21 00:31:05,274 - SchedulerService - INFO -    - Erros: tail -f scheduler_errors.log
+2025-10-21 00:31:05,274 - SchedulerService - INFO - 
+🔄 Serviço rodando...
+
+2025-10-21 00:32:21,380 - SchedulerService - INFO - 🔄 Recarregando configurações...
+2025-10-21 00:32:21,380 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-21 00:32:21,388 - SchedulerService - INFO - 🔄 Recarregando configurações...
+2025-10-21 00:32:21,388 - SchedulerService - INFO - ⚙️  Configurando jobs...
+2025-10-21 00:32:21,398 - apscheduler.scheduler - INFO - Added job "backup_banco" to job store "default"
+2025-10-21 00:32:21,407 - SchedulerService - INFO - ✅ Job 'backup_banco': a cada 600min, próxima às 10:32
+2025-10-21 00:32:21,407 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-21 00:32:21,414 - SchedulerService - INFO - ✅ Job 'consultar_notas': a cada 60min, próxima às 01:32
+2025-10-21 00:32:21,414 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-21 00:32:21,422 - SchedulerService - INFO - ✅ Job 'enviar_api': a cada 100min, próxima às 02:12
+2025-10-21 00:32:21,423 - SchedulerService - INFO - ✅ 3 jobs configurados
+2025-10-21 00:32:21,423 - SchedulerService - INFO - ✅ Configurações recarregadas (3 jobs)
+2025-10-21 00:32:21,424 - apscheduler.scheduler - INFO - Added job "backup_banco" to job store "default"
+2025-10-21 00:32:21,432 - SchedulerService - INFO - ✅ Job 'backup_banco': a cada 600min, próxima às 10:32
+2025-10-21 00:32:21,432 - apscheduler.scheduler - INFO - Added job "consultar_notas" to job store "default"
+2025-10-21 00:32:21,439 - SchedulerService - INFO - ✅ Job 'consultar_notas': a cada 60min, próxima às 01:32
+2025-10-21 00:32:21,440 - apscheduler.scheduler - INFO - Added job "enviar_api" to job store "default"
+2025-10-21 00:32:21,447 - SchedulerService - INFO - ✅ Job 'enviar_api': a cada 100min, próxima às 02:12
+2025-10-21 00:32:21,447 - SchedulerService - INFO - ✅ 3 jobs configurados
+2025-10-21 00:32:21,447 - SchedulerService - INFO - ✅ Configurações recarregadas (3 jobs)
+2025-10-21 00:32:45,806 - __main__ - INFO - ============================================================
+2025-10-21 00:32:45,806 - __main__ - INFO - INICIANDO run_scheduler.py - 2025-10-21 00:32:45.806607
+2025-10-21 00:32:45,806 - __main__ - INFO - Python: 3.9.6 (default, Aug  8 2025, 19:06:38) 
+[Clang 17.0.0 (clang-1700.3.19.1)]
+2025-10-21 00:32:45,806 - __main__ - INFO - CWD: /Users/david/Documents/GitHub/disparador-email
+2025-10-21 00:32:45,806 - __main__ - INFO - Args: ['run_scheduler.py']
+2025-10-21 00:32:45,806 - __main__ - INFO - Variáveis de ambiente configuradas
+2025-10-21 00:32:45,806 - __main__ - INFO - Importando scheduler_service...
+2025-10-21 00:32:45,907 - __main__ - INFO - scheduler_service importado com sucesso
+2025-10-21 00:32:45,907 - __main__ - INFO - Executando scheduler_service.main()...
+2025-10-21 00:32:45,907 - SchedulerService - INFO - ======================================================================
+2025-10-21 00:32:45,907 - SchedulerService - INFO - 🚀 SERVIÇO DE JOBS AUTOMÁTICOS - VERSÃO MELHORADA
+2025-10-21 00:32:45,907 - SchedulerService - INFO - ======================================================================
+2025-10-21 00:32:45,907 - SchedulerService - ERROR - ❌ Serviço já rodando (PID: 68842)

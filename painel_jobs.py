@@ -34,13 +34,12 @@ def mostrar_painel_jobs():
                 servico_rodando = False
                 try:
                     pid_file.unlink()
+                    pid = None
                 except:
                     pass
         except Exception as e:
-            # Erro ao ler arquivo PID
             servico_rodando = False
             st.warning(f"⚠️ Erro ao verificar status: {e}")
-            servico_rodando = False
     
     # Status do serviço
     col1, col2, col3 = st.columns([2, 1, 1])
@@ -55,22 +54,26 @@ def mostrar_painel_jobs():
         if servico_rodando:
             if st.button("🛑 Parar Serviço", use_container_width=True):
                 try:
-                    # Enviar sinal SIGTERM para o processo
                     import os
                     import signal
-                    os.kill(pid, signal.SIGTERM)
                     
-                    # Aguardar um pouco e verificar
+                    # Tentar parar graciosamente
+                    os.kill(pid, signal.SIGTERM)
+                    st.info("Enviando sinal de parada...")
+                    
+                    # Aguardar um pouco
                     import time
                     time.sleep(2)
                     
                     # Verificar se parou
                     try:
                         os.kill(pid, 0)
-                        st.warning("⚠️ Processo ainda rodando, tentando forçar...")
+                        # Ainda rodando, forçar
+                        st.warning("Forçando parada...")
                         os.kill(pid, signal.SIGKILL)
+                        time.sleep(1)
                     except OSError:
-                        pass  # Processo já parou
+                        pass  # Já parou
                     
                     # Remover arquivo PID
                     if pid_file.exists():
@@ -79,32 +82,62 @@ def mostrar_painel_jobs():
                     st.success("✅ Serviço parado!")
                     time.sleep(1)
                     st.rerun()
+                    
                 except Exception as e:
-                    st.error(f"❌ Erro: {e}")
+                    st.error(f"❌ Erro ao parar: {e}")
                     import traceback
                     st.code(traceback.format_exc())
         else:
             if st.button("▶️ Iniciar Serviço", use_container_width=True):
                 try:
-                    # Configurar variáveis de ambiente antes de iniciar
                     import os
+                    import time
+                    
+                    # Verificar se já existe um processo rodando
+                    if pid_file.exists():
+                        st.warning("Removendo arquivo PID antigo...")
+                        pid_file.unlink()
+                    
+                    # Configurar variáveis de ambiente
                     env = os.environ.copy()
                     env['DYLD_LIBRARY_PATH'] = '/opt/homebrew/lib:' + env.get('DYLD_LIBRARY_PATH', '')
                     env['PKG_CONFIG_PATH'] = '/opt/homebrew/lib/pkgconfig:' + env.get('PKG_CONFIG_PATH', '')
                     
-                    # Usar o wrapper que configura as variáveis corretas
-                    subprocess.Popen(
-                        ['venv/bin/python', 'run_scheduler.py'],
+                    # Caminho completo para o Python do venv
+                    python_path = Path(__file__).parent / 'venv' / 'bin' / 'python'
+                    scheduler_path = Path(__file__).parent / 'run_scheduler.py'
+                    
+                    # Iniciar processo em background
+                    processo = subprocess.Popen(
+                        [str(python_path), str(scheduler_path)],
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
                         start_new_session=True,
                         env=env,
-                        cwd=Path(__file__).parent
+                        cwd=str(Path(__file__).parent)
                     )
-                    st.success("✅ Serviço iniciado! Aguarde alguns segundos...")
-                    import time
-                    time.sleep(2)  # Dar tempo para o serviço iniciar
-                    st.rerun()
+                    
+                    st.info(f"Processo iniciado (PID: {processo.pid})")
+                    
+                    # Aguardar arquivo PID ser criado
+                    for i in range(10):  # Tentar por 5 segundos
+                        time.sleep(0.5)
+                        if pid_file.exists():
+                            st.success("✅ Serviço iniciado com sucesso!")
+                            time.sleep(1)
+                            st.rerun()
+                            return
+                    
+                    # Se chegou aqui, processo não criou o PID
+                    st.warning("⚠️ Processo iniciou mas não criou arquivo PID. Verificando logs...")
+                    
+                    # Mostrar últimas linhas do log
+                    log_file = Path(__file__).parent / 'scheduler.log'
+                    if log_file.exists():
+                        with open(log_file, 'r') as f:
+                            linhas = f.readlines()
+                            st.code('\n'.join(linhas[-20:]))
+                    
                 except Exception as e:
                     st.error(f"❌ Erro ao iniciar: {e}")
                     import traceback

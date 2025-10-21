@@ -1,18 +1,51 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Wrapper para iniciar o scheduler com as configurações corretas do macOS
+Wrapper para iniciar o scheduler com as variáveis de ambiente corretas
 """
 import os
 import sys
+import logging
+from datetime import datetime
 
-# CRÍTICO: Configurar variáveis de ambiente ANTES de importar qualquer biblioteca
+# Configurar logging logo no início
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('scheduler.log'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+logger.info("="*60)
+logger.info(f"INICIANDO run_scheduler.py - {datetime.now()}")
+logger.info(f"Python: {sys.version}")
+logger.info(f"CWD: {os.getcwd()}")
+logger.info(f"Args: {sys.argv}")
+
+# Configurar variáveis de ambiente necessárias para macOS
 os.environ['DYLD_LIBRARY_PATH'] = '/opt/homebrew/lib:' + os.environ.get('DYLD_LIBRARY_PATH', '')
 os.environ['PKG_CONFIG_PATH'] = '/opt/homebrew/lib/pkgconfig:' + os.environ.get('PKG_CONFIG_PATH', '')
 
-# Adicionar diretório atual ao path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+logger.info("Variáveis de ambiente configuradas")
 
-# Importar e executar o scheduler
+# Iniciar o scheduler
 if __name__ == '__main__':
-    # Executar o scheduler_service - ele já processa argumentos automaticamente via sys.argv
-    import scheduler_service
+    try:
+        logger.info("Importando scheduler_service...")
+        import scheduler_service
+        logger.info("scheduler_service importado com sucesso")
+        
+        # Executar o main() se não há comandos CLI
+        if len(sys.argv) == 1:
+            logger.info("Executando scheduler_service.main()...")
+            scheduler_service.main()
+        # Se há comandos CLI, o scheduler_service já os processou na importação
+    except Exception as e:
+        logger.error(f"ERRO ao executar scheduler: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        sys.exit(1)
