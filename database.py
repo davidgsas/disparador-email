@@ -102,6 +102,48 @@ def run_migrations():
         )''')
         cur.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_os_blacklist ON os_blacklist (prestador_id, os_numero);''')
 
+        # **NOVO: Tabela para notificações WhatsApp**
+        cur.execute('''CREATE TABLE IF NOT EXISTS notificacoes_whatsapp (
+            id SERIAL PRIMARY KEY,
+            prestador_id INTEGER REFERENCES prestadores(id),
+            montador_id INTEGER REFERENCES montadores(id),
+            tipo TEXT NOT NULL,
+            mensagem TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'enviado',
+            data_envio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            erro TEXT,
+            metadata JSONB
+        )''')
+        cur.execute('''CREATE INDEX IF NOT EXISTS idx_notificacoes_prestador ON notificacoes_whatsapp(prestador_id);''')
+        cur.execute('''CREATE INDEX IF NOT EXISTS idx_notificacoes_montador ON notificacoes_whatsapp(montador_id);''')
+        cur.execute('''CREATE INDEX IF NOT EXISTS idx_notificacoes_data ON notificacoes_whatsapp(data_envio);''')
+        
+        # **NOVO: Tabelas para automação WhatsApp**
+        cur.execute('''CREATE TABLE IF NOT EXISTS templates_whatsapp (
+            id SERIAL PRIMARY KEY,
+            nome TEXT NOT NULL UNIQUE,
+            tipo TEXT NOT NULL,
+            template TEXT NOT NULL,
+            ativo BOOLEAN NOT NULL DEFAULT TRUE,
+            variaveis TEXT,
+            criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )''')
+        
+        cur.execute('''CREATE TABLE IF NOT EXISTS automacao_whatsapp (
+            id SERIAL PRIMARY KEY,
+            evento TEXT NOT NULL UNIQUE,
+            template_id TEXT,
+            ativo BOOLEAN NOT NULL DEFAULT TRUE,
+            condicoes TEXT,
+            criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )''')
+        
+        # Adicionar campo telefone nas tabelas
+        cur.execute("ALTER TABLE prestadores ADD COLUMN IF NOT EXISTS telefone TEXT;")
+        cur.execute("ALTER TABLE montadores ADD COLUMN IF NOT EXISTS telefone TEXT;")
+
     conn.commit()
     conn.close()
 
@@ -328,6 +370,38 @@ def salvar_nota_fiscal(lote_id, file_path):
         )
     conn.commit()
     conn.close()
+    
+    # 📱 Enviar WhatsApp notificando que a NF foi recebida
+    try:
+        print(f"\n🟢 [NF Recebida] Iniciando envio WhatsApp para lote {lote_id}")
+        from whatsapp_triggers import WhatsAppAutomation
+        wa = WhatsAppAutomation()
+        
+        # Buscar info do lote para notificar
+        lote = get_lote_by_id(lote_id)
+        print(f"🟢 [NF Recebida] Lote encontrado: {lote}")
+        
+        if lote:
+            # Extrair número da NF do nome do arquivo (se possível)
+            import os
+            numero_nf = os.path.basename(file_path).replace('.pdf', '').replace('.PDF', '')
+            print(f"🟢 [NF Recebida] Número NF: {numero_nf}")
+            
+            print(f"🟢 [NF Recebida] Chamando enviar_prestador_nf_recebida...")
+            resultado = wa.enviar_prestador_nf_recebida(
+                lote['prestador_id'],
+                lote['periodo'],
+                lote['valor_total'],  # ✅ Corrigido: usar valor_total
+                numero_nf,
+                lote_id=lote_id  # ✅ Passar lote_id para registrar no metadata
+            )
+            print(f"🟢 [NF Recebida] Resultado: {resultado}")
+        else:
+            print(f"🔴 [NF Recebida] Lote não encontrado!")
+    except Exception as e:
+        import traceback
+        print(f"🔴 [NF Recebida] ERRO: {str(e)}")
+        print(f"🔴 [NF Recebida] Traceback: {traceback.format_exc()}")
 
 def get_lotes_com_link_pendente():
     """Retorna lotes que têm link gerado mas ainda não receberam NF"""
@@ -887,6 +961,27 @@ def salvar_nota_fiscal_montagem(envio_id, file_path):
         )
     conn.commit()
     conn.close()
+    
+    # 📱 Enviar WhatsApp notificando que a NF foi recebida
+    try:
+        from whatsapp_triggers import WhatsAppAutomation
+        wa = WhatsAppAutomation()
+        
+        # Buscar info do envio para notificar
+        envio = get_envio_montagem_by_id(envio_id)
+        if envio:
+            # Extrair número da NF do nome do arquivo (se possível)
+            import os
+            numero_nf = os.path.basename(file_path).replace('.pdf', '').replace('.PDF', '')
+            
+            wa.enviar_montador_nf_recebida(
+                envio['montador_id'],
+                envio['relatorio_data'].get('periodo_relatorio', ''),
+                envio['relatorio_data'].get('total_geral', 0),
+                numero_nf
+            )
+    except Exception as e:
+        print(f"⚠️ Erro ao enviar WhatsApp de NF recebida: {str(e)}")
 
 def get_envio_montagem_by_id(envio_id):
     """Retorna envio de montagem pelo ID"""

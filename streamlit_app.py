@@ -20,6 +20,8 @@ from notificacoes_widget import mostrar_badge_notificacoes, mostrar_modal_notifi
 from painel_jobs import mostrar_painel_jobs
 from notificacoes_toast import processar_notificacoes_toast, badge_contador_notificacoes, marcar_todas_como_lidas
 from pagina_pagamentos_vencidos import pagina_pagamentos_vencidos
+from painel_whatsapp import mostrar_painel_whatsapp
+from automacao_whatsapp import mostrar_automacao_whatsapp
 
 # --- Novas Funções de Configuração ---
 CONFIG_FILE = Path("config.json")
@@ -157,7 +159,9 @@ app_mode = st.sidebar.selectbox("Selecione a Página", [
     "Serviços (Prestadores)", 
     "Montagem (Montadores)", 
     "💸 Pagamentos Vencidos",
-    "📤 Upload de Notas Fiscais", 
+    "📤 Upload de Notas Fiscais",
+    "📱 WhatsApp",
+    "🤖 Automação WhatsApp",
     "⚙️ Jobs Automáticos", 
     "🔌 Integrações",
     "🗄️ Backups do Banco"
@@ -323,6 +327,9 @@ Obrigado."""
                 st.text_input("Assunto", value=config.get("prestador_subject", default_subject), key="prestador_subject", on_change=save_config)
                 st.text_area("Corpo do E-mail", value=config.get("prestador_body", default_body), key="prestador_body", on_change=save_config, height=200)
                 
+                # 📱 Opção de enviar WhatsApp
+                enviar_whatsapp = st.checkbox("📱 Enviar notificação por WhatsApp também?", value=True, help="Se ativado, enviará WhatsApp junto com o email (conforme templates configurados em Automação WhatsApp)")
+                
                 if st.button("▶️ ENVIAR E-MAILS PENDENTES", type="primary"):
                     report = []
                     saudacao = "Bom dia" if datetime.datetime.now().hour < 12 else "Boa tarde" if datetime.datetime.now().hour < 18 else "Boa noite"
@@ -442,7 +449,36 @@ Obrigado."""
                                 sent_resp = requests.get(sent_items_url, headers=headers).json()
                                 conversation_id = sent_resp['value'][0]['conversationId']
                                 db.atualizar_lote_com_conversation_id(lote_id, conversation_id)
-                                report.append({"Prestador": nome_prestador, "Status": f"✅ Lote #{lote_id} Enviado"})
+                                
+                                # 📱 Enviar WhatsApp se opção marcada
+                                whatsapp_status = ""
+                                if enviar_whatsapp:
+                                    try:
+                                        print(f"\n🔵 Iniciando envio WhatsApp para prestador {prestador_info['id']}")
+                                        from whatsapp_triggers import WhatsAppAutomation
+                                        wa_automation = WhatsAppAutomation()
+                                        print(f"🔵 Chamando enviar_prestador_email_enviado...")
+                                        resultado_wa = wa_automation.enviar_prestador_email_enviado(
+                                            prestador_info['id'],
+                                            periodo,
+                                            total_geral,
+                                            link_upload if link_upload else ""
+                                        )
+                                        print(f"🔵 Resultado WhatsApp: {resultado_wa}")
+                                        
+                                        if resultado_wa.get("success"):
+                                            whatsapp_status = " 📱✅"
+                                            print(f"✅ WhatsApp enviado com sucesso!")
+                                        else:
+                                            whatsapp_status = f" 📱⚠️ ({resultado_wa.get('error', 'erro desconhecido')})"
+                                            print(f"⚠️ WhatsApp não enviado: {resultado_wa.get('error')}")
+                                    except Exception as e:
+                                        import traceback
+                                        print(f"❌ ERRO ao enviar WhatsApp: {str(e)}")
+                                        print(f"❌ Traceback: {traceback.format_exc()}")
+                                        whatsapp_status = f" 📱❌ ({str(e)[:30]})"
+                                
+                                report.append({"Prestador": nome_prestador, "Status": f"✅ Lote #{lote_id} Enviado{whatsapp_status}"})
                             else:
                                 report.append({"Prestador": nome_prestador, "Status": f"❌ Erro {resp.status_code} - {resp.text}"})
                                 
@@ -974,6 +1010,9 @@ Qualquer dúvida, estamos à disposição."""
                 st.text_input("Assunto (Montadores)", value=config.get("montador_subject", default_subject_montador), key="montador_subject", on_change=save_config)
                 st.text_area("Corpo do E-mail (Montadores)", value=config.get("montador_body", default_body_montador), key="montador_body", on_change=save_config, height=200)
                 
+                # 📱 Opção de enviar WhatsApp
+                enviar_whatsapp_montador = st.checkbox("📱 Enviar notificação por WhatsApp também?", value=True, help="Se ativado, enviará WhatsApp junto com o email (conforme templates configurados em Automação WhatsApp)")
+                
                 if st.button("▶️ PROCESSAR E ENVIAR E-MAILS", type="primary"):
                     report_summary = []
                     cc_list_montador = [e.strip() for e in st.session_state.montador_cc.split(",") if e.strip()]
@@ -1120,6 +1159,33 @@ Qualquer dúvida, estamos à disposição."""
                                     status_msg += f" com link ({link_gerado[:30]}...)"
                                 else:
                                     status_msg += " ⚠️ SEM LINK (consulte histórico)"
+                                
+                                # 📱 Enviar WhatsApp se opção marcada
+                                if enviar_whatsapp_montador:
+                                    try:
+                                        print(f"\n🔵 Iniciando envio WhatsApp para montador {montador_info['id']}")
+                                        from whatsapp_triggers import WhatsAppAutomation
+                                        wa_automation = WhatsAppAutomation()
+                                        print(f"🔵 Chamando enviar_montador_email_enviado...")
+                                        resultado_wa = wa_automation.enviar_montador_email_enviado(
+                                            montador_info['id'],
+                                            periodo_relatorio,
+                                            total_geral,
+                                            len(items_para_pdf)  # quantidade de OS/boletins
+                                        )
+                                        print(f"🔵 Resultado WhatsApp: {resultado_wa}")
+                                        
+                                        if resultado_wa.get("success"):
+                                            status_msg += " 📱✅"
+                                            print(f"✅ WhatsApp enviado com sucesso!")
+                                        else:
+                                            status_msg += f" 📱⚠️ ({resultado_wa.get('error', 'erro desconhecido')})"
+                                            print(f"⚠️ WhatsApp não enviado: {resultado_wa.get('error')}")
+                                    except Exception as e:
+                                        import traceback
+                                        print(f"❌ ERRO ao enviar WhatsApp: {str(e)}")
+                                        print(f"❌ Traceback: {traceback.format_exc()}")
+                                        status_msg += f" 📱❌ ({str(e)[:30]})"
                                     
                                 report_summary.append({"Montador": montador_info['nome'], "Status": status_msg})
                                 status_placeholder.success(f"✅ Email enviado para {montador_info['nome']}")
@@ -2089,6 +2155,12 @@ elif app_mode == "📤 Upload de Notas Fiscais":
 
 elif app_mode == "⚙️ Jobs Automáticos":
     mostrar_painel_jobs()
+
+elif app_mode == "📱 WhatsApp":
+    mostrar_painel_whatsapp()
+
+elif app_mode == "🤖 Automação WhatsApp":
+    mostrar_automacao_whatsapp()
 
 elif app_mode == "🔌 Integrações":
     from painel_integracoes import mostrar_painel_integracoes

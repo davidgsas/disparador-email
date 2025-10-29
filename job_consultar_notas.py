@@ -157,9 +157,10 @@ def processar_uploads_pendentes():
                 db.atualizar_status_arquivo(lote_id, 2)
                 logger.info(f"   ✅ Status atualizado: Arquivos baixados")
                 
-                # Atualizar status do lote para "N.F RECEBIDA"
-                db.update_lote_servico_status(lote_id, 'N.F RECEBIDA')
-                logger.info(f"   ✅ Status do lote atualizado: N.F RECEBIDA")
+                # Salvar primeiro arquivo como nota_fiscal_path (isso dispara WhatsApp automaticamente)
+                primeiro_arquivo = os.path.join(pasta_destino, arquivos[0]['nome_original'])
+                db.salvar_nota_fiscal(lote_id, primeiro_arquivo)
+                logger.info(f"   ✅ Nota fiscal salva e WhatsApp enviado (se configurado)")
                 
                 # **NOVO: Calcular e registrar data de vencimento do pagamento**
                 from datetime import datetime as dt

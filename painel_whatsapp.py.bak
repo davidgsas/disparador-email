@@ -1,0 +1,455 @@
+"""
+Painel de controle WhatsApp para Streamlit
+"""
+
+import streamlit as st
+import requests
+from datetime import datetime
+
+
+def mostrar_painel_whatsapp():
+    """Exibe o painel de controle do WhatsApp na interface"""
+    
+    st.title("📱 WhatsApp")
+    
+    # Criar cliente
+    whatsapp = WhatsAppClient()
+    
+    # Verificar status
+    status = whatsapp.get_status()
+    
+    # Tabs principais
+    tab_status, tab_enviar, tab_historico, tab_config = st.tabs([
+        "🔌 Status & Conexão",
+        "📤 Enviar Mensagens",
+        "📊 Histórico",
+        "⚙️ Configurações"
+    ])
+    
+    # ========== TAB STATUS ==========
+    with tab_status:
+        st.subheader("Status da Conexão")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if status.get("status") == "error":
+                st.error("❌ **Serviço Offline**")
+                st.warning("O serviço WhatsApp não está rodando!")
+                st.info("""
+                **Para iniciar o serviço:**
+                
+                1. Abra um terminal
+                2. Execute: `npm start`
+                3. Ou: `./start_whatsapp.sh`
+                """)
+            elif status.get("status") == "connected":
+                st.success("✅ **Conectado**")
+            else:
+                st.warning("⏳ **Aguardando Conexão**")
+        
+        with col2:
+            if status.get("hasQrCode"):
+                st.info("📱 **QR Code Disponível**")
+                if st.button("🔍 Ver QR Code", use_container_width=True):
+                    st.markdown("[Clique aqui para ver o QR Code](http://localhost:3000/qr)")
+                    st.markdown("👆 Abra em uma nova aba e escaneie com seu WhatsApp")
+            elif status.get("status") == "connected":
+                st.success("🔗 **Autenticado**")
+        
+        with col3:
+            if st.button("🔄 Atualizar Status", use_container_width=True):
+                st.rerun()
+        
+        # Informações do usuário conectado
+        if status.get("status") == "connected":
+            st.divider()
+            info = whatsapp.get_info()
+            
+            if info.get("success"):
+                user_info = info.get("info", {})
+                st.subheader("👤 Usuário Conectado")
+                
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Nome", user_info.get("name", "N/A"))
+                col2.metric("Número", user_info.get("number", "N/A"))
+                col3.metric("Plataforma", user_info.get("platform", "N/A").title())
+        
+        # Como conectar
+        if status.get("status") != "connected":
+            st.divider()
+            st.subheader("📱 Como Conectar")
+            
+            with st.expander("Ver instruções detalhadas"):
+                st.markdown("""
+                ### Passo a Passo:
+                
+                1. **Inicie o serviço** (se ainda não estiver rodando):
+                   ```bash
+                   npm start
+                   ```
+                   ou
+                   ```bash
+                   ./start_whatsapp.sh
+                   ```
+                
+                2. **Acesse o link do QR Code**:
+                   - [http://localhost:3000/qr](http://localhost:3000/qr)
+                
+                3. **No seu celular**:
+                   - Abra o WhatsApp
+                   - Toque em **Menu** (⋮) ou **Configurações**
+                   - Toque em **Aparelhos conectados**
+                   - Toque em **Conectar um aparelho**
+                   - Aponte a câmera para o QR Code
+                
+                4. **Aguarde a confirmação**
+                   - A página mostrará quando estiver conectado
+                   - Volte aqui e clique em "Atualizar Status"
+                """)
+    
+    # ========== TAB ENVIAR ==========
+    with tab_enviar:
+        if status.get("status") != "connected":
+            st.warning("⚠️ WhatsApp não está conectado. Conecte primeiro na aba 'Status & Conexão'.")
+        else:
+            st.subheader("Enviar Mensagem")
+            
+            # Escolher tipo de envio
+            tipo_envio = st.radio(
+                "Tipo de Envio",
+                ["📱 Número Manual", "👤 Prestador", "🔧 Montador", "📋 Lista (Múltiplos)"],
+                horizontal=True
+            )
+            
+            destinatarios = []
+            nomes = []
+            
+            if tipo_envio == "📱 Número Manual":
+                numero = st.text_input(
+                    "Número do WhatsApp",
+                    placeholder="11999999999",
+                    help="Digite apenas números, com DDD"
+                )
+                if numero:
+                    destinatarios = [numero]
+                    nomes = ["Manual"]
+            
+            elif tipo_envio == "👤 Prestador":
+                prestadores = db.get_all_prestadores()
+                prestadores_com_tel = [p for p in prestadores if p.get('telefone')]
+                
+                if not prestadores_com_tel:
+                    st.warning("Nenhum prestador com telefone cadastrado!")
+                else:
+                    prestador_selecionado = st.selectbox(
+                        "Selecione o Prestador",
+                        options=prestadores_com_tel,
+                        format_func=lambda x: f"{x['nome']} - {x.get('telefone', 'Sem telefone')}"
+                    )
+                    if prestador_selecionado:
+                        destinatarios = [prestador_selecionado.get('telefone')]
+                        nomes = [prestador_selecionado['nome']]
+            
+            elif tipo_envio == "🔧 Montador":
+                montadores = db.get_all_montadores()
+                montadores_com_tel = [m for m in montadores if m.get('telefone')]
+                
+                if not montadores_com_tel:
+                    st.warning("Nenhum montador com telefone cadastrado!")
+                else:
+                    montador_selecionado = st.selectbox(
+                        "Selecione o Montador",
+                        options=montadores_com_tel,
+                        format_func=lambda x: f"{x['nome']} - {x.get('telefone', 'Sem telefone')}"
+                    )
+                    if montador_selecionado:
+                        destinatarios = [montador_selecionado.get('telefone')]
+                        nomes = [montador_selecionado['nome']]
+            
+            else:  # Lista múltiplos
+                st.info("Digite um número por linha (apenas números com DDD)")
+                numeros_texto = st.text_area(
+                    "Lista de Números",
+                    placeholder="11999999999\n11988888888\n11977777777",
+                    height=150
+                )
+                if numeros_texto:
+                    destinatarios = [n.strip() for n in numeros_texto.split('\n') if n.strip()]
+                    nomes = ["Manual"] * len(destinatarios)
+                
+                st.caption(f"📊 Total de números: {len(destinatarios)}")
+            
+            # Mensagem
+            st.divider()
+            
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                mensagem = st.text_area(
+                    "Mensagem",
+                    placeholder="Digite a mensagem...",
+                    height=200,
+                    help="Use *texto* para negrito e _texto_ para itálico"
+                )
+            
+            with col2:
+                st.markdown("**Formatação:**")
+                st.markdown("""
+                - `*negrito*`
+                - `_itálico_`
+                - `~riscado~`
+                - `\`\`\`código\`\`\``
+                """)
+                
+                if len(destinatarios) > 1:
+                    delay = st.number_input(
+                        "Delay (segundos)",
+                        min_value=2,
+                        max_value=10,
+                        value=3,
+                        help="Tempo entre mensagens"
+                    )
+            
+            # Botão enviar
+            if st.button("📤 Enviar Mensagem", type="primary", use_container_width=True):
+                if not destinatarios:
+                    st.error("❌ Selecione ao menos um destinatário!")
+                elif not mensagem:
+                    st.error("❌ Digite uma mensagem!")
+                else:
+                    with st.spinner("Enviando..."):
+                        if len(destinatarios) == 1:
+                            # Envio único
+                            resultado = whatsapp.send_message(
+                                number=destinatarios[0],
+                                message=mensagem
+                            )
+                            
+                            if resultado.get("success"):
+                                st.success(f"✅ Mensagem enviada para {nomes[0]}!")
+                                
+                                # Registrar no banco
+                                try:
+                                    conn = db.get_db_connection()
+                                    cursor = conn.cursor()
+                                    cursor.execute("""
+                                        INSERT INTO notificacoes_whatsapp 
+                                        (tipo, mensagem, status, metadata)
+                                        VALUES (%s, %s, %s, %s)
+                                    """, (
+                                        "manual",
+                                        mensagem,
+                                        "enviado",
+                                        f'{{"numero": "{destinatarios[0]}", "nome": "{nomes[0]}"}}'
+                                    ))
+                                    conn.commit()
+                                    conn.close()
+                                except Exception as e:
+                                    st.warning(f"⚠️ Erro ao registrar no banco: {e}")
+                            else:
+                                st.error(f"❌ Erro: {resultado.get('error')}")
+                        else:
+                            # Envio em massa
+                            resultado = whatsapp.send_bulk_messages(
+                                numbers=destinatarios,
+                                message=mensagem,
+                                delay=delay * 1000  # Converter para milissegundos
+                            )
+                            
+                            if resultado.get("success"):
+                                enviados = resultado.get("sent", 0)
+                                falhas = resultado.get("failed", 0)
+                                
+                                st.success(f"✅ Enviadas: {enviados}/{len(destinatarios)}")
+                                
+                                if falhas > 0:
+                                    st.warning(f"⚠️ Falhas: {falhas}")
+                                    
+                                    with st.expander("Ver detalhes"):
+                                        for item in resultado.get("results", []):
+                                            if not item.get("success"):
+                                                st.error(f"❌ {item['number']}: {item.get('error', 'Erro desconhecido')}")
+                            else:
+                                st.error(f"❌ Erro: {resultado.get('error')}")
+    
+    # ========== TAB HISTÓRICO ==========
+    with tab_historico:
+        st.subheader("📊 Histórico de Envios")
+        
+        try:
+            conn = db.get_db_connection()
+            cursor = conn.cursor()
+            
+            # Buscar histórico
+            cursor.execute("""
+                SELECT 
+                    n.id,
+                    n.tipo,
+                    n.mensagem,
+                    n.status,
+                    n.data_envio,
+                    n.erro,
+                    n.metadata,
+                    p.nome as prestador_nome,
+                    m.nome as montador_nome
+                FROM notificacoes_whatsapp n
+                LEFT JOIN prestadores p ON n.prestador_id = p.id
+                LEFT JOIN montadores m ON n.montador_id = m.id
+                ORDER BY n.data_envio DESC
+                LIMIT 100
+            """)
+            
+            historico = cursor.fetchall()
+            conn.close()
+            
+            if not historico:
+                st.info("Nenhum envio registrado ainda.")
+            else:
+                # Filtros
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    filtro_tipo = st.selectbox(
+                        "Filtrar por Tipo",
+                        ["Todos", "manual", "nota_fiscal", "lembrete", "confirmacao"]
+                    )
+                
+                with col2:
+                    filtro_status = st.selectbox(
+                        "Filtrar por Status",
+                        ["Todos", "enviado", "erro"]
+                    )
+                
+                # Aplicar filtros
+                historico_filtrado = historico
+                if filtro_tipo != "Todos":
+                    historico_filtrado = [h for h in historico_filtrado if h[1] == filtro_tipo]
+                if filtro_status != "Todos":
+                    historico_filtrado = [h for h in historico_filtrado if h[3] == filtro_status]
+                
+                st.caption(f"Mostrando {len(historico_filtrado)} de {len(historico)} registros")
+                
+                # Exibir histórico
+                for h in historico_filtrado:
+                    with st.expander(
+                        f"{'✅' if h[3] == 'enviado' else '❌'} "
+                        f"{h[1].upper()} - {h[4].strftime('%d/%m/%Y %H:%M')}"
+                    ):
+                        col1, col2 = st.columns([2, 1])
+                        
+                        with col1:
+                            st.markdown(f"**Destinatário:** {h[7] or h[8] or 'Manual'}")
+                            st.markdown(f"**Status:** {h[3]}")
+                            if h[5]:  # Erro
+                                st.error(f"**Erro:** {h[5]}")
+                        
+                        with col2:
+                            st.markdown(f"**Data:** {h[4].strftime('%d/%m/%Y')}")
+                            st.markdown(f"**Hora:** {h[4].strftime('%H:%M:%S')}")
+                        
+                        st.divider()
+                        st.markdown("**Mensagem:**")
+                        st.text(h[2][:200] + "..." if len(h[2]) > 200 else h[2])
+        
+        except Exception as e:
+            st.error(f"❌ Erro ao carregar histórico: {e}")
+    
+    # ========== TAB CONFIGURAÇÕES ==========
+    with tab_config:
+        st.subheader("⚙️ Configurações")
+        
+        st.markdown("### 🔗 URLs do Serviço")
+        st.code("http://localhost:3000/status", language="bash")
+        st.code("http://localhost:3000/qr", language="bash")
+        st.code("http://localhost:3000/info", language="bash")
+        
+        st.divider()
+        
+        st.markdown("### 📱 Adicionar Telefones")
+        
+        tab_prest, tab_mont = st.tabs(["Prestadores", "Montadores"])
+        
+        with tab_prest:
+            prestadores = db.get_all_prestadores()
+            prestadores_sem_tel = [p for p in prestadores if not p.get('telefone')]
+            
+            if prestadores_sem_tel:
+                st.warning(f"⚠️ {len(prestadores_sem_tel)} prestadores sem telefone cadastrado")
+                
+                for p in prestadores_sem_tel[:5]:  # Mostrar apenas os 5 primeiros
+                    col1, col2, col3 = st.columns([2, 2, 1])
+                    col1.write(p['nome'])
+                    telefone = col2.text_input(
+                        "Telefone",
+                        key=f"tel_prest_{p['id']}",
+                        placeholder="11999999999",
+                        label_visibility="collapsed"
+                    )
+                    if col3.button("💾", key=f"save_prest_{p['id']}"):
+                        if telefone:
+                            try:
+                                conn = db.get_db_connection()
+                                cursor = conn.cursor()
+                                cursor.execute(
+                                    "UPDATE prestadores SET telefone = %s WHERE id = %s",
+                                    (telefone, p['id'])
+                                )
+                                conn.commit()
+                                conn.close()
+                                st.success("✅ Salvo!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"❌ Erro: {e}")
+            else:
+                st.success("✅ Todos os prestadores têm telefone cadastrado!")
+        
+        with tab_mont:
+            montadores = db.get_all_montadores()
+            montadores_sem_tel = [m for m in montadores if not m.get('telefone')]
+            
+            if montadores_sem_tel:
+                st.warning(f"⚠️ {len(montadores_sem_tel)} montadores sem telefone cadastrado")
+                
+                for m in montadores_sem_tel[:5]:  # Mostrar apenas os 5 primeiros
+                    col1, col2, col3 = st.columns([2, 2, 1])
+                    col1.write(m['nome'])
+                    telefone = col2.text_input(
+                        "Telefone",
+                        key=f"tel_mont_{m['id']}",
+                        placeholder="11999999999",
+                        label_visibility="collapsed"
+                    )
+                    if col3.button("💾", key=f"save_mont_{m['id']}"):
+                        if telefone:
+                            try:
+                                conn = db.get_db_connection()
+                                cursor = conn.cursor()
+                                cursor.execute(
+                                    "UPDATE montadores SET telefone = %s WHERE id = %s",
+                                    (telefone, m['id'])
+                                )
+                                conn.commit()
+                                conn.close()
+                                st.success("✅ Salvo!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"❌ Erro: {e}")
+            else:
+                st.success("✅ Todos os montadores têm telefone cadastrado!")
+        
+        st.divider()
+        
+        st.markdown("### 🧪 Teste de Conexão")
+        if st.button("🔬 Executar Teste", use_container_width=True):
+            with st.spinner("Testando..."):
+                import subprocess
+                resultado = subprocess.run(
+                    ["python", "teste_whatsapp.py"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                st.code(resultado.stdout)
+                if resultado.returncode != 0:
+                    st.error(resultado.stderr)
