@@ -11,7 +11,7 @@ from datetime import datetime
 def mostrar_automacao_whatsapp():
     """Painel de automação WhatsApp"""
     
-    st.title("🤖 Automação WhatsApp")
+    st.title("Automação WhatsApp")
     
     # Tabs principais
     tab_templates, tab_triggers, tab_historico = st.tabs([

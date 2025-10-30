@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Pagamentos - {{ prestador.nome }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #2c5aa0;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #2c5aa0;
+            font-size: 24pt;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+        
+        .header .subtitle {
+            font-size: 12pt;
+            color: #666;
+        }
+        
+        .info-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2c5aa0;
+        }
+        
+        .info-section h2 {
+            color: #2c5aa0;
+            font-size: 14pt;
+            margin: 0 0 10px 0;
+            font-weight: bold;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 8px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+        
+        .summary-boxes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .summary-box.paid {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .summary-box.pending {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+        }
+        
+        .summary-box .label {
+            font-size: 10pt;
+            opacity: 0.9;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .summary-box .value {
+            font-size: 22pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .summary-box .subvalue {
+            font-size: 9pt;
+            opacity: 0.9;
+        }
+        
+        .section-title {
+            color: #2c5aa0;
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 30px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #2c5aa0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 10pt;
+        }
+        
+        thead {
+            background-color: #2c5aa0;
+            color: white;
+        }
+        
+        thead th {
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 9pt;
+            letter-spacing: 0.5px;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tbody tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        tbody td {
+            padding: 10px 8px;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 9pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .badge-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: #ffc107;
+            color: #333;
+        }
+        
+        .badge-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            background-color: #e8eaf6 !important;
+            border-top: 2px solid #2c5aa0;
+        }
+        
+        .total-row td {
+            padding: 15px 8px;
+            font-size: 11pt;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- CABEÇALHO -->
+    <div class="header">
+        <h1>RELATÓRIO DE PAGAMENTOS</h1>
+        <div class="subtitle">Detalhamento de Serviços Prestados</div>
+    </div>
+    
+    <!-- INFORMAÇÕES DO PRESTADOR -->
+    <div class="info-section">
+        <h2>📋 Informações do Prestador</h2>
+        <div class="info-grid">
+            <div class="info-label">Nome:</div>
+            <div class="info-value">{{ prestador.nome }}</div>
+            
+            {% if prestador.fornecedor_id %}
+            <div class="info-label">ID Fornecedor:</div>
+            <div class="info-value">{{ prestador.fornecedor_id }}</div>
+            {% endif %}
+            
+            {% if prestador.email %}
+            <div class="info-label">Email:</div>
+            <div class="info-value">{{ prestador.email }}</div>
+            {% endif %}
+            
+            {% if prestador.telefone %}
+            <div class="info-label">Telefone:</div>
+            <div class="info-value">{{ prestador.telefone }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- RESUMO EXECUTIVO -->
+    <div class="summary-boxes">
+        <div class="summary-box paid">
+            <div class="label">💰 Pago</div>
+            <div class="value">R$ {{ "%.2f"|format(totais.pago)|replace('.', ',')|replace(',', '.', 1) }}</div>
+            <div class="subvalue">{{ totais.quantidade_pagos }} lote(s)</div>
+        </div>
+        
+        <div class="summary-box pending">
+            <div class="label">⏳ Pendente</div>
+            <div class="value">R$ {{ "%.2f"|format(totais.pendente)|replace('.', ',')|replace(',', '.', 1) }}</div>
+            <div class="subvalue">{{ totais.quantidade_pendentes }} lote(s)</div>
+        </div>
+        
+        <div class="summary-box">
+            <div class="label">📊 Total Geral</div>
+            <div class="value">R$ {{ "%.2f"|format(totais.geral)|replace('.', ',')|replace(',', '.', 1) }}</div>
+            <div class="subvalue">{{ totais.quantidade_total }} lote(s)</div>
+        </div>
+    </div>
+    
+    <!-- LOTES PAGOS -->
+    {% if lotes_pagos %}
+    <div class="section-title">✅ Pagamentos Realizados</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">Lote</th>
+                <th style="width: 15%;">Período</th>
+                <th style="width: 15%;" class="text-right">Valor</th>
+                <th style="width: 15%;">Data Envio</th>
+                <th style="width: 15%;">Data Pagto</th>
+                <th style="width: 15%;">Vencimento</th>
+                <th style="width: 10%;">Nota Fiscal</th>
+                <th style="width: 10%;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lote in lotes_pagos %}
+            <tr>
+                <td><strong>#{{ lote.id }}</strong></td>
+                <td>{{ lote.periodo }}</td>
+                <td class="text-right">R$ {{ "%.2f"|format(lote.valor_total)|replace('.', ',')|replace(',', '.', 1) }}</td>
+                <td>{{ lote.data_envio.strftime('%d/%m/%Y') if lote.data_envio else '-' }}</td>
+                <td>{{ lote.data_pagamento.strftime('%d/%m/%Y') if lote.data_pagamento else '-' }}</td>
+                <td>{{ lote.vencimento.strftime('%d/%m/%Y') if lote.vencimento else '-' }}</td>
+                <td class="text-center">
+                    {% if lote.nota_fiscal_path %}
+                    <span class="badge badge-success">✓ Sim</span>
+                    {% else %}
+                    <span class="badge badge-warning">✗ Não</span>
+                    {% endif %}
+                </td>
+                <td><span class="badge badge-success">{{ lote.status }}</span></td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="2" class="text-right"><strong>TOTAL PAGO:</strong></td>
+                <td class="text-right"><strong>R$ {{ "%.2f"|format(totais.pago)|replace('.', ',')|replace(',', '.', 1) }}</strong></td>
+                <td colspan="5"></td>
+            </tr>
+        </tbody>
+    </table>
+    {% else %}
+    <div class="section-title">✅ Pagamentos Realizados</div>
+    <div class="no-data">Nenhum pagamento realizado no período.</div>
+    {% endif %}
+    
+    <!-- LOTES PENDENTES -->
+    {% if lotes_pendentes %}
+    <div class="section-title">⏳ Pagamentos Pendentes</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">Lote</th>
+                <th style="width: 15%;">Período</th>
+                <th style="width: 15%;" class="text-right">Valor</th>
+                <th style="width: 15%;">Data Envio</th>
+                <th style="width: 15%;">Vencimento</th>
+                <th style="width: 10%;">Situação</th>
+                <th style="width: 10%;">Nota Fiscal</th>
+                <th style="width: 10%;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lote in lotes_pendentes %}
+            <tr {% if lote.dias_vencido %}style="background-color: #ffebee;"{% endif %}>
+                <td><strong>#{{ lote.id }}</strong></td>
+                <td>{{ lote.periodo }}</td>
+                <td class="text-right">R$ {{ "%.2f"|format(lote.valor_total)|replace('.', ',')|replace(',', '.', 1) }}</td>
+                <td>{{ lote.data_envio.strftime('%d/%m/%Y') if lote.data_envio else '-' }}</td>
+                <td>{{ lote.vencimento.strftime('%d/%m/%Y') if lote.vencimento else '-' }}</td>
+                <td class="text-center">
+                    {% if lote.dias_vencido %}
+                    <span class="badge" style="background-color: #dc3545; color: white;">⚠️ {{ lote.dias_vencido }}d</span>
+                    {% else %}
+                    <span class="badge" style="background-color: #28a745; color: white;">✓ OK</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if lote.nota_fiscal_path %}
+                    <span class="badge badge-success">✓ Sim</span>
+                    {% else %}
+                    <span class="badge badge-warning">✗ Não</span>
+                    {% endif %}
+                </td>
+                <td><span class="badge badge-info">{{ lote.status }}</span></td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="2" class="text-right"><strong>TOTAL PENDENTE:</strong></td>
+                <td class="text-right"><strong>R$ {{ "%.2f"|format(totais.pendente)|replace('.', ',')|replace(',', '.', 1) }}</strong></td>
+                <td colspan="5"></td>
+            </tr>
+        </tbody>
+    </table>
+    {% else %}
+    <div class="section-title">⏳ Pagamentos Pendentes</div>
+    <div class="no-data">Nenhum pagamento pendente no período.</div>
+    {% endif %}
+    
+    <!-- RODAPÉ -->
+    <div class="footer">
+        <p>Relatório gerado em {{ data_geracao }}</p>
+        {% if periodo_filtro.inicio or periodo_filtro.fim %}
+        <p>Período: 
+            {% if periodo_filtro.inicio %}{{ periodo_filtro.inicio }}{% else %}início{% endif %} 
+            até 
+            {% if periodo_filtro.fim %}{{ periodo_filtro.fim }}{% else %}hoje{% endif %}
+        </p>
+        {% endif %}
+        <p><em>Este documento é gerado automaticamente pelo sistema de gestão.</em></p>
+    </div>
+</body>
+</html>

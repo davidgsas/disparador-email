@@ -11,7 +11,7 @@ from integracoes.trello_integration import TrelloIntegration
 def mostrar_painel_integracoes():
     """Exibe o painel de configuração de integrações"""
     
-    st.title("🔌 Integrações")
+    st.title("Integrações")
     st.markdown("Configure integrações com serviços externos")
     
     # Tabs para diferentes integrações

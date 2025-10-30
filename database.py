@@ -1319,7 +1319,7 @@ def marcar_lote_como_pago(lote_id):
     with conn.cursor() as cur:
         cur.execute('''
             UPDATE lotes_servico 
-            SET pago = TRUE, data_pagamento = CURRENT_TIMESTAMP
+            SET status = 'PAGO', data_pagamento = CURRENT_TIMESTAMP
             WHERE id = %s
         ''', (lote_id,))
     conn.commit()
@@ -1332,11 +1332,93 @@ def marcar_montagem_como_paga(envio_id):
     with conn.cursor() as cur:
         cur.execute('''
             UPDATE envios_montagem 
-            SET pago = TRUE, data_pagamento = CURRENT_TIMESTAMP
+            SET status = 'PAGO', data_pagamento = CURRENT_TIMESTAMP
             WHERE id = %s
         ''', (envio_id,))
     conn.commit()
     conn.close()
+
+
+def marcar_todos_nao_pendentes_como_pagos():
+    """
+    Marca como PAGO todos os lotes/montagens que têm NF recebida mas ainda não estão marcados como pagos.
+    Isso é útil para marcar como pago em lote todos que já foram processados mas não foram marcados.
+    
+    Returns:
+        dict: quantidade de lotes e montagens marcados
+    """
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        # Marcar lotes de serviço que têm NF recebida mas não estão pagos
+        cur.execute('''
+            UPDATE lotes_servico 
+            SET status = 'PAGO', data_pagamento = CURRENT_TIMESTAMP
+            WHERE status != 'PAGO' 
+            AND data_recebimento_nf IS NOT NULL
+        ''')
+        lotes_marcados = cur.rowcount
+        
+        # Marcar montagens que têm NF recebida mas não estão pagas
+        cur.execute('''
+            UPDATE envios_montagem 
+            SET status = 'PAGO', data_pagamento = CURRENT_TIMESTAMP
+            WHERE status != 'PAGO' 
+            AND data_recebimento_nf IS NOT NULL
+        ''')
+        montagens_marcadas = cur.rowcount
+    
+    conn.commit()
+    conn.close()
+    
+    return {
+        'lotes': lotes_marcados,
+        'montagens': montagens_marcadas,
+        'total': lotes_marcados + montagens_marcadas
+    }
+
+
+def desmarcar_todos_como_pagos():
+    """
+    ROLLBACK: Desmarca TODOS os pagamentos, voltando status para 'N.F. RECEBIDA' 
+    onde havia data_recebimento_nf, ou 'Em Aberto' caso contrário.
+    
+    Returns:
+        dict: quantidade de lotes e montagens desmarcados
+    """
+    conn = get_db_connection()
+    with conn.cursor() as cur:
+        # Desmarcar lotes de serviço pagos
+        cur.execute('''
+            UPDATE lotes_servico 
+            SET status = CASE 
+                WHEN data_recebimento_nf IS NOT NULL THEN 'N.F. RECEBIDA'
+                ELSE 'Em Aberto'
+            END,
+            data_pagamento = NULL
+            WHERE status = 'PAGO'
+        ''')
+        lotes_desmarcados = cur.rowcount
+        
+        # Desmarcar montagens pagas
+        cur.execute('''
+            UPDATE envios_montagem 
+            SET status = CASE 
+                WHEN data_recebimento_nf IS NOT NULL THEN 'N.F. RECEBIDA'
+                ELSE 'Em Aberto'
+            END,
+            data_pagamento = NULL
+            WHERE status = 'PAGO'
+        ''')
+        montagens_desmarcadas = cur.rowcount
+    
+    conn.commit()
+    conn.close()
+    
+    return {
+        'lotes': lotes_desmarcados,
+        'montagens': montagens_desmarcadas,
+        'total': lotes_desmarcados + montagens_desmarcadas
+    }
 
 
 def get_pagamentos_vencidos():

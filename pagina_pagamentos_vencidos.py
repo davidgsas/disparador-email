@@ -19,7 +19,40 @@ def obter_status_urgencia(dias_para_vencimento):
         return ("⚪", f"Vence em {dias_para_vencimento} dias", 6)
 
 def pagina_pagamentos_vencidos():
-    st.title("💸 Pagamentos Pendentes")
+    st.title("Pagamentos Pendentes")
+    
+    # Botões de ação em massa no topo
+    st.markdown("### Ações em Massa")
+    col_acao1, col_acao2, col_acao3 = st.columns([2, 2, 2])
+    
+    with col_acao1:
+        if st.button("✅ Marcar Todos com NF como Pagos", use_container_width=True, type="primary"):
+            with st.spinner("Marcando como pagos..."):
+                resultado = db.marcar_todos_nao_pendentes_como_pagos()
+                st.success(f"✅ {resultado['total']} pagamentos marcados! ({resultado['lotes']} lotes + {resultado['montagens']} montagens)")
+                st.rerun()
+    
+    with col_acao2:
+        if st.button("🔄 Desfazer TODOS os Pagamentos", use_container_width=True, type="secondary"):
+            if st.session_state.get('confirmar_rollback'):
+                with st.spinner("Desfazendo pagamentos..."):
+                    resultado = db.desmarcar_todos_como_pagos()
+                    st.warning(f"🔄 {resultado['total']} pagamentos desfeitos! ({resultado['lotes']} lotes + {resultado['montagens']} montagens)")
+                    st.session_state.confirmar_rollback = False
+                    st.rerun()
+            else:
+                st.session_state.confirmar_rollback = True
+                st.warning("⚠️ Clique novamente para CONFIRMAR o rollback!")
+                st.rerun()
+    
+    with col_acao3:
+        if st.session_state.get('confirmar_rollback'):
+            if st.button("❌ Cancelar", use_container_width=True):
+                st.session_state.confirmar_rollback = False
+                st.rerun()
+    
+    st.divider()
+    
     pagamentos = db.get_todos_pagamentos_pendentes()
     total_servicos = len(pagamentos['servicos'])
     total_montagens = len(pagamentos['montagens'])

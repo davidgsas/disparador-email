@@ -22,6 +22,7 @@ from notificacoes_toast import processar_notificacoes_toast, badge_contador_noti
 from pagina_pagamentos_vencidos import pagina_pagamentos_vencidos
 from painel_whatsapp import mostrar_painel_whatsapp
 from automacao_whatsapp import mostrar_automacao_whatsapp
+from pagina_relatorios import mostrar_pagina_relatorios
 
 # --- Novas Funções de Configuração ---
 CONFIG_FILE = Path("config.json")
@@ -158,18 +159,19 @@ app_mode = st.sidebar.selectbox("Selecione a Página", [
     "Dashboard de Pendências", 
     "Serviços (Prestadores)", 
     "Montagem (Montadores)", 
-    "💸 Pagamentos Vencidos",
-    "📤 Upload de Notas Fiscais",
-    "📱 WhatsApp",
-    "🤖 Automação WhatsApp",
-    "⚙️ Jobs Automáticos", 
-    "🔌 Integrações",
-    "🗄️ Backups do Banco"
+    "Pagamentos Vencidos",
+    "Relatórios de Pagamentos",
+    "Upload de Notas Fiscais",
+    "WhatsApp",
+    "Automação WhatsApp",
+    "Jobs Automáticos", 
+    "Integrações",
+    "Backups do Banco"
 ])
 st.sidebar.info(f"**Conectado como:** \n{st.session_state.user}")
 
 if app_mode == "Dashboard de Pendências":
-    st.title("🗓️ Dashboard de Pendências de Envio")
+    st.title("Dashboard de Pendências de Envio")
     
     st.subheader("Prestadores com Envios Pendentes Oggi")
     pendencias_prestadores = verificar_pendencias(db.get_all_prestadores(), 'prestador')
@@ -210,7 +212,7 @@ elif app_mode == "Serviços (Prestadores)":
     page = st.sidebar.radio("Navegar", ["Enviar Boletins", "Gerenciar Prestadores", "Histórico de Envios", "Editor de PDF (Serviços)"])
 
     if page == "Enviar Boletins":
-        st.title("📤 Envio de Boletins de Serviço")
+        st.title("Envio de Boletins de Serviço")
         input_method = st.tabs(["Lançamento Manual", "Importar via Excel"])
         df_para_envio = None
 
@@ -905,16 +907,20 @@ Obrigado."""
             template_path.write_text(new_html_content, encoding="utf-8")
             st.success("Template salvo!")
 
-elif app_mode == "💸 Pagamentos Vencidos":
+elif app_mode == "Pagamentos Vencidos":
     # Página de pagamentos vencidos
     pagina_pagamentos_vencidos()
+
+elif app_mode == "Relatórios de Pagamentos":
+    # Página de relatórios de pagamentos
+    mostrar_pagina_relatorios()
 
 elif app_mode == "Montagem (Montadores)":
     st.sidebar.divider()
     page = st.sidebar.radio("Navegar", ["Enviar Pagamentos", "Gerenciar Montadores", "Histórico de Montagens"])
     
     if page == "Enviar Pagamentos":
-        st.title("💸 Enviar Pagamentos de Montagem")
+        st.title("Enviar Pagamentos de Montagem")
         input_method = st.tabs(["Lançamento Manual", "Importar via Excel"])
         df_para_envio_montagem = None
 
@@ -1644,11 +1650,11 @@ Qualquer dúvida, estamos à disposição."""
                                 st.success("Pagamento excluído!")
                                 st.rerun()
 
-elif app_mode == "📤 Upload de Notas Fiscais":
-    st.title("📤 Sistema de Upload de Notas Fiscais")
+elif app_mode == "Upload de Notas Fiscais":
+    st.title("Sistema de Upload de Notas Fiscais")
     
     st.markdown("""
-    ### 🎯 Como Funciona o Sistema de Upload
+    ### Como Funciona o Sistema de Upload
     
     1. **Disparo de Lote**: Quando um lote de serviços é enviado por email, um link único é gerado automaticamente
     2. **Prestador Acessa**: O prestador recebe o link no email e pode fazer upload da nota fiscal
@@ -2153,21 +2159,21 @@ elif app_mode == "📤 Upload de Notas Fiscais":
                             with open(arquivo_path, "r", encoding="utf-8") as f:
                                 st.code(f.read(), language="markdown" if arquivo.endswith(".md") else "python")
 
-elif app_mode == "⚙️ Jobs Automáticos":
+elif app_mode == "Jobs Automáticos":
     mostrar_painel_jobs()
 
-elif app_mode == "📱 WhatsApp":
+elif app_mode == "WhatsApp":
     mostrar_painel_whatsapp()
 
-elif app_mode == "🤖 Automação WhatsApp":
+elif app_mode == "Automação WhatsApp":
     mostrar_automacao_whatsapp()
 
-elif app_mode == "🔌 Integrações":
+elif app_mode == "Integrações":
     from painel_integracoes import mostrar_painel_integracoes
     mostrar_painel_integracoes()
 
-elif app_mode == "🗄️ Backups do Banco":
-    st.title("🗄️ Sistema de Backup do Banco de Dados")
+elif app_mode == "Backups do Banco":
+    st.title("Sistema de Backup do Banco de Dados")
     
     backup_dir = Path("backups")
     

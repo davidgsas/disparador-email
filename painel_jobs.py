@@ -12,7 +12,7 @@ from pathlib import Path
 def mostrar_painel_jobs():
     """Mostra painel de configuração e monitoramento de jobs"""
     
-    st.title("⚙️ Jobs Automáticos")
+    st.title("Jobs Automáticos")
     
     # Verificar status do serviço
     pid_file = Path('scheduler.pid')

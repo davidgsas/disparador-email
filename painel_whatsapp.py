@@ -53,7 +53,7 @@ def mostrar_painel_whatsapp():
     """Exibe o painel de controle do WhatsApp na interface"""
     
     # Debug - sempre mostrar algo
-    st.title("📱 WhatsApp")
+    st.title("WhatsApp")
     st.write("🔄 Carregando painel WhatsApp...")
     
     # Importar database aqui para evitar erros de importação circular
